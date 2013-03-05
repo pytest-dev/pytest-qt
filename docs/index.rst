@@ -3,23 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pytest-qt's documentation!
-=====================================
-
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-   
+pytest-qt: test your Qt GUI applications with pytest
+====================================================
    
 .. automodule:: pytestqt   
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
