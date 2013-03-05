@@ -7,5 +7,3 @@ pytest-qt: test your Qt GUI applications with pytest
 ====================================================
    
 .. automodule:: pytestqt   
-
-
