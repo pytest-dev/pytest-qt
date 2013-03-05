@@ -2,5 +2,5 @@ language: python
 python:
   - "2.7"
 install:
-    - pip install pyside
+    - pip install pyside --use-mirrors
 script: py.test 
