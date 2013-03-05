@@ -7,6 +7,8 @@ from pytestqt.qt_compat import QtGui
 class QtBot(object):
     '''
     Responsible for sending events to Qt objects, simulating user input.
+    
+    Instances of this class should be accessed by the ``qtbot`` pytest fixture.
     '''
     
     def __init__(self, app):
