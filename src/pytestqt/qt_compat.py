@@ -40,13 +40,15 @@ if USES_PYSIDE:
     Signal = QtCore.Signal
     Slot = QtCore.Slot
     Property = QtCore.Property
-    
-    from PySide import QtGui
 else:
     import_module = _pyqt4_import_module
 
     Signal = QtCore.pyqtSignal
     Slot = QtCore.pyqtSlot
     Property = QtCore.pyqtProperty
-    
-    from PyQt4 import QtGui
+
+
+QtGui = import_module('QtGui')
+QtTest = import_module('QtTest')
+Qt = QtCore.Qt
+QEvent = QtCore.QEvent
