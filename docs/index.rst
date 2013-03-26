@@ -3,7 +3,31 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-pytest-qt: test your Qt GUI applications with pytest
-====================================================
-   
-.. automodule:: pytestqt   
+
+=========
+pytest-qt
+=========
+
+:Author: Bruno Oliveira
+:Repository: `GitHub <https://github.com/nicoddemus/pytest-qt>`_
+:Version: |version|
+:License: `LGPL <http://www.gnu.org/licenses/lgpl-3.0.txt>`_
+
+
+Introduction
+============
+
+.. automodule:: pytestqt
+
+Tutorial
+========
+
+Soon.
+
+
+QtBot
+=====
+
+.. module:: pytestqt.conftest
+.. autoclass:: QtBot
+
