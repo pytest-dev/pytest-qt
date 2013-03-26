@@ -1,14 +1,106 @@
 import pytest
 from pytestqt.qt_compat import QtGui 
+from pytestqt.qt_compat import QtTest
 
 #===================================================================================================
 # QtBot
 #===================================================================================================
 class QtBot(object):
     '''
-    Responsible for sending events to Qt objects, simulating user input.
+    Instances of this class are responsible for sending events to `Qt` objects (usually widgets), 
+    simulating user input. 
     
-    Instances of this class should be accessed by the ``qtbot`` pytest fixture.
+    .. important:: Instances of this class should be accessed only by using a ``qtbot`` fixture, 
+                    never instantiated directly.
+    
+    **Widgets**
+    
+    .. automethod:: addWidget
+    .. automethod:: waitForWindowShown
+
+    **QTest API**
+    
+    Methods below are forwarded directly to the `QTest API`_. Consult documentation for more
+    information.
+    
+    ---
+    
+    Below are methods used to simulate sending key events to widgets:
+    
+    .. staticmethod:: keyPress(widget, key[, modifier=Qt.NoModifier[, delay=-1]])
+    .. staticmethod:: keyClick (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
+    .. staticmethod:: keyClicks (widget, key sequence[, modifier=Qt.NoModifier[, delay=-1]])
+    .. staticmethod:: keyEvent (action, widget, key[, modifier=Qt.NoModifier[, delay=-1]])
+    .. staticmethod:: keyPress (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
+    .. staticmethod:: keyRelease (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
+    
+        Sends one or more keyword events to a widget.
+    
+        :param QWidget widget: the widget that will receive the event
+        
+        :param str|int key: key to send, it can be either a Qt.Key_* constant or a single character string.
+        
+        .. _keyboard modifiers:
+        
+        :param Qt.KeyboardModifier modifier: flags OR'ed together representing other modifier keys
+            also pressed. Possible flags are:
+        
+            * ``Qt.NoModifier``: No modifier key is pressed.
+            * ``Qt.ShiftModifier``: A Shift key on the keyboard is pressed.
+            * ``Qt.ControlModifier``: A Ctrl key on the keyboard is pressed.
+            * ``Qt.AltModifier``: An Alt key on the keyboard is pressed.
+            * ``Qt.MetaModifier``: A Meta key on the keyboard is pressed.
+            * ``Qt.KeypadModifier``: A keypad button is pressed.
+            * ``Qt.GroupSwitchModifier``: X11 only. A Mode_switch key on the keyboard is pressed.
+            
+        :param int delay: after the event, delay the test for this miliseconds (if > 0).
+        
+    
+    .. staticmethod:: keyToAscii (key)
+        
+        Auxilliary method that converts the given constant ot its equivalent ascii.
+        
+        :param Qt.Key_* key: one of the constants for keys in the Qt namespace.
+        
+        :return type: str 
+        :returns: the equivalent character string. 
+    
+    ---
+    
+    Below are methods used to simulate sending mouse events to widgets.
+    
+    .. staticmethod:: mouseClick (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
+    .. staticmethod:: mouseDClick (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
+    .. staticmethod:: mouseEvent (action, widget, button, stateKey, pos[, delay=-1])
+    .. staticmethod:: mouseMove (widget[, pos=QPoint()[, delay=-1]])
+    .. staticmethod:: mousePress (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
+    .. staticmethod:: mouseRelease (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
+    
+        Sends a mouse moves and clicks to a widget.
+        
+        :param QWidget widget: the widget that will receive the event
+        
+        :param Qt.MouseButton button: flags OR'ed together representing the button pressed. 
+            Possible flags are:
+        
+            * ``Qt.NoButton``: The button state does not refer to any button (see QMouseEvent.button()).
+            * ``Qt.LeftButton``: The left button is pressed, or an event refers to the left button. (The left button may be the right button on left-handed mice.)
+            * ``Qt.RightButton``: The right button.
+            * ``Qt.MidButton``: The middle button.
+            * ``Qt.MiddleButton``: he middle button.
+            * ``Qt.XButton1``: The first X button.
+            * ``Qt.XButton2``: The second X button.
+            
+        :param Qt.KeyboardModifier modifier: flags OR'ed together representing other modifier keys
+            also pressed. See `keyboard modifiers`_.
+            
+        :param QPoint position: position of the mouse pointer.
+        
+        :param int delay: after the event, delay the test for this miliseconds (if > 0).
+            
+    
+    .. _QTest API: http://doc.qt.digia.com/4.7/qtest.html
+    
     '''
     
     def __init__(self, app):
@@ -38,6 +130,18 @@ class QtBot(object):
             Widget to keep track of.
         '''
         self._widgets.append(widget)
+        
+        
+    def waitForWindowShown(self, widget):
+        '''
+        Waits until the window is shown in the screen. This is mainly useful for asynchronous 
+        systems like X11, where a window will be mapped to screen some time after being asked to 
+        show itself on the screen. 
+        
+        :param QWidget widget:
+            Widget to wait on.
+        '''
+        QtTest.QTest.qWaitForWindowShown(widget)
 
 
 #===================================================================================================
@@ -76,3 +180,41 @@ def qtbot(request):
     request.addfinalizer(result._close)
     return result
 
+
+
+
+#===================================================================================================
+# Inject QtTest Functions
+#===================================================================================================
+def _createQTestProxyMethod(method_name):
+    
+    def result(*args, **kwargs):
+        method = getattr(QtTest.QTest, method_name) 
+        return method(*args, **kwargs)
+    
+    result.__name__ = method_name
+    return staticmethod(result)
+
+# inject methods from QTest into QtBot
+method_names = set([
+    'keyPress',
+    'keyClick',
+    'keyClicks',
+    'keyEvent',
+    'keyPress',
+    'keyRelease',
+    'keyToAscii',
+    
+    'mouseClick',
+    'mouseDClick',
+    'mouseEvent',
+    'mouseMove',
+    'mousePress',
+    'mouseRelease',
+    
+    
+])
+for method_name in method_names:        
+    method = _createQTestProxyMethod(method_name)
+    setattr(QtBot, method_name, method)
+    

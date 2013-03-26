@@ -1,13 +1,6 @@
 '''
-Introduction
-============
-
-pytest-qt is a `pytest`_ that provides fixtures to help programmers write
-tests for `PyQt`_ and `PySide`_.
-
-.. _pytest: http://www.pytest.org
-.. _PyQt: http://www.riverbankcomputing.com/software/pyqt 
-.. _PySide: https://pypi.python.org/pypi/PySide
+`pytest-qt` is a pytest_ plugin that provides fixtures to help programmers write tests for
+PySide_ and PyQt_.
 
 The main usage is to use the ``qtbot`` fixture, which provides methods to simulate user 
 interaction, like key presses and mouse clicks::
@@ -18,10 +11,13 @@ interaction, like key presses and mouse clicks::
         # test away
 
 
-QtBot Instances
----------------
+.. .. literalinclude:: ../src/pytestqt/_tests/test_basics.py
+..    :language: python
+..    :start-after: # create test widget
 
-.. autoclass:: pytestqt.conftest.QtBot
-    :members:
+
+.. _pytest: http://www.pytest.org
+.. _PySide: https://pypi.python.org/pypi/PySide
+.. _PyQt: http://www.riverbankcomputing.com/software/pyqt
 
 '''
