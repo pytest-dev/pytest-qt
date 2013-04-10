@@ -19,6 +19,16 @@ Introduction
 
 .. automodule:: pytestqt
 
+Installation
+============
+
+The `pytest-qt`_ package may be installed by running::
+
+    python setup.py install
+
+.. _`pytest-qt`: http://pypi.python.org/pypi/pytest-qt/
+
+
 Tutorial
 ========
 
