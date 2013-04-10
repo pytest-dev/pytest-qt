@@ -17,10 +17,12 @@ class QtBot(object):
     
     .. automethod:: addWidget
     .. automethod:: waitForWindowShown
+    .. automethod:: stopForInteraction
 
-    **QTest API**
+    **Raw QTest API**
     
-    Methods below are forwarded directly to the `QTest API`_. Consult documentation for more
+    Methods below provide very low level functions, as sending a single mouse click or a key event.
+    Thos methods are just forwarded directly to the `QTest API`_. Consult the documentation for more
     information.
     
     ---
@@ -87,7 +89,7 @@ class QtBot(object):
             * ``Qt.LeftButton``: The left button is pressed, or an event refers to the left button. (The left button may be the right button on left-handed mice.)
             * ``Qt.RightButton``: The right button.
             * ``Qt.MidButton``: The middle button.
-            * ``Qt.MiddleButton``: he middle button.
+            * ``Qt.MiddleButton``: The middle button.
             * ``Qt.XButton1``: The first X button.
             * ``Qt.XButton2``: The second X button.
             
@@ -114,7 +116,7 @@ class QtBot(object):
         
     def _close(self):
         '''
-        Clear up method. Called at the end of each test that uses a qtbot fixture.
+        Clear up method. Called at the end of each test that uses a ``qtbot`` fixture.
         '''
         for w in self._widgets:
             w.close()
@@ -142,6 +144,25 @@ class QtBot(object):
             Widget to wait on.
         '''
         QtTest.QTest.qWaitForWindowShown(widget)
+        
+        
+    def stopForInteraction(self):
+        '''
+        Stops the current test flow, letting the user interact with any visible widget.
+        
+        This is mainly useful so that you can verify the current state of the program while writing
+        tests.
+        
+        Closing the windows should resume the test run, with ``qtbot`` attempting to restore visibility
+        of the widgets as they were before this call.        
+        '''
+        widget_visibility = [widget.isVisible() for widget in self._widgets]
+        
+        self._app.exec_()    
+
+        for index, visible in enumerate(widget_visibility):
+            widget = self._widgets[index]
+            widget.setVisible(visible)
 
 
 #===================================================================================================
