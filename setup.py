@@ -15,10 +15,10 @@ setup(
     install_requires = ['pytest>=2.3.4'],
     
     # metadata for upload to PyPI
-    author = "nicoddemus@gmail.com",
+    author = "Bruno Oliveira",
     author_email = "nicoddemus@gmail.com",
     description = description,
     license = "LGPL",
     keywords = "pytest qt test unittest",
-    url = "github.com/nicoddemus/pytest-qt",  
+    url = "http://github.com/nicoddemus/pytest-qt",  
 )
