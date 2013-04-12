@@ -28,7 +28,7 @@ The `pytest-qt`_ package may be installed by running::
 
 .. _`pytest-qt`: http://pypi.python.org/pypi/pytest-qt/
 
-This will automatically register ``pytest-qt`` for usage in ``py.test``.
+This will automatically register it for usage in ``py.test``.
 
 
 Quick Tutorial
