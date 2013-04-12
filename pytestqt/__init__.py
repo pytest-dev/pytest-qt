@@ -8,7 +8,11 @@ interaction, like key presses and mouse clicks::
     def test_hello(qtbot):
         widget = QtGui.QWidget()
         qtbot.addWidget(widget)
-        # test away
+        
+        # click in the Greet button and make sure it updates the appropriate label
+        qtbot.mouseClick(window.button_greet, QtCore.Qt.LeftButton)
+        
+        assert window.greet_label.text() == 'Hello'
 
 
 .. .. literalinclude:: ../src/pytestqt/_tests/test_basics.py
