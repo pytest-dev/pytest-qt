@@ -8,10 +8,10 @@
 pytest-qt
 =========
 
-:Author: Bruno Oliveira
 :Repository: `GitHub <https://github.com/nicoddemus/pytest-qt>`_
 :Version: |version|
 :License: `LGPL <http://www.gnu.org/licenses/lgpl-3.0.txt>`_
+:Author: Bruno Oliveira
 
 
 Introduction
@@ -34,7 +34,7 @@ This will automatically register it for usage in ``py.test``.
 Quick Tutorial
 ==============
 
-``pytest-qt`` registers a new fixture_ named ``qtbot``. This fixture acts as *bot* in the sense
+``pytest-qt`` registers a new fixture_ named ``qtbot``, which acts as *bot* in the sense
 that it can send keyboard and mouse events to any widgets being tested. This way, the programmer
 can simulate user interaction while checking if GUI controls are behaving in the expected manner.
 
