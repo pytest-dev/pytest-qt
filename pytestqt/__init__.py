@@ -6,13 +6,13 @@ The main usage is to use the ``qtbot`` fixture, which provides methods to simula
 interaction, like key presses and mouse clicks::
 
     def test_hello(qtbot):
-        widget = QtGui.QWidget()
+        widget = HelloWidget()
         qtbot.addWidget(widget)
         
         # click in the Greet button and make sure it updates the appropriate label
         qtbot.mouseClick(window.button_greet, QtCore.Qt.LeftButton)
         
-        assert window.greet_label.text() == 'Hello'
+        assert window.greet_label.text() == 'Hello!'
 
 
 .. .. literalinclude:: ../src/pytestqt/_tests/test_basics.py
@@ -27,6 +27,6 @@ interaction, like key presses and mouse clicks::
 '''
 
 # The short X.Y version.
-version = '0.3'
+version = '1.0'
 # The full version, including alpha/beta/rc tags.
-release = '0.3'
+release = '1.0'
