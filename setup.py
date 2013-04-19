@@ -21,4 +21,10 @@ setup(
     license = "LGPL",
     keywords = "pytest qt test unittest",
     url = "http://github.com/nicoddemus/pytest-qt",  
+    classifiers=[
+        'Topic :: Software Development :: Testing',
+        'Topic :: Software Development :: Quality Assurance',
+        'Intended Audience :: Developers',
+        'Operating System :: OS Independent',
+    ]
 )
