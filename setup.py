@@ -14,6 +14,8 @@ setup(
     },
     install_requires = ['pytest>=2.3.4'],
     
+    py_modules = ['distribute_setup'],
+    
     # metadata for upload to PyPI
     author = "Bruno Oliveira",
     author_email = "nicoddemus@gmail.com",
