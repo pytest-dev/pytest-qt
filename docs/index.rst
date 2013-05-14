@@ -22,13 +22,17 @@ Introduction
 Installation
 ============
 
-The `pytest-qt`_ package may be installed by running::
+The package may be installed by running::
 
-    python setup.py install
+   pip install pytest-qt
 
-.. _`pytest-qt`: http://pypi.python.org/pypi/pytest-qt/
+Or alternatively, download the package from pypi_, extract and execute::
 
-This will automatically register it for usage in ``py.test``.
+   python setup.py install
+
+.. _pypi: http://pypi.python.org/pypi/pytest-qt/
+
+Both methods will automatically register it for usage in ``py.test``.
 
 
 Quick Tutorial
@@ -109,3 +113,9 @@ QtBot
 .. module:: pytestqt.conftest
 .. autoclass:: QtBot
 
+Versioning
+==========
+
+This projects follows `semantic versioning`_.
+
+.. _`semantic versioning`: http://semver.org/
