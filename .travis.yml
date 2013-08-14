@@ -1,8 +1,8 @@
-language: python
-python:
-  - "2.7"
-before_install:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - yes | sudo apt-get install python-pyside.qtcore
-script: py.test 
+language: python
+python:
+  - "2.7"
+before_install:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - yes | sudo apt-get install python-pyside.qtcore
+script: py.test
