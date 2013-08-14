@@ -6,7 +6,7 @@ applications.
 
 The main usage is to use the qtbot fixture, which provides methods to simulate user interaction, like key presses and mouse clicks:
 
-```
+```python
 def test_hello(qtbot):
     widget = HelloWidget()
     qtbot.addWidget(widget)
