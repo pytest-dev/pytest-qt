@@ -17,5 +17,5 @@ def test_hello(qtbot):
     assert window.greet_label.text() == 'Hello!'
 ```
 
-Full documentation and tutorial available at `Read the Docs`_.
+Full documentation and tutorial available at [Read the Docs](https://pytest-qt.readthedocs.org/en/latest/).
 
