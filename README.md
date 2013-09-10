@@ -4,8 +4,8 @@ pytest-qt is a [pytest](http://pytest.org) plugin that provides fixtures to help
 programmers write tests for [PySide](https://pypi.python.org/pypi/PySide) and [PyQt](http://www.riverbankcomputing.com/software/pyqt)
 applications.
 
-The main usage is to use the `qtbot` fixture, which provides methods to simulate user interaction, like key 
-presses and mouse clicks:
+The main usage is to use the `qtbot` fixture, responsible for handling `qApp` creation as needed and provides methods to 
+simulate user interaction, like key presses and mouse clicks:
 
 ```python
 def test_hello(qtbot):
