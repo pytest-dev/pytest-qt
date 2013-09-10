@@ -27,6 +27,6 @@ interaction, like key presses and mouse clicks::
 '''
 
 # The short X.Y version.
-version = '1.0.1'
+version = '1.0.2'
 # The full version, including alpha/beta/rc tags.
-release = '1.0.1'
+release = '1.0.2'
