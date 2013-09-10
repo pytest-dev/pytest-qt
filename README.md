@@ -20,4 +20,4 @@ def test_hello(qtbot):
 
 Full documentation and tutorial available at [Read the Docs](https://pytest-qt.readthedocs.org/en/latest/).
 
-[![badge](https://pypip.in/d/pytest-qt/badge.png)](https://crate.io/packages/pytest-qt)
+[![badge](https://pypip.in/d/pytest-qt/badge.png)](https://crate.io/packages/pytest-qt) [![ci](https://secure.travis-ci.org/nicoddemus/pytest-qt.png?branch=master)](https://travis-ci.org/nicoddemus/pytest-qt)
