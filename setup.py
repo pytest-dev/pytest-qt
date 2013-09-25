@@ -14,8 +14,6 @@ setup(
     },
     install_requires = ['pytest>=2.3.4'],
     
-    py_modules = ['distribute_setup'],
-    
     # metadata for upload to PyPI
     author = "Bruno Oliveira",
     author_email = "nicoddemus@gmail.com",
@@ -24,9 +22,17 @@ setup(
     keywords = "pytest qt test unittest",
     url = "http://github.com/nicoddemus/pytest-qt",  
     classifiers=[
-        'Topic :: Software Development :: Testing',
-        'Topic :: Software Development :: Quality Assurance',
+        'Development Status :: 4 - Beta',
+        'Framework :: PyQt',
+        'Framework :: PySide',
+        'Framework :: Qt',
         'Intended Audience :: Developers',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2.7',
+        'Topic :: Desktop Environment :: Window Managers',
+        'Topic :: Software Development :: Quality Assurance',
+        'Topic :: Software Development :: Testing',
+        'Topic :: Software Development :: User Interfaces',
     ]
 )
