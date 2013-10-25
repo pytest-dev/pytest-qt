@@ -18,7 +18,8 @@ def test_hello(qtbot):
     assert window.greet_label.text() == 'Hello!'
 ```
 
-[![badge](https://pypip.in/d/pytest-qt/badge.png)](https://crate.io/packages/pytest-qt)
+[![version](https://pypip.in/v/pytest-qt/badge.png)](https://crate.io/packages/pytest-qt)
+[![downloads](https://pypip.in/d/pytest-qt/badge.png)](https://crate.io/packages/pytest-qt)
 [![ci](https://secure.travis-ci.org/nicoddemus/pytest-qt.png?branch=master)](https://travis-ci.org/nicoddemus/pytest-qt)
 
 This allows you to test and make sure your view layer is behaving the way you expect after each code change.
