@@ -16,6 +16,6 @@ env:
 
 install:
  - pip uninstall -y pytest
- - pip install pytest==$PYTEST_VERSION
+ - pip install hg+https://nicoddemus@bitbucket.org/hpk42/pytest@$PYTEST_VERSION
   
 script: py.test
