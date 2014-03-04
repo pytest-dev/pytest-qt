@@ -9,4 +9,13 @@ before_install:
  - "export DISPLAY=:99.0"
  - "sh -e /etc/init.d/xvfb start"
  - sleep 3
+
+env:
+ - PYTEST_VERSION=2.4.2
+ - PYTEST_VERSION=2.5.2
+
+install:
+ - pip uninstall -y pytest
+ - pip install pytest==$PYTEST_VERSION
+  
 script: py.test
