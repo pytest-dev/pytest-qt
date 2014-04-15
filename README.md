@@ -22,7 +22,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
 
 [![version](http://img.shields.io/pypi/v/pytest-qt.svg)](https://crate.io/packages/pytest-qt)
 [![downloads](http://img.shields.io/pypi/dm/pytest-qt.svg)](https://crate.io/packages/pytest-qt/)
-[![ci](https://secure.travis-ci.org/nicoddemus/pytest-qt.png?branch=master)](https://travis-ci.org/nicoddemus/pytest-qt)
+[![ci](http://img.shields.io/travis/nicoddemus/pytest-qt.svg)](https://travis-ci.org/nicoddemus/pytest-qt)
 
 ## Documentation ##
 
