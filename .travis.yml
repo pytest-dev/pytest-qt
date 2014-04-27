@@ -12,10 +12,9 @@ env:
 
 install:
  - sudo apt-get install -qq python-pyside
- - ln -s /usr/lib/python2.7/dist-packages/PySide /home/travis/virtualenv/python2.7/lib/python2.7/site-packages/PySide -v
+ - ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PySide /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages/PySide -v
  - pip uninstall -y pytest
  - pip install pytest==$PYTEST_VERSION
   
 script:
- - echo $TRAVIS_PYTHON_VERSION
  - py.test
