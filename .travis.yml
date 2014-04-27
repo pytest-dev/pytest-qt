@@ -2,10 +2,6 @@ language: python
 python:
   - "2.7"
 before_script:
-# - sudo add-apt-repository -y ppa:pyside/ppa
-# - sudo apt-get update -qq
-# - sudo apt-get install -qq python-pyside
-# - export PYTHONPATH="$PYTHONPATH:/usr/lib/python2.7/dist-packages/"
  - "export DISPLAY=:99.0"
  - "sh -e /etc/init.d/xvfb start"
  - sleep 3
@@ -18,7 +14,6 @@ install:
  - sudo apt-get install -qq python-pyside
  - ln -s /usr/lib/python2.7/dist-packages/PySide /home/travis/virtualenv/python2.7/lib/python2.7/site-packages/PySide -v
  - pip uninstall -y pytest
- #- pip install --upgrade setuptools
  - pip install pytest==$PYTEST_VERSION
   
 script: py.test
