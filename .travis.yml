@@ -16,4 +16,6 @@ install:
  - pip uninstall -y pytest
  - pip install pytest==$PYTEST_VERSION
   
-script: py.test
+script:
+ - echo $TRAVIS_PYTHON_VERSION
+ - py.test
