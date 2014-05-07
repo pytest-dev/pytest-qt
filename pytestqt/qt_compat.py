@@ -14,16 +14,19 @@ if not on_rtd:
     try:
         import PySide.QtCore as _QtCore
         QtCore = _QtCore
-        USES_PYSIDE = True
+        PYSIDE_AVAILABLE = True
     except ImportError:
+        PYSIDE_AVAILABLE = False
+
+    FORCE_PYQT = os.environ.get('PYTEST_QT_FORCE_PYQT', 'false') == 'true'
+    if not PYSIDE_AVAILABLE or FORCE_PYQT:
+        PYSIDE_AVAILABLE = False
         import sip
         sip.setapi('QString', 2)
         sip.setapi('QVariant', 2)
         import PyQt4.QtCore as _QtCore
         QtCore = _QtCore
-        USES_PYSIDE = False
-    
-    
+
     def _pyside_import_module(moduleName):
         pyside = __import__('PySide', globals(), locals(), [moduleName], -1)
         return getattr(pyside, moduleName)
@@ -34,7 +37,7 @@ if not on_rtd:
         return getattr(pyside, moduleName)
     
     
-    if USES_PYSIDE:
+    if PYSIDE_AVAILABLE:
         import_module = _pyside_import_module
     
         Signal = QtCore.Signal
