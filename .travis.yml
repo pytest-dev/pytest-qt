@@ -7,9 +7,9 @@ before_script:
  - sleep 3
 
 env:
- - PYTEST_VERSION=2.4.2
- - PYTEST_VERSION=2.5.2
- - PYTEST_QT_FORCE_PYQT=true
+ #- PYTEST_VERSION=2.4.2
+ - PYTEST_VERSION=2.5.2 PYTEST_QT_FORCE_PYQT=true
+ #-
  #- PYTEST_QT_FORCE_PYQT=false
 
 install:
