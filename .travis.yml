@@ -15,16 +15,16 @@ env:
 install:
  # PySide
  - if [[ $PYTEST_QT_FORCE_PYQT == 'false' ]]; then
- - sudo apt-get install -qq python-pyside;
- - fi
- - if [[ $PYTEST_QT_FORCE_PYQT == 'false' ]]; then
+ - sudo apt-get install -qq python-pyside
  - ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PySide /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages/PySide -v
  - fi
 
  # PyQt4
- - if [[ $PYTEST_QT_FORCE_PYQT == 'true' ]]; then sudo apt-get install -qq python-qt4; fi
- - if [[ $PYTEST_QT_FORCE_PYQT == 'true' ]]; then ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PyQt4 /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages/PyQt4 -v; fi
- - if [[ $PYTEST_QT_FORCE_PYQT == 'true' ]]; then ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/sip* /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v; fi
+ - if [[ $PYTEST_QT_FORCE_PYQT == 'true' ]]; then
+ - sudo apt-get install -qq python-qt4
+ - ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PyQt4 /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages/PyQt4 -v
+ - ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/sip* /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v
+ - fi
 
  # PyTest
  - pip uninstall -y pytest
