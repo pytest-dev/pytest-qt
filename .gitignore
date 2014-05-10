@@ -6,3 +6,4 @@ __pycache__
 /pytest_qt.egg-info
 /build
 /dist
+.env*
