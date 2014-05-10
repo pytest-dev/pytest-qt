@@ -28,12 +28,12 @@ if not on_rtd:
         QtCore = _QtCore
 
     def _pyside_import_module(moduleName):
-        pyside = __import__('PySide', globals(), locals(), [moduleName], -1)
+        pyside = __import__('PySide', globals(), locals(), [moduleName], 0)
         return getattr(pyside, moduleName)
     
     
     def _pyqt4_import_module(moduleName):
-        pyside = __import__('PyQt4', globals(), locals(), [moduleName], -1)
+        pyside = __import__('PyQt4', globals(), locals(), [moduleName], 0)
         return getattr(pyside, moduleName)
     
     

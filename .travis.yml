@@ -1,29 +1,25 @@
 language: python
 python:
   - "2.7"
+  - "3.4"
 before_script:
  - "export DISPLAY=:99.0"
  - "sh -e /etc/init.d/xvfb start"
  - sleep 3
 
 env:
- - PYTEST_VERSION=2.4.2 PYTEST_QT_FORCE_PYQT=true
  - PYTEST_VERSION=2.5.2 PYTEST_QT_FORCE_PYQT=true
- - PYTEST_VERSION=2.4.2 PYTEST_QT_FORCE_PYQT=false
  - PYTEST_VERSION=2.5.2 PYTEST_QT_FORCE_PYQT=false
 
 install:
  # PySide
  - if [[ $PYTEST_QT_FORCE_PYQT == 'false' ]]; then
- - sudo apt-get install -qq python-pyside
- - ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PySide /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages/PySide -v
+ - pip install pyside
  - fi
 
  # PyQt4
  - if [[ $PYTEST_QT_FORCE_PYQT == 'true' ]]; then
- - sudo apt-get install -qq python-qt4
- - ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PyQt4 /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages/PyQt4 -v
- - ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/sip* /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v
+ - pip install pyqt4
  - fi
 
  # PyTest

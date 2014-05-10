@@ -99,7 +99,7 @@ class EventRecorder(QtGui.QWidget):
         
     
     def event(self, ev):
-        for event_type, extract_func in self._event_types.iteritems():
+        for event_type, extract_func in self._event_types.items():
             if type(ev) is event_type:
                 self.event_data = extract_func(ev)
                 return True
