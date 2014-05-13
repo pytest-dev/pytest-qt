@@ -1,6 +1,3 @@
-import distribute_setup
-distribute_setup.use_setuptools()
-
 from setuptools import setup, find_packages
 import pytestqt
 
@@ -22,14 +19,13 @@ setup(
     keywords = "pytest qt test unittest",
     url = "http://github.com/nicoddemus/pytest-qt",  
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Framework :: PyQt',
-        'Framework :: PySide',
-        'Framework :: Qt',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Desktop Environment :: Window Managers',
         'Topic :: Software Development :: Quality Assurance',
         'Topic :: Software Development :: Testing',
