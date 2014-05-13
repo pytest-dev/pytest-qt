@@ -24,6 +24,15 @@ This allows you to test and make sure your view layer is behaving the way you ex
 [![downloads](http://img.shields.io/pypi/dm/pytest-qt.svg)](https://crate.io/packages/pytest-qt/)
 [![ci](http://img.shields.io/travis/nicoddemus/pytest-qt.svg)](https://travis-ci.org/nicoddemus/pytest-qt)
 
+## Requirements ##
+
+Python 2.7 or 3.4.
+
+Works with either [PySide](https://pypi.python.org/pypi/PySide) or
+[PyQt](http://www.riverbankcomputing.com/software/pyqt), picking one that is available giving
+preference to `PySide` if both are installed (to force it to use `PyQt`, set
+the environment variable `PYTEST_QT_FORCE_PYQT=true`).
+
 ## Documentation ##
 
 Full documentation and tutorial available at [Read the Docs](https://pytest-qt.readthedocs.org/en/latest/).

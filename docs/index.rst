@@ -19,6 +19,18 @@ Introduction
 
 .. automodule:: pytestqt
 
+Requirements
+============
+
+Python 2.7 or Python 3.4.
+
+Tested with pytest version 2.5.2.
+
+Works with either `PySide` or
+`PyQt`, picking one that is available giving
+preference to `PySide` if both are installed (to force it to use `PyQt`, set
+the environment variable `PYTEST_QT_FORCE_PYQT=true`).
+
 Installation
 ============
 
