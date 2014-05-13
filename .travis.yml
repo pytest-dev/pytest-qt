@@ -39,4 +39,5 @@ before_script:
  - sleep 3
 
 script:
+ - python setup.py install
  - py.test

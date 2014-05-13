@@ -5,9 +5,9 @@ description = "pytest plugin that adds fixtures for testing Qt (PyQt and PySide)
 setup(
     name = "pytest-qt",
     version = pytestqt.version,
-    packages = ['pytestqt'],
+    packages = ['pytestqt', 'pytestqt._tests'],
     entry_points = {
-        'pytest11' : ['pytest-qt = pytestqt.conftest'],
+        'pytest11' : ['pytest-qt = pytestqt.plugin'],
     },
     install_requires = ['pytest>=2.3.4'],
     
