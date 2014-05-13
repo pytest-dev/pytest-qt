@@ -19,7 +19,8 @@ install:
  -     sudo apt-get install -qq python-pyside;
  -     ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PySide /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v;
  - elif [[ "$PYTEST_QT_FORCE_PYQT" == "false" && "$TRAVIS_PYTHON_VERSION" != "2.7" ]]; then
- -     pip install pyside;
+ -     sudo apt-get install -qq python3-pyside;
+ -     ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PySide /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v;
  - fi
 
  # PyQt4
