@@ -29,8 +29,8 @@ install:
  -   sudo apt-get install -qq python-qt4
  -   ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PyQt4 /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages/PyQt4 -v
  -   ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/sip* /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v
- - elif [[ "$PYTEST_QT_FORCE_PYQT" == "false" && "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then
- -   sudo apt-get install -qq python3-qt4
+ - elif [[ "$PYTEST_QT_FORCE_PYQT" == "true" && "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then
+ -   sudo apt-get install -qq python3-pyqt4
  -   ln -s /usr/lib/python3/dist-packages/PyQt4 /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages/PyQt4 -v
  -   ln -s /usr/lib/python3/dist-packages/sip* /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v
  -   python -c "import PyQt4; print(PyQt4.__file__)"
