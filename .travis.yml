@@ -20,6 +20,8 @@ install:
  -     ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PySide /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v;
  - elif [[ "$PYTEST_QT_FORCE_PYQT" == "false" && "$TRAVIS_PYTHON_VERSION" != "2.7" ]]; then
  -     sudo apt-get install -qq python3-pyside;
+ -     ls /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PySide
+ -     ls /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages 
  -     ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PySide /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v;
  - fi
 
