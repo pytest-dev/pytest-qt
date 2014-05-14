@@ -1,7 +1,7 @@
 language: python
 python:
   - 2.7
-  - 3.4
+  - 3.2
 
 env:
  - PYTEST_VERSION=2.5.2 PYTEST_QT_FORCE_PYQT=true
@@ -23,6 +23,7 @@ install:
  -     ls /usr/lib/python3/dist-packages/PySide
  -     ls /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages
  -     ln -s /usr/lib/python3/dist-packages/PySide /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v;
+ -     python -c "import PySide; print(PySide.__file__)"
  - fi
 
  # PyQt4
