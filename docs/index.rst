@@ -22,7 +22,7 @@ Introduction
 Requirements
 ============
 
-Python 2.7 or Python 3.4.
+Python 2.6 or later, including Python 3+.
 
 Tested with pytest version 2.5.2.
 

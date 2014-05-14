@@ -26,7 +26,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
 
 ## Requirements ##
 
-Python 2.7 or 3.4.
+Python 2.6 or later, including Python 3+.
 
 Works with either [PySide](https://pypi.python.org/pypi/PySide) or
 [PyQt](http://www.riverbankcomputing.com/software/pyqt), picking one that is available giving
