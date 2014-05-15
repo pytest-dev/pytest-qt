@@ -1,39 +1,30 @@
 language: python
+
 python:
   - 2.7
   - 3.2
+  
+virtualenv:
+  system_site_packages: true  
 
 env:
  - PYTEST_VERSION=2.5.2 PYTEST_QT_FORCE_PYQT=true
  - PYTEST_VERSION=2.5.2 PYTEST_QT_FORCE_PYQT=false
-
-#matrix:
-#  exclude:
-#    - python: 3.2
-#      env: PYTEST_VERSION=2.5.2 PYTEST_QT_FORCE_PYQT=true
 
 install:
  # PySide
  - echo $TRAVIS_PYTHON_VERSION
  - if [[ "$PYTEST_QT_FORCE_PYQT" == "false" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
  -     sudo apt-get install -qq python-pyside;
- -     ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PySide /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v;
  - elif [[ "$PYTEST_QT_FORCE_PYQT" == "false" && "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then
  -     sudo apt-get install -qq python3-pyside;
- -     ln -s /usr/lib/python3/dist-packages/PySide /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v;
- -     python -c "import PySide; print(PySide.__file__)"
  - fi
 
  # PyQt4
  - if [[ "$PYTEST_QT_FORCE_PYQT" == "true" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
  -   sudo apt-get install -qq python-qt4
- -   ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/PyQt4 /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages/PyQt4 -v
- -   ln -s /usr/lib/python$TRAVIS_PYTHON_VERSION/dist-packages/sip* /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v
  - elif [[ "$PYTEST_QT_FORCE_PYQT" == "true" && "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then
  -   sudo apt-get install -qq python3-pyqt4
- -   ln -s /usr/lib/python3/dist-packages/PyQt4 /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages/PyQt4 -v
- -   ln -s /usr/lib/python3/dist-packages/sip* /home/travis/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages -v
- -   python -c "import PyQt4; print(PyQt4.__file__)"
  - fi
 
  # PyTest
