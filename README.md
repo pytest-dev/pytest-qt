@@ -37,6 +37,10 @@ the environment variable `PYTEST_QT_FORCE_PYQT=true`).
 
 Full documentation and tutorial available at [Read the Docs](https://pytest-qt.readthedocs.org/en/latest/).
 
+## Change Log ##
+
+Please consult the [releases page](https://github.com/nicoddemus/pytest-qt/releases).
+
 ## Bugs/Requests ##
 
 Please report any issues or feature requests in the [issue tracker](https://github.com/nicoddemus/pytest-qt/issues).
