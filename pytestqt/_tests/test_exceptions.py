@@ -3,6 +3,10 @@ from pytestqt.qt_compat import QtGui, Qt, QtCore
 
 
 class Receiver(QtCore.QObject):
+    """
+    Dummy QObject subclass that raises an error on receiving events if
+    `raise_error` is True.
+    """
 
     def __init__(self, raise_error, *args, **kwargs):
         QtCore.QObject.__init__(self, *args, **kwargs)
