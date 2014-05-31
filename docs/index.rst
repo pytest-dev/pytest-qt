@@ -122,7 +122,7 @@ And that's it for this quick tutorial!
 QtBot
 =====
 
-.. module:: pytestqt.conftest
+.. module:: pytestqt.plugin
 .. autoclass:: QtBot
 
 Versioning

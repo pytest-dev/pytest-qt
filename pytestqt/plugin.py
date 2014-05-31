@@ -156,7 +156,7 @@ class QtBot(object):
         Closing the windows should resume the test run, with ``qtbot`` attempting to restore visibility
         of the widgets as they were before this call.
 
-        .. note:: as a convenience, `stop` and `stopForInteraction` are aliases.
+        .. note:: As a convenience, it is aliased as `stop`.
         '''
         widget_visibility = [widget.isVisible() for widget in self._widgets]
         
