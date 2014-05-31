@@ -2,24 +2,11 @@ from pytestqt.qt_compat import QtGui, Qt, QEvent
 import pytest
 
 
-#===================================================================================================
-# fixtures
-#===================================================================================================
-@pytest.fixture
-def event_recorder(qtbot):
-    widget = EventRecorder()
-    qtbot.addWidget(widget)
-    return widget
-
-
-#===================================================================================================
-# testBasics
-#===================================================================================================
-def testBasics(qtbot):
-    '''
+def test_basics(qtbot):
+    """
     Basic test that works more like a sanity check to ensure we are setting up a QApplication
     properly and are able to display a simple event_recorder. 
-    '''
+    """
     assert type(QtGui.qApp) is QtGui.QApplication
     widget = QtGui.QWidget()
     qtbot.addWidget(widget)
@@ -30,13 +17,10 @@ def testBasics(qtbot):
     assert widget.windowTitle() == 'W1'
     
     
-#===================================================================================================
-# testKeyEvents
-#===================================================================================================
-def testKeyEvents(qtbot, event_recorder):
-    '''
+def test_key_events(qtbot, event_recorder):
+    """
     Basic key events test.
-    '''
+    """
     def extract(key_event):
         return (
             key_event.type(),
@@ -53,20 +37,17 @@ def testKeyEvents(qtbot, event_recorder):
     assert event_recorder.event_data == (QEvent.KeyRelease, int(Qt.Key_A), 'a')
     
     
-#===================================================================================================
-# testMouseEvents
-#===================================================================================================
-def testMouseEvents(qtbot, event_recorder):
-    '''
+def test_mouse_events(qtbot, event_recorder):
+    """
     Basic mouse events test.
-    '''
+    """
     def extract(mouse_event):
         return (
             mouse_event.type(),
             mouse_event.button(),
             mouse_event.modifiers(),
         )
-        
+
     event_recorder.registerEvent(QtGui.QMouseEvent, extract)
     
     qtbot.mousePress(event_recorder, Qt.LeftButton)
@@ -76,17 +57,14 @@ def testMouseEvents(qtbot, event_recorder):
     assert event_recorder.event_data == (QEvent.MouseButtonPress, Qt.RightButton, Qt.AltModifier)
     
     
-#===================================================================================================
-# EventRecorder
-#===================================================================================================
 class EventRecorder(QtGui.QWidget):
-    '''
+    """
     Widget that records some kind of events sent to it.
     
     When this event_recorder receives a registered event (by calling `registerEvent`), it will call
     the associated *extract* function and hold the return value from the function in the 
     `event_data` member.
-    '''
+    """
         
     def __init__(self):
         QtGui.QWidget.__init__(self)
@@ -105,10 +83,14 @@ class EventRecorder(QtGui.QWidget):
                 return True
         
         return False
-    
-    
-#===================================================================================================
-# main
-#===================================================================================================
+
+
+@pytest.fixture
+def event_recorder(qtbot):
+    widget = EventRecorder()
+    qtbot.addWidget(widget)
+    return widget
+
+
 if __name__ == '__main__':
     pytest.main(args=['-s'])
