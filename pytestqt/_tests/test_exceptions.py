@@ -1,4 +1,7 @@
+import textwrap
 import pytest
+import sys
+from pytestqt.plugin import capture_exceptions, format_captured_exceptions
 from pytestqt.qt_compat import QtGui, Qt, QtCore
 
 
@@ -32,3 +35,14 @@ def test_catch_exceptions_in_virtual_methods(qtbot, raise_error):
     app.processEvents()
 
 
+def test_format_captured_exceptions():
+    try:
+        raise ValueError('errors were made')
+    except ValueError:
+        exceptions = [sys.exc_info()]
+
+    obtained_text = format_captured_exceptions(exceptions)
+    lines = obtained_text.splitlines()
+
+    assert 'Qt exceptions in virtual methods:' in lines
+    assert 'ValueError: errors were made' in lines
