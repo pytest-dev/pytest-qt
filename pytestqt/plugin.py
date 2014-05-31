@@ -1,5 +1,10 @@
+from contextlib import contextmanager
+import sys
+import traceback
+
 import pytest
-from pytestqt.qt_compat import QtGui 
+
+from pytestqt.qt_compat import QtGui
 from pytestqt.qt_compat import QtTest
 
 
@@ -208,9 +213,30 @@ class QtBot(object):
     stop = stopForInteraction
 
 
+    @contextmanager
+    def _capture_exceptions(self):
+        """
+        Context manager that captures exceptions that happen insides it context,
+        and returns them as a list of (type, value, traceback) after the
+        context ends.
+        """
+        result = []
+
+        def hook(type_, value, tback):
+            result.append((type_, value, tback))
+            sys.__excepthook__(type_, value, tback)
+
+        sys.excepthook = hook
+        try:
+            yield result
+        finally:
+            sys.excepthook = sys.__excepthook__
+
+
 def pytest_configure(config):
     """
-    PyTest plugin API. Called before the start of each test session.
+    PyTest plugin API. Called before the start of each test session, used
+    to instantiate the qApplication object that will be used for the session.
     
     :param config.Config config:  
     """
@@ -226,7 +252,7 @@ def pytest_configure(config):
     config._cleanup.append(exit_qapp)
 
 
-@pytest.fixture
+@pytest.yield_fixture
 def qtbot(request):
     """
     Fixture used to create a QtBot instance for using during testing. 
@@ -235,6 +261,17 @@ def qtbot(request):
     that they are properly closed after the test ends.
     """
     result = QtBot(request.config.qt_app_instance)
-    request.addfinalizer(result._close)
-    return result
+    with result._capture_exceptions() as exceptions:
+        yield result
+
+    if exceptions:
+        message = 'Qt exceptions in virtual methods:\n'
+        message += '_' * 80 + '\n'
+        for (exc_type, value, tback) in exceptions:
+            message += ''.join(traceback.format_tb(tback)) + '\n'
+            message += '%s: %s\n' % (exc_type.__name__, value)
+            message += '_' * 80 + '\n'
+        pytest.fail(message)
+
+    result._close()
 
