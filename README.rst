@@ -2,14 +2,17 @@
 pytest-qt
 =========
 
-pytest-qt is a `pytest <http://pytest.org>`_ plugin to allow
-programmers write tests for `PySide <https://pypi.python.org/pypi/PySide>`_ and 
-`PyQt <http://www.riverbankcomputing.com/software/pyqt>`_ applications.
+pytest-qt is a `pytest`_ plugin to allow
+programmers write tests for `PySide`_ and 
+`PyQt`_ applications.
 
 The main usage is to use the `qtbot` fixture, responsible for handling `qApp` 
 creation as needed and provides methods to simulate user interaction, 
 like key presses and mouse clicks::
 
+.. _PySide: https://pypi.python.org/pypi/PySide
+.. _PyQt: http://www.riverbankcomputing.com/software/pyqt
+.. _pytest: http://pytest.org
 
     def test_hello(qtbot):
         widget = HelloWidget()
@@ -23,27 +26,45 @@ like key presses and mouse clicks::
 
 This allows you to test and make sure your view layer is behaving the way you expect after each code change.
 
-[![version](http://img.shields.io/pypi/v/pytest-qt.svg)](https://crate.io/packages/pytest-qt)
-[![downloads](http://img.shields.io/pypi/dm/pytest-qt.svg)](https://crate.io/packages/pytest-qt/)
-[![ci](http://img.shields.io/travis/nicoddemus/pytest-qt.svg)](https://travis-ci.org/nicoddemus/pytest-qt)
+|version| |downloads| |ci|
 
-## Requirements ##
+.. |version| image:: http://img.shields.io/pypi/v/pytest-qt.svg
+  :target: https://crate.io/packages/pytest-qt
+  
+.. |downloads| image:: http://img.shields.io/pypi/dm/pytest-qt.svg
+  :target: https://crate.io/packages/pytest-qt
+  
+.. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-qt.svg
+  :target: https://travis-ci.org/nicoddemus/pytest-qt
+  
+
+Requirements
+------------
 
 Python 2.6 or later, including Python 3+.
 
-Works with either [PySide](https://pypi.python.org/pypi/PySide) or
-[PyQt](http://www.riverbankcomputing.com/software/pyqt), picking one that is available giving
-preference to `PySide` if both are installed (to force it to use `PyQt`, set
-the environment variable `PYTEST_QT_FORCE_PYQT=true`).
+Works with either PySide_ or
+PyQt_ picking whichever is available on the system, giving
+preference to ``PySide`` if both are installed (to force it to use ``PyQt``, set
+the environment variable ``PYTEST_QT_FORCE_PYQT=true``).
 
-## Documentation ##
+Documentation
+-------------
 
-Full documentation and tutorial available at [Read the Docs](https://pytest-qt.readthedocs.org/en/latest/).
+Full documentation and tutorial available at `Read the Docs`_.
 
-## Change Log ##
+.. _Read The Docs: https://pytest-qt.readthedocs.org/en/latest/
 
-Please consult the [releases page](https://github.com/nicoddemus/pytest-qt/releases).
+Change Log
+----------
 
-## Bugs/Requests ##
+Please consult the `releases page`.
 
-Please report any issues or feature requests in the [issue tracker](https://github.com/nicoddemus/pytest-qt/issues).
+.. _releases page: https://github.com/nicoddemus/pytest-qt/releases
+
+Bugs/Requests
+-------------
+
+Please report any issues or feature requests in the `issue tracker`.
+
+.. _issue tracker: https://github.com/nicoddemus/pytest-qt/issues
