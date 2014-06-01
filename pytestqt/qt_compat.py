@@ -14,45 +14,43 @@ if not on_rtd:
     try:
         import PySide.QtCore as _QtCore
         QtCore = _QtCore
-        PYSIDE_AVAILABLE = True
+        USE_PYSIDE = True
     except ImportError:
-        PYSIDE_AVAILABLE = False
+        USE_PYSIDE = False
 
     FORCE_PYQT = os.environ.get('PYTEST_QT_FORCE_PYQT', 'false') == 'true'
-    if not PYSIDE_AVAILABLE or FORCE_PYQT:
-        PYSIDE_AVAILABLE = False
-        import sip
+    if not USE_PYSIDE or FORCE_PYQT:
+        try:
+            import sip
+        except ImportError:
+            msg = 'pytest-qt requires either PyQt4 or PySide to be installed'
+            raise ImportError(msg)
+        USE_PYSIDE = False
         sip.setapi('QString', 2)
         sip.setapi('QVariant', 2)
         import PyQt4.QtCore as _QtCore
         QtCore = _QtCore
 
-    def _pyside_import_module(moduleName):
-        pyside = __import__('PySide', globals(), locals(), [moduleName], 0)
-        return getattr(pyside, moduleName)
-    
-    
-    def _pyqt4_import_module(moduleName):
-        pyside = __import__('PyQt4', globals(), locals(), [moduleName], 0)
-        return getattr(pyside, moduleName)
-    
-    
-    if PYSIDE_AVAILABLE:
-        import_module = _pyside_import_module
+    if USE_PYSIDE:
+        def _import_module(moduleName):
+            pyside = __import__('PySide', globals(), locals(), [moduleName], 0)
+            return getattr(pyside, moduleName)
     
         Signal = QtCore.Signal
         Slot = QtCore.Slot
         Property = QtCore.Property
     else:
-        import_module = _pyqt4_import_module
+        def _import_module(moduleName):
+            pyside = __import__('PyQt4', globals(), locals(), [moduleName], 0)
+            return getattr(pyside, moduleName)
     
         Signal = QtCore.pyqtSignal
         Slot = QtCore.pyqtSlot
         Property = QtCore.pyqtProperty
     
     
-    QtGui = import_module('QtGui')
-    QtTest = import_module('QtTest')
+    QtGui = _import_module('QtGui')
+    QtTest = _import_module('QtTest')
     Qt = QtCore.Qt
     QEvent = QtCore.QEvent
     
