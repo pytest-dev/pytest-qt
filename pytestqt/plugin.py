@@ -4,8 +4,7 @@ import traceback
 
 import pytest
 
-from pytestqt.qt_compat import QtGui
-from pytestqt.qt_compat import QtTest
+from pytestqt.qt_compat import QtCore, QtGui, QtTest
 
 
 def _inject_qtest_methods(cls):
@@ -61,6 +60,7 @@ class QtBot(object):
     .. automethod:: addWidget
     .. automethod:: waitForWindowShown
     .. automethod:: stopForInteraction
+    .. automethod:: waitSignal
 
     **Raw QTest API**
     
@@ -211,6 +211,68 @@ class QtBot(object):
 
 
     stop = stopForInteraction
+
+    def waitSignal(self, signal=None, timeout=1000):
+        """
+        Stops current test until a signal is triggered.
+
+        Used to stop the control flow of a test until a signal is emitted, or
+        a number of milliseconds, specified by ``timeout``, has elapsed.
+
+        Best used as a context manager::
+
+           with qtbot.waitSignal(signal, timeout=1000):
+               long_function_that_calls_signal()
+
+        Can also be used to return blocker object::
+
+           blocker = qtbot.waitSignal(signal, timeout=1000)
+           blocker.connect(other_signal)
+           long_function_that_calls_signal()
+           blocker.wait()
+
+        :param Signal signal:
+            A signal to wait for. Set to ``None`` to just use timeout.
+        :param int timeout:
+            How many milliseconds to wait before resuming control flow.
+        :returns:
+            ``SignalBlocker`` object. Call ``SignalBlocker.wait()`` to wait.
+
+        .. note::
+           Cannot have both ``signals`` and ``timeout`` equal ``None``, or 
+           else you will block indefinitely. We throw an error if this occurs.
+
+        """
+        blocker = SignalBlocker(timeout=timeout)
+        if signal is not None:
+            blocker.connect(signal)
+        return blocker
+
+
+class SignalBlocker:
+
+    def __init__(self, timeout=1000):
+        self.loop = QtCore.QEventLoop()
+        self._signals = []
+        self.timeout = timeout
+
+    def wait(self):
+        if self.timeout is None and len(self._signals) == 0:
+            raise ValueError("No signals or timeout specified.")
+        if self.timeout is not None:
+            QtCore.QTimer.singleShot(self.timeout, self.loop.quit)
+        self.loop.exec_()
+
+    def connect(self, signal):
+        signal.connect(self.loop.quit)
+        self._signals.append(signal)
+
+    def __enter__(self):
+        # Return self for testing purposes. Generally not needed.
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.wait()
 
 
 def pytest_configure(config):
