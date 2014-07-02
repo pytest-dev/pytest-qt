@@ -130,11 +130,15 @@ ensuring the results are correct::
 
     def test_long_computation(qtbot):
         app = Application()
-        app.worker.start()
 
+        # Watch for the app.worker.finished signal, then start the worker.
         with qtbot.waitSignal(app.worker.finished, timeout=10000) as blocker:
-            assert blocker.signal_triggered
-            assert_application_results(app)
+            blocker.connect(app.worker.failed)  # Can add other signals to blocker
+            app.worker.start()
+            # Test will wait here until either signal is emitted, or 10 seconds has elapsed
+
+        assert blocker.signal_triggered  # Assuming the work took less than 10 seconds
+        assert_application_results(app)
 
 
 QtBot
