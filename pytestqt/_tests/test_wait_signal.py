@@ -23,9 +23,9 @@ def explicit_wait(qtbot, signal, timeout):
     Explicit wait for the signal using blocker API.
     """
     blocker = qtbot.waitSignal(signal, timeout)
-    start_time = time.time()
+    assert blocker.signal_triggered is None
     blocker.wait()
-    return blocker._loop, start_time
+    return blocker
 
 
 def context_manager_wait(qtbot, signal, timeout):
@@ -33,32 +33,39 @@ def context_manager_wait(qtbot, signal, timeout):
     Waiting for signal using context manager API.
     """
     with qtbot.waitSignal(signal, timeout) as blocker:
-        start_time = time.time()
-    return blocker._loop, start_time
+        pass
+    return blocker
 
 
 @pytest.mark.parametrize(
-    ('wait_function', 'emit_delay', 'timeout'),
+    ('wait_function', 'emit_delay', 'timeout', 'expected_signal_triggered'),
     [
-        (explicit_wait, 500, 2000),
-        (explicit_wait, 500, None),
-        (context_manager_wait, 500, 2000),
-        (context_manager_wait, 500, None),
+        (explicit_wait, 500, 2000, True),
+        (explicit_wait, 500, None, True),
+        (context_manager_wait, 500, 2000, True),
+        (context_manager_wait, 500, None, True),
+        (explicit_wait, 2000, 500, False),
+        (context_manager_wait, 2000, 500, False),
     ]
 )
-def test_signal_triggered(qtbot, wait_function, emit_delay, timeout):
+def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
+                          expected_signal_triggered):
     """
-    Ensure that a signal being triggered before timeout expires makes the
-    loop quitting early.
+    Testing for a signal in different conditions, ensuring we are obtaining
+    the expected results.
     """
     signaller = Signaller()
     QtCore.QTimer.singleShot(emit_delay, signaller.signal.emit)
 
     # block signal until either signal is emitted or timeout is reached
-    loop, start_time = wait_function(qtbot, signaller.signal, timeout)
+    start_time = time.time()
+    blocker = wait_function(qtbot, signaller.signal, timeout)
 
     # Check that event loop exited.
-    assert not loop.isRunning()
+    assert not blocker._loop.isRunning()
+
+    # ensure that either signal was triggered or timeout occurred
+    assert blocker.signal_triggered == expected_signal_triggered
 
     # Check that we exited by the earliest parameter; timeout = None means
     # wait forever, so ensure we waited at most 4 times emit-delay

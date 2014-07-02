@@ -259,12 +259,17 @@ class SignalBlocker(object):
 
     :ivar int timeout: maximum time to wait for a signal to be triggered. Can
         be changed before :meth:`wait` is called.
+
+    :ivar bool signal_triggered: set to ``True`` if a signal was triggered, or
+        ``False`` if timeout was reached instead. Until :meth:`wait` is called,
+        this is set to ``None``.
     """
 
     def __init__(self, timeout=1000):
         self._loop = QtCore.QEventLoop()
         self._signals = []
         self.timeout = timeout
+        self.signal_triggered = None
 
     def wait(self):
         """
@@ -278,6 +283,7 @@ class SignalBlocker(object):
             raise ValueError("No signals or timeout specified.")
         if self.timeout is not None:
             QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
+        self.signal_triggered = False
         self._loop.exec_()
 
     def connect(self, signal):
@@ -287,8 +293,16 @@ class SignalBlocker(object):
 
         :param signal: QtCore.Signal
         """
-        signal.connect(self._loop.quit)
+        signal.connect(self._quit_loop_by_signal)
         self._signals.append(signal)
+
+
+    def _quit_loop_by_signal(self):
+        """
+        quits the event loop and marks that we finished because of a signal.
+        """
+        self.signal_triggered = True
+        self._loop.quit()
 
     def __enter__(self):
         # Return self for testing purposes. Generally not needed.

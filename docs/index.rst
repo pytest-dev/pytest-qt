@@ -132,7 +132,8 @@ ensuring the results are correct::
         app = Application()
         app.worker.start()
 
-        with qtbot.waitSignal(app.worker.finished, timeout=10000):
+        with qtbot.waitSignal(app.worker.finished, timeout=10000) as blocker:
+            assert blocker.signal_triggered
             assert_application_results(app)
 
 
