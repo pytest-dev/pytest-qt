@@ -25,7 +25,7 @@ def explicit_wait(qtbot, signal, timeout):
     blocker = qtbot.waitSignal(signal, timeout)
     start_time = time.time()
     blocker.wait()
-    return blocker.loop, start_time
+    return blocker._loop, start_time
 
 
 def context_manager_wait(qtbot, signal, timeout):
@@ -34,7 +34,7 @@ def context_manager_wait(qtbot, signal, timeout):
     """
     with qtbot.waitSignal(signal, timeout) as blocker:
         start_time = time.time()
-    return blocker.loop, start_time
+    return blocker._loop, start_time
 
 
 @pytest.mark.parametrize(

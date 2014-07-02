@@ -252,7 +252,7 @@ class QtBot(object):
 class SignalBlocker:
 
     def __init__(self, timeout=1000):
-        self.loop = QtCore.QEventLoop()
+        self._loop = QtCore.QEventLoop()
         self._signals = []
         self.timeout = timeout
 
@@ -260,11 +260,11 @@ class SignalBlocker:
         if self.timeout is None and len(self._signals) == 0:
             raise ValueError("No signals or timeout specified.")
         if self.timeout is not None:
-            QtCore.QTimer.singleShot(self.timeout, self.loop.quit)
-        self.loop.exec_()
+            QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
+        self._loop.exec_()
 
     def connect(self, signal):
-        signal.connect(self.loop.quit)
+        signal.connect(self._loop.quit)
         self._signals.append(signal)
 
     def __enter__(self):
