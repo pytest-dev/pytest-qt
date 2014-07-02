@@ -116,14 +116,37 @@ created earlier::
     assert window.filesTable.item(0, 0).text() == 'video1.avi'
     assert window.filesTable.item(1, 0).text() == 'video2.avi'    
     
-        
-And that's it for this quick tutorial!    
+
+
+Waiting for threads, processes, etc.
+====================================
+
+If your program has long running cumputations running in other threads or
+processes, you can use :meth:`qtbot.waitSignal <pytestqt.plugin.QtBot.waitSignal>`
+to block a test until a signal is emitted (such as ``QThread.finished``) or a
+timeout is reached. This makes it easy to write tests that wait until a
+computation running in another thread or process is completed before
+ensuring the results are correct::
+
+    def test_long_computation(qtbot):
+        app = Application()
+
+        # Watch for the app.worker.finished signal, then start the worker.
+        with qtbot.waitSignal(app.worker.finished, timeout=10000) as blocker:
+            blocker.connect(app.worker.failed)  # Can add other signals to blocker
+            app.worker.start()
+            # Test will wait here until either signal is emitted, or 10 seconds has elapsed
+
+        assert blocker.signal_triggered  # Assuming the work took less than 10 seconds
+        assert_application_results(app)
+
 
 QtBot
 =====
 
 .. module:: pytestqt.plugin
 .. autoclass:: QtBot
+.. autoclass:: SignalBlocker
 
 Versioning
 ==========
