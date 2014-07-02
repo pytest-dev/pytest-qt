@@ -2,17 +2,12 @@
 pytest-qt
 =========
 
-pytest-qt is a `pytest`_ plugin to allow
-programmers write tests for `PySide`_ and 
-`PyQt`_ applications.
+pytest-qt is a `pytest`_ plugin to allow programmers write tests for `PySide`_ and `PyQt`_ applications.
 
 The main usage is to use the `qtbot` fixture, responsible for handling `qApp` 
 creation as needed and provides methods to simulate user interaction, 
 like key presses and mouse clicks::
 
-.. _PySide: https://pypi.python.org/pypi/PySide
-.. _PyQt: http://www.riverbankcomputing.com/software/pyqt
-.. _pytest: http://pytest.org
 
     def test_hello(qtbot):
         widget = HelloWidget()
@@ -23,6 +18,10 @@ like key presses and mouse clicks::
     
         assert window.greet_label.text() == 'Hello!'
 
+
+.. _PySide: https://pypi.python.org/pypi/PySide
+.. _PyQt: http://www.riverbankcomputing.com/software/pyqt
+.. _pytest: http://pytest.org
 
 This allows you to test and make sure your view layer is behaving the way you expect after each code change.
 
@@ -58,13 +57,13 @@ Full documentation and tutorial available at `Read the Docs`_.
 Change Log
 ----------
 
-Please consult the `releases page`.
+Please consult the `releases page`_.
 
 .. _releases page: https://github.com/nicoddemus/pytest-qt/releases
 
 Bugs/Requests
 -------------
 
-Please report any issues or feature requests in the `issue tracker`.
+Please report any issues or feature requests in the `issue tracker`_.
 
 .. _issue tracker: https://github.com/nicoddemus/pytest-qt/issues
