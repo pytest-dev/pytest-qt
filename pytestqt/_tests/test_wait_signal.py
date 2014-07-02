@@ -4,43 +4,65 @@ import time
 from pytestqt.qt_compat import QtCore, Signal
 
 
-def test_signal_blocker_exception(qtbot):
-    with pytest.raises(ValueError):
-        qtbot.waitSignal(None, None).wait()
-
-
 class Signaller(QtCore.QObject):
 
     signal = Signal()
 
 
-def test_wait_signal_context_manager(qtbot, monkeypatch):
-    signaller = Signaller()
-
-    # Emit a signal after half a second, and block the signal with a timeout
-    # of 2 seconds.
-    QtCore.QTimer.singleShot(500, signaller.signal.emit)
-    with qtbot.waitSignal(signaller.signal, 2000) as blocker:
-        saved_loop = blocker.loop
-        start_time = time.time()
-
-    # Check that event loop exited.
-    assert not saved_loop.isRunning()
-    # Check that it didn't exit by a timeout.
-    assert time.time() - start_time < 2  # Less than 2 seconds elapsed
+def test_signal_blocker_exception(qtbot):
+    """
+    Make sure waitSignal without signals and timeout doesn't hang, but raises
+    ValueError instead.
+    """
+    with pytest.raises(ValueError):
+        qtbot.waitSignal(None, None).wait()
 
 
-def test_wait_signal_function(qtbot, monkeypatch):
-    signaller = Signaller()
-
-    # Emit a signal after half a second, and block the signal with a timeout
-    # of 2 seconds.
-    QtCore.QTimer.singleShot(500, signaller.signal.emit)
-    blocker = qtbot.waitSignal(signaller.signal, 2000)
+def explicit_wait(qtbot, signal, timeout):
+    """
+    Explicit wait for the signal using blocker API.
+    """
+    blocker = qtbot.waitSignal(signal, timeout)
     start_time = time.time()
     blocker.wait()
+    return blocker.loop, start_time
+
+
+def context_manager_wait(qtbot, signal, timeout):
+    """
+    Waiting for signal using context manager API.
+    """
+    with qtbot.waitSignal(signal, timeout) as blocker:
+        start_time = time.time()
+    return blocker.loop, start_time
+
+
+@pytest.mark.parametrize(
+    ('wait_function', 'emit_delay', 'timeout'),
+    [
+        (explicit_wait, 500, 2000),
+        (explicit_wait, 500, None),
+        (context_manager_wait, 500, 2000),
+        (context_manager_wait, 500, None),
+    ]
+)
+def test_signal_triggered(qtbot, wait_function, emit_delay, timeout):
+    """
+    Ensure that a signal being triggered before timeout expires makes the
+    loop quitting early.
+    """
+    signaller = Signaller()
+    QtCore.QTimer.singleShot(emit_delay, signaller.signal.emit)
+    
+    # block signal until either signal is emitted or timeout is reached
+    loop, start_time = wait_function(qtbot, signaller.signal, timeout)
 
     # Check that event loop exited.
-    assert not blocker.loop.isRunning()
-    # Check that it didn't exit by a timeout.
-    assert time.time() - start_time < 2  # Less than 2 seconds elapsed
+    assert not loop.isRunning()
+
+    # Check that we exited by the earliest parameter; timeout = None means
+    # wait forever, so ensure we waited at most 4 times emit-delay
+    if timeout is None:
+        timeout = emit_delay * 4
+    max_wait_ms = max(emit_delay, timeout)
+    assert time.time() - start_time < (max_wait_ms / 1000.0)
