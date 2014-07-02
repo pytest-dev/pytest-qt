@@ -14,7 +14,8 @@ setup(
     # metadata for upload to PyPI
     author="Bruno Oliveira",
     author_email="nicoddemus@gmail.com",
-    description=open('README.rst').read(),
+    description='pytest support for PyQt and PySide applications',
+    long_description=open('README.rst').read(),
     license="LGPL",
     keywords="pytest qt test unittest",
     url="http://github.com/nicoddemus/pytest-qt",
