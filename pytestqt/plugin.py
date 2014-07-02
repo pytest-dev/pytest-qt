@@ -224,7 +224,8 @@ class QtBot(object):
            with qtbot.waitSignal(signal, timeout=1000):
                long_function_that_calls_signal()
 
-        Can also be used to return blocker object::
+        Also, you can use the :class:`SignalBlocker` directly if the context
+        manager form is not convenient::
 
            blocker = qtbot.waitSignal(signal, timeout=1000)
            blocker.connect(other_signal)
@@ -249,7 +250,16 @@ class QtBot(object):
         return blocker
 
 
-class SignalBlocker:
+class SignalBlocker(object):
+    """
+    Returned by :meth:`QtBot.waitSignal` method.
+
+    .. automethod:: wait
+    .. automethod:: connect
+
+    :ivar int timeout: maximum time to wait for a signal to be triggered. Can
+        be changed before :meth:`wait` is called.
+    """
 
     def __init__(self, timeout=1000):
         self._loop = QtCore.QEventLoop()
@@ -257,6 +267,13 @@ class SignalBlocker:
         self.timeout = timeout
 
     def wait(self):
+        """
+        Waits until either condition signal is triggered or
+        timeout is reached.
+
+        :raise ValueError: if no signals are connected and timeout is None; in
+            this case it would wait forever.
+        """
         if self.timeout is None and len(self._signals) == 0:
             raise ValueError("No signals or timeout specified.")
         if self.timeout is not None:
@@ -264,6 +281,12 @@ class SignalBlocker:
         self._loop.exec_()
 
     def connect(self, signal):
+        """
+        Connects to the given signal, making :meth:`wait()` return once this signal
+        is emitted.
+
+        :param signal: QtCore.Signal
+        """
         signal.connect(self._loop.quit)
         self._signals.append(signal)
 

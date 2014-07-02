@@ -53,7 +53,7 @@ def test_signal_triggered(qtbot, wait_function, emit_delay, timeout):
     """
     signaller = Signaller()
     QtCore.QTimer.singleShot(emit_delay, signaller.signal.emit)
-    
+
     # block signal until either signal is emitted or timeout is reached
     loop, start_time = wait_function(qtbot, signaller.signal, timeout)
 
