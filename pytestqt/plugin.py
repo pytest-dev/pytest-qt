@@ -276,8 +276,7 @@ class SignalBlocker(object):
 
     def wait(self):
         """
-        Waits until either condition signal is triggered or
-        timeout is reached.
+        Waits until either a connected signal is triggered or timeout is reached.
 
         :raise ValueError: if no signals are connected and timeout is None; in
             this case it would wait forever.
