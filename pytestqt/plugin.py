@@ -60,6 +60,9 @@ class QtBot(object):
     .. automethod:: addWidget
     .. automethod:: waitForWindowShown
     .. automethod:: stopForInteraction
+
+    **Signals**
+
     .. automethod:: waitSignal
 
     **Raw QTest API**
@@ -305,7 +308,6 @@ class SignalBlocker(object):
         self._loop.quit()
 
     def __enter__(self):
-        # Return self for testing purposes. Generally not needed.
         return self
 
     def __exit__(self, type, value, traceback):

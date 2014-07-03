@@ -121,7 +121,7 @@ created earlier::
 Waiting for threads, processes, etc.
 ====================================
 
-If your program has long running cumputations running in other threads or
+If your program has long running computations running in other threads or
 processes, you can use :meth:`qtbot.waitSignal <pytestqt.plugin.QtBot.waitSignal>`
 to block a test until a signal is emitted (such as ``QThread.finished``) or a
 timeout is reached. This makes it easy to write tests that wait until a
@@ -146,6 +146,10 @@ QtBot
 
 .. module:: pytestqt.plugin
 .. autoclass:: QtBot
+
+SignalBlocker
+-------------
+
 .. autoclass:: SignalBlocker
 
 Versioning

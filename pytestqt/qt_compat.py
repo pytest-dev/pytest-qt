@@ -76,6 +76,7 @@ else:
                 return Mock()
     
     QtGui = Mock()
+    QtCore = Mock()
     QtTest = Mock()
     Qt = Mock()
     QEvent = Mock()
