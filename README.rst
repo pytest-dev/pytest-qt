@@ -88,5 +88,6 @@ Many thanks to:
 
 - Igor T. Ghisi (`@itghisi <https://github.com/itghisi>`_);
 - John David Reaver (`@jdreaver <https://github.com/jdreaver>`_);
+- Benjamin Hedrich (`@bh <https://github.com/bh>`_);
 
 .. _tox: http://tox.readthedocs.org
