@@ -40,7 +40,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
   
 
 Requirements
-------------
+============
 
 Python 2.6 or later, including Python 3+.
 
@@ -50,22 +50,42 @@ preference to ``PySide`` if both are installed (to force it to use ``PyQt``, set
 the environment variable ``PYTEST_QT_FORCE_PYQT=true``).
 
 Documentation
--------------
+=============
 
 Full documentation and tutorial available at `Read the Docs`_.
 
 .. _Read The Docs: https://pytest-qt.readthedocs.org/en/latest/
 
 Change Log
-----------
+==========
 
 Please consult the `releases page`_.
 
 .. _releases page: https://github.com/nicoddemus/pytest-qt/releases
 
 Bugs/Requests
--------------
+=============
 
 Please report any issues or feature requests in the `issue tracker`_.
 
 .. _issue tracker: https://github.com/nicoddemus/pytest-qt/issues
+
+Contributing
+============
+
+Contributions are welcome, so feel free to submit a bug or feature
+request.
+
+Pull requests for new features or bug fixes are highly appreciated! If you
+can, include some tests that exercise the new code or test that a bug has been
+fixed, and make sure to include yourself in the contributors list. :)
+
+Contributors
+------------
+
+Many thanks to:
+
+- Igor T. Ghisi (`@itghisi <https://github.com/itghisi>`_);
+- John David Reaver (`@jdreaver <https://github.com/jdreaver>`_);
+
+.. _tox: http://tox.readthedocs.org
