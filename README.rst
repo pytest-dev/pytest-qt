@@ -55,7 +55,7 @@ Documentation
 
 Full documentation and tutorial available at `Read the Docs`_.
 
-.. _Read The Docs: https://pytest-qt.readthedocs.org/en/latest/
+.. _Read The Docs: https://pytest-qt.readthedocs.org
 
 Change Log
 ==========
