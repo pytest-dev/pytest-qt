@@ -25,7 +25,7 @@ def _inject_qtest_methods(cls):
             functools.update_wrapper(result, qtest_method)
             return staticmethod(result)
         else:
-            return None
+            return None # pragma: no cover
 
     # inject methods from QTest into QtBot
     method_names = [
