@@ -54,7 +54,7 @@ if not on_rtd:
     Qt = QtCore.Qt
     QEvent = QtCore.QEvent
     
-else:
+else:  # pragma: no cover
     USING_PYSIDE = True
 
     # mock Qt when we are generating documentation at readthedocs.org
