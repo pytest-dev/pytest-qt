@@ -135,9 +135,10 @@ ensuring the results are correct::
         with qtbot.waitSignal(app.worker.finished, timeout=10000) as blocker:
             blocker.connect(app.worker.failed)  # Can add other signals to blocker
             app.worker.start()
-            # Test will wait here until either signal is emitted, or 10 seconds has elapsed
+            # Test will block at this point until signal is emitted or
+            # 10 seconds has elapsed
 
-        assert blocker.signal_triggered  # Assuming the work took less than 10 seconds
+        assert blocker.signal_triggered, "process timed-out"
         assert_application_results(app)
 
 
