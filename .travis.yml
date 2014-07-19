@@ -32,7 +32,7 @@ install:
  - pip install pytest==$PYTEST_VERSION
 
  # others
- - pip install coveralls --use-wheel
+ - pip install pytest-cov coveralls --use-wheel
 
 before_script:
  - export DISPLAY=:99.0
