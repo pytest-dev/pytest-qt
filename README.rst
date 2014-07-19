@@ -28,7 +28,7 @@ like key presses and mouse clicks:
 
 This allows you to test and make sure your view layer is behaving the way you expect after each code change.
 
-|version| |downloads| |ci|
+|version| |downloads| |ci| |coverage|
 
 .. Using PNG badges because PyPI doesn't support SVG
 
