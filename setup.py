@@ -1,11 +1,34 @@
+import sys
+
 from setuptools import setup
+from setuptools.command.test import test as TestCommand
+
 import pytestqt
+
+
+class PyTest(TestCommand):
+    """
+    Overrides setup "test" command, taken from here:
+    http://pytest.org/latest/goodpractises.html
+    """
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        # import here, cause outside the eggs aren't loaded
+        import pytest
+
+        errno = pytest.main([])
+        sys.exit(errno)
 
 
 setup(
     name="pytest-qt",
     version=pytestqt.version,
-    packages=['pytestqt', 'pytestqt._tests'],
+    packages=['pytestqt'],
     entry_points={
         'pytest11': ['pytest-qt = pytestqt.plugin'],
     },
@@ -31,5 +54,7 @@ setup(
         'Topic :: Software Development :: Quality Assurance',
         'Topic :: Software Development :: Testing',
         'Topic :: Software Development :: User Interfaces',
-    ]
+    ],
+    tests_requires=['pytest'],
+    cmdclass={'test': PyTest},
 )
