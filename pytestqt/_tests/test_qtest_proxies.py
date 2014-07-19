@@ -27,5 +27,5 @@ def test_expected_qtest_proxies(qtbot, expected_method):
     """
     Ensure that we are exporting expected QTest API methods.
     """
-    hasattr(qtbot, expected_method)
+    assert hasattr(qtbot, expected_method)
     assert getattr(qtbot, expected_method).__name__ == expected_method
