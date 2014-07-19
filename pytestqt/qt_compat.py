@@ -14,24 +14,24 @@ if not on_rtd:
     try:
         import PySide.QtCore as _QtCore
         QtCore = _QtCore
-        USE_PYSIDE = True
+        USING_PYSIDE = True
     except ImportError:
-        USE_PYSIDE = False
+        USING_PYSIDE = False
 
     FORCE_PYQT = os.environ.get('PYTEST_QT_FORCE_PYQT', 'false') == 'true'
-    if not USE_PYSIDE or FORCE_PYQT:
+    if not USING_PYSIDE or FORCE_PYQT:
         try:
             import sip
         except ImportError:
             msg = 'pytest-qt requires either PyQt4 or PySide to be installed'
             raise ImportError(msg)
-        USE_PYSIDE = False
+        USING_PYSIDE = False
         sip.setapi('QString', 2)
         sip.setapi('QVariant', 2)
         import PyQt4.QtCore as _QtCore
         QtCore = _QtCore
 
-    if USE_PYSIDE:
+    if USING_PYSIDE:
         def _import_module(moduleName):
             pyside = __import__('PySide', globals(), locals(), [moduleName], 0)
             return getattr(pyside, moduleName)
@@ -55,8 +55,9 @@ if not on_rtd:
     QEvent = QtCore.QEvent
     
 else:
-    # mock Qt when we are generating documentation at readthedocs.org
+    USING_PYSIDE = True
 
+    # mock Qt when we are generating documentation at readthedocs.org
     class Mock(object):
         def __init__(self, *args, **kwargs):
             pass

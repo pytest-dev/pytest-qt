@@ -16,13 +16,16 @@ def _inject_qtest_methods(cls):
 
     def create_qtest_proxy_method(method_name):
 
-        qtest_method = getattr(QtTest.QTest, method_name)
+        if hasattr(QtTest.QTest, method_name):
+            qtest_method = getattr(QtTest.QTest, method_name)
 
-        def result(*args, **kwargs):
-            return qtest_method(*args, **kwargs)
+            def result(*args, **kwargs):
+                return qtest_method(*args, **kwargs)
 
-        functools.update_wrapper(result, qtest_method)
-        return staticmethod(result)
+            functools.update_wrapper(result, qtest_method)
+            return staticmethod(result)
+        else:
+            return None
 
     # inject methods from QTest into QtBot
     method_names = [
@@ -43,7 +46,8 @@ def _inject_qtest_methods(cls):
     ]
     for method_name in method_names:
         method = create_qtest_proxy_method(method_name)
-        setattr(cls, method_name, method)
+        if method is not None:
+            setattr(cls, method_name, method)
 
     return cls
 
@@ -113,7 +117,9 @@ class QtBot(object):
         :param Qt.Key_* key: one of the constants for keys in the Qt namespace.
         
         :return type: str 
-        :returns: the equivalent character string. 
+        :returns: the equivalent character string.
+
+        .. note:: this method is not available in PyQt.
     
     ---
     
@@ -149,7 +155,7 @@ class QtBot(object):
         :param int delay: after the event, delay the test for this miliseconds (if > 0).
             
     
-    .. _QTest API: http://doc.qt.digia.com/4.7/qtest.html
+    .. _QTest API: http://doc.qt.digia.com/4.8/qtest.html
     
     """
     
