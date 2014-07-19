@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+import functools
 import sys
 import traceback
 
@@ -15,15 +16,16 @@ def _inject_qtest_methods(cls):
 
     def create_qtest_proxy_method(method_name):
 
-        def result(*args, **kwargs):
-            m = getattr(QtTest.QTest, method_name)
-            return m(*args, **kwargs)
+        qtest_method = getattr(QtTest.QTest, method_name)
 
-        result.__name__ = method_name
+        def result(*args, **kwargs):
+            return qtest_method(*args, **kwargs)
+
+        functools.update_wrapper(result, qtest_method)
         return staticmethod(result)
 
     # inject methods from QTest into QtBot
-    method_names = set([
+    method_names = [
         'keyPress',
         'keyClick',
         'keyClicks',
@@ -38,7 +40,7 @@ def _inject_qtest_methods(cls):
         'mouseMove',
         'mousePress',
         'mouseRelease',
-    ])
+    ]
     for method_name in method_names:
         method = create_qtest_proxy_method(method_name)
         setattr(cls, method_name, method)
@@ -202,7 +204,7 @@ class QtBot(object):
         Closing the windows should resume the test run, with ``qtbot`` attempting to restore visibility
         of the widgets as they were before this call.
 
-        .. note:: As a convenience, it is aliased as `stop`.
+        .. note:: As a convenience, it is also aliased as `stop`.
         """
         widget_visibility = [widget.isVisible() for widget in self._widgets]
         
