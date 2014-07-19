@@ -30,6 +30,8 @@ This allows you to test and make sure your view layer is behaving the way you ex
 
 |version| |downloads| |ci|
 
+.. Using PNG badges because PyPI doesn't support SVG
+
 .. |version| image:: http://img.shields.io/pypi/v/pytest-qt.png
   :target: https://crate.io/packages/pytest-qt
   
@@ -38,7 +40,10 @@ This allows you to test and make sure your view layer is behaving the way you ex
   
 .. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-qt.png
   :target: https://travis-ci.org/nicoddemus/pytest-qt
-  
+
+.. |coverage| image:: http://img.shields.io/coveralls/nicoddemus/pytest-qt.png
+  :target: https://coveralls.io/r/nicoddemus/pytest-qt
+
 
 Requirements
 ============
