@@ -41,7 +41,7 @@ before_script:
 
 script:
  - python setup.py develop
- - coverage run --source=pytestqt py.test
+ - py.test --cov pytestqt
 
 after_success:
  - coveralls
