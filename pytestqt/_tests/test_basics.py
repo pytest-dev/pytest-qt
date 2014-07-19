@@ -1,4 +1,4 @@
-from pytestqt.qt_compat import QtGui, Qt, QEvent
+from pytestqt.qt_compat import QtGui, Qt, QEvent, QtCore
 import pytest
 
 
@@ -55,7 +55,18 @@ def test_mouse_events(qtbot, event_recorder):
     
     qtbot.mousePress(event_recorder, Qt.RightButton, Qt.AltModifier)
     assert event_recorder.event_data == (QEvent.MouseButtonPress, Qt.RightButton, Qt.AltModifier)
-    
+
+
+def test_stop_for_interaction(qtbot):
+    """
+    Test qtbot.stopForInteraction()
+    """
+    widget = QtGui.QWidget()
+    qtbot.addWidget(widget)
+    qtbot.waitForWindowShown(widget)
+    QtCore.QTimer.singleShot(0, widget.close)
+    qtbot.stopForInteraction()
+
     
 class EventRecorder(QtGui.QWidget):
     """
@@ -92,5 +103,3 @@ def event_recorder(qtbot):
     return widget
 
 
-if __name__ == '__main__':
-    pytest.main(args=['-s'])

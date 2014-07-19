@@ -10,7 +10,7 @@ import os
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
-if not on_rtd:
+if not on_rtd:  # pragma: no cover
     try:
         import PySide.QtCore as _QtCore
         QtCore = _QtCore
@@ -54,7 +54,7 @@ if not on_rtd:
     Qt = QtCore.Qt
     QEvent = QtCore.QEvent
     
-else:
+else:  # pragma: no cover
     USING_PYSIDE = True
 
     # mock Qt when we are generating documentation at readthedocs.org
