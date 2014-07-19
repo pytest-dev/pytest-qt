@@ -90,7 +90,3 @@ def event_recorder(qtbot):
     widget = EventRecorder()
     qtbot.addWidget(widget)
     return widget
-
-
-if __name__ == '__main__':
-    pytest.main(args=['-s'])

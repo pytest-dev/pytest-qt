@@ -10,7 +10,7 @@ import os
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
-if not on_rtd:
+if not on_rtd:  # pragma: no cover
     try:
         import PySide.QtCore as _QtCore
         QtCore = _QtCore
