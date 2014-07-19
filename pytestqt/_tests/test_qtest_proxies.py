@@ -3,7 +3,8 @@ import pytest
 from pytestqt.qt_compat import USING_PYSIDE
 
 
-fails_on_pyqt = pytest.mark.xfail(USING_PYSIDE, reason='not exported by PyQt')
+fails_on_pyqt = pytest.mark.xfail(not USING_PYSIDE,
+                                  reason='not exported by PyQt')
 
 
 @pytest.mark.parametrize('expected_method', [
