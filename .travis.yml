@@ -10,10 +10,11 @@ virtualenv:
 env:
  - PYTEST_VERSION=2.5.2 PYTEST_QT_FORCE_PYQT=true
  - PYTEST_VERSION=2.5.2 PYTEST_QT_FORCE_PYQT=false
+ - PYTEST_VERSION=2.6.0 PYTEST_QT_FORCE_PYQT=true
+ - PYTEST_VERSION=2.6.0 PYTEST_QT_FORCE_PYQT=false
 
 install:
  # PySide
- - echo $TRAVIS_PYTHON_VERSION
  - if [[ "$PYTEST_QT_FORCE_PYQT" == "false" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
  -     sudo apt-get install -qq python-pyside;
  - elif [[ "$PYTEST_QT_FORCE_PYQT" == "false" && "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then
@@ -32,7 +33,7 @@ install:
  - pip install pytest==$PYTEST_VERSION
 
  # others
- - pip install pytest-cov coveralls --use-wheel
+ - pip install coveralls --use-wheel
 
 before_script:
  - export DISPLAY=:99.0
