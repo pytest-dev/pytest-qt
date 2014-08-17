@@ -28,7 +28,7 @@ like key presses and mouse clicks:
 
 This allows you to test and make sure your view layer is behaving the way you expect after each code change.
 
-|version| |downloads| |ci| |coverage|
+|version| |downloads| |ci| |coverage| |docs|
 
 .. Using PNG badges because PyPI doesn't support SVG
 
@@ -43,6 +43,9 @@ This allows you to test and make sure your view layer is behaving the way you ex
 
 .. |coverage| image:: http://img.shields.io/coveralls/nicoddemus/pytest-qt.png
   :target: https://coveralls.io/r/nicoddemus/pytest-qt
+
+.. |docs| image:: https://readthedocs.org/projects/pytest-qt/badge/?version=latest
+  :target: https://pytest-qt.readthedocs.org
 
 
 Requirements
