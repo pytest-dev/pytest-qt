@@ -14,19 +14,8 @@ env:
  - PYTEST_VERSION=2.6.0 PYTEST_QT_FORCE_PYQT=false
 
 install:
- # PySide
- - if [[ "$PYTEST_QT_FORCE_PYQT" == "false" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
- -     sudo apt-get install -qq python-pyside;
- - elif [[ "$PYTEST_QT_FORCE_PYQT" == "false" && "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then
- -     sudo apt-get install -qq python3-pyside;
- - fi
-
- # PyQt4
- - if [[ "$PYTEST_QT_FORCE_PYQT" == "true" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
- -   sudo apt-get install -qq python-qt4
- - elif [[ "$PYTEST_QT_FORCE_PYQT" == "true" && "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then
- -   sudo apt-get install -qq python3-pyqt4
- - fi
+ # Qt
+ - python install-qt.py
 
  # PyTest
  - pip uninstall -y pytest
