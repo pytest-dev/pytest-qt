@@ -6,7 +6,7 @@ import os
 import sys
 
 def run(cmd):
-    print cmd
+    print(cmd)
     r = os.system(cmd)
     if r != 0:
         sys.exit('command %s failed with status %s' % (cmd, r))
