@@ -28,24 +28,28 @@ like key presses and mouse clicks:
 
 This allows you to test and make sure your view layer is behaving the way you expect after each code change.
 
-|version| |downloads| |ci| |coverage| |docs|
+|python| |version| |downloads| |ci| |coverage| |docs|
 
 .. Using PNG badges because PyPI doesn't support SVG
 
-.. |version| image:: http://img.shields.io/pypi/v/pytest-qt.png
+.. |version| image:: http://img.shields.io/pypi/v/pytest-qt.svg
   :target: https://crate.io/packages/pytest-qt
   
-.. |downloads| image:: http://img.shields.io/pypi/dm/pytest-qt.png
+.. |downloads| image:: http://img.shields.io/pypi/dm/pytest-qt.svg
   :target: https://crate.io/packages/pytest-qt
   
-.. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-qt.png
+.. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-qt.svg
   :target: https://travis-ci.org/nicoddemus/pytest-qt
 
-.. |coverage| image:: http://img.shields.io/coveralls/nicoddemus/pytest-qt.png
+.. |coverage| image:: http://img.shields.io/coveralls/nicoddemus/pytest-qt.svg
   :target: https://coveralls.io/r/nicoddemus/pytest-qt
 
 .. |docs| image:: https://readthedocs.org/projects/pytest-qt/badge/?version=latest
   :target: https://pytest-qt.readthedocs.org
+
+.. |python| image:: https://pypip.in/py_versions/pytest-qt/badge.svg
+    :target: https://pypi.python.org/pypi/pytest-qt/
+    :alt: Supported Python versions
 
 
 Requirements
