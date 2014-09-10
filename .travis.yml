@@ -14,6 +14,8 @@ env:
  - PYTEST_VERSION=2.6.0 PYTEST_QT_FORCE_PYQT=false
 
 install:
+ - sudo apt-get update
+ 
  # Qt
  - python install-qt.py
 
