@@ -89,7 +89,7 @@ Contributing
 Contributions are welcome, so feel free to submit a bug or feature
 request.
 
-Pull requests for new features or bug fixes are highly appreciated! If you
+Pull requests are highly appreciated! If you
 can, include some tests that exercise the new code or test that a bug has been
 fixed, and make sure to include yourself in the contributors list. :)
 
@@ -101,5 +101,6 @@ Many thanks to:
 - Igor T. Ghisi (`@itghisi <https://github.com/itghisi>`_);
 - John David Reaver (`@jdreaver <https://github.com/jdreaver>`_);
 - Benjamin Hedrich (`@bh <https://github.com/bh>`_);
+- baundren (`@baudren <https://github.com/baudren>`_);
 
 .. _tox: http://tox.readthedocs.org
