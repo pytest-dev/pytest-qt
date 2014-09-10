@@ -280,7 +280,7 @@ class SignalBlocker(object):
         self._loop = QtCore.QEventLoop()
         self._signals = []
         self.timeout = timeout
-        self.signal_triggered = None
+        self.signal_triggered = False
 
     def wait(self):
         """
@@ -289,11 +289,12 @@ class SignalBlocker(object):
         :raise ValueError: if no signals are connected and timeout is None; in
             this case it would wait forever.
         """
+        if self.signal_triggered:
+            return
         if self.timeout is None and len(self._signals) == 0:
             raise ValueError("No signals or timeout specified.")
         if self.timeout is not None:
             QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
-        self.signal_triggered = False
         self._loop.exec_()
 
     def connect(self, signal):
@@ -305,7 +306,6 @@ class SignalBlocker(object):
         """
         signal.connect(self._quit_loop_by_signal)
         self._signals.append(signal)
-
 
     def _quit_loop_by_signal(self):
         """
