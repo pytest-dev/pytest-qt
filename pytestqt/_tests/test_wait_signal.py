@@ -23,7 +23,7 @@ def explicit_wait(qtbot, signal, timeout):
     Explicit wait for the signal using blocker API.
     """
     blocker = qtbot.waitSignal(signal, timeout)
-    assert blocker.signal_triggered is None
+    assert not blocker.signal_triggered
     blocker.wait()
     return blocker
 
@@ -73,3 +73,14 @@ def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
         timeout = emit_delay * 4
     max_wait_ms = max(emit_delay, timeout)
     assert time.time() - start_time < (max_wait_ms / 1000.0)
+
+
+def test_explicit_emit(qtbot):
+    """
+    Make sure an explicit emit() inside a waitSignal block works.
+    """
+    signaller = Signaller()
+    with qtbot.waitSignal(signaller.signal, timeout=5000) as waiting:
+        signaller.signal.emit()
+
+    assert waiting.signal_triggered
