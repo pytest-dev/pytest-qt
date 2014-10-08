@@ -367,7 +367,7 @@ def qapp():
         yield app
         app.exit()
     else:
-        yield app
+        yield app  # pragma: no cover
 
 
 @pytest.yield_fixture
