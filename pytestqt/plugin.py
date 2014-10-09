@@ -321,25 +321,6 @@ class SignalBlocker(object):
         self.wait()
 
 
-def pytest_configure(config):
-    """
-    PyTest plugin API. Called before the start of each test session, used
-    to instantiate the qApplication object that will be used for the session.
-    
-    :param config.Config config:  
-    """
-    qt_app_instance = QtGui.QApplication([])
-    config.qt_app_instance = qt_app_instance
-    
-    def exit_qapp():
-        '''
-        Makes sure to exit the application after all tests finish running.
-        '''
-        qt_app_instance.exit()
-        
-    config._cleanup.append(exit_qapp)
-
-
 @contextmanager
 def capture_exceptions():
     """
@@ -374,15 +355,30 @@ def format_captured_exceptions(exceptions):
     return message
 
 
+@pytest.yield_fixture(scope='session')
+def qapp():
+    """
+    fixture that instantiates the QApplication instance that will be used by
+    the tests.
+    """
+    app = QtGui.QApplication.instance()
+    if app is None:
+        app = QtGui.QApplication([])
+        yield app
+        app.exit()
+    else:
+        yield app  # pragma: no cover
+
+
 @pytest.yield_fixture
-def qtbot(request):
+def qtbot(qapp):
     """
     Fixture used to create a QtBot instance for using during testing. 
     
     Make sure to call addWidget for each top-level widget you create to ensure
     that they are properly closed after the test ends.
     """
-    result = QtBot(request.config.qt_app_instance)
+    result = QtBot(qapp)
     with capture_exceptions() as exceptions:
         yield result
 

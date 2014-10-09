@@ -101,5 +101,6 @@ Many thanks to:
 - John David Reaver (`@jdreaver <https://github.com/jdreaver>`_);
 - Benjamin Hedrich (`@bh <https://github.com/bh>`_);
 - Benjamin Audren (`@baudren <https://github.com/baudren>`_);
+- Fabio Zadrozny (`@fabioz <https://github.com/fabioz>`_);
 
 .. _tox: http://tox.readthedocs.org
