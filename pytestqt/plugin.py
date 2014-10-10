@@ -2,6 +2,7 @@ from contextlib import contextmanager
 import functools
 import sys
 import traceback
+import weakref
 
 import pytest
 
@@ -173,7 +174,9 @@ class QtBot(object):
         Clear up method. Called at the end of each test that uses a ``qtbot`` fixture.
         """
         for w in self._widgets:
-            w.close()
+            w = w()
+            if w is not None:
+                w.close()
         self._widgets[:] = []
 
     def addWidget(self, widget):
@@ -184,7 +187,9 @@ class QtBot(object):
         :param QWidget widget:
             Widget to keep track of.
         """
-        self._widgets.append(widget)
+        self._widgets.append(weakref.ref(widget))
+
+    add_widget = addWidget  # pep-8 alias
 
     def waitForWindowShown(self, widget):
         """
@@ -196,6 +201,8 @@ class QtBot(object):
             Widget to wait on.
         """
         QtTest.QTest.qWaitForWindowShown(widget)
+
+    wait_for_window_shown = waitForWindowShown  # pep-8 alias
 
     def stopForInteraction(self):
         """
@@ -209,12 +216,15 @@ class QtBot(object):
 
         .. note:: As a convenience, it is also aliased as `stop`.
         """
-        widget_visibility = [widget.isVisible() for widget in self._widgets]
+        widget_and_visibility = []
+        for weak_widget in self._widgets:
+            widget = weak_widget()
+            if widget is not None:
+                widget_and_visibility.append((widget, widget.isVisible()))
 
         self._app.exec_()
 
-        for index, visible in enumerate(widget_visibility):
-            widget = self._widgets[index]
+        for widget, visible in widget_and_visibility:
             widget.setVisible(visible)
 
     stop = stopForInteraction
@@ -255,6 +265,8 @@ class QtBot(object):
         if signal is not None:
             blocker.connect(signal)
         return blocker
+
+    wait_signal = waitSignal  # pep-8 alias
 
 
 class SignalBlocker(object):
