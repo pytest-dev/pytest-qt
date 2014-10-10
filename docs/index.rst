@@ -43,14 +43,22 @@ Or alternatively, download the package from pypi_, extract and execute::
    python setup.py install
 
 .. _pypi: http://pypi.python.org/pypi/pytest-qt/
-.. _`pytest.ini`: http://pytest.org/latest/customize.html
 
 Both methods will automatically register it for usage in ``py.test``.
 
-Alternatively, to develop pytest-qt itself, it's possible to grab it's sources through ``git clone https://github.com/nicoddemus/pytest-qt.git``, 
-add it to the PYTHONPATH and enable it by adding ``-p pytestqt.plugin``
-to the command line (ideally, add it to your `pytest.ini`_).
+Development
+-----------
 
+If you intend to develop ``pytest-qt`` itself, use virtualenv_ to
+activate a new fresh environment and execute::
+
+    git clone https://github.com/nicoddemus/pytest-qt.git
+    cd pytest-qt
+    python setup.py develop
+    pip install pyside
+
+
+.. _virtualenv: http://virtualenv.readthedocs.org/
 
 Quick Tutorial
 ==============
