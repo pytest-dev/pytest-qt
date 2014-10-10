@@ -167,7 +167,7 @@ class QtBot(object):
             The current QApplication instance.
         """
         self._app = app
-        self._widgets = []
+        self._widgets = []  # list of weakref to QWidget instances
 
     def _close(self):
         """
