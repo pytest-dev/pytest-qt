@@ -76,7 +76,7 @@ class QtBot(object):
     **Raw QTest API**
 
     Methods below provide very low level functions, as sending a single mouse click or a key event.
-    Thos methods are just forwarded directly to the `QTest API`_. Consult the documentation for more
+    Those methods are just forwarded directly to the `QTest API`_. Consult the documentation for more
     information.
 
     ---
