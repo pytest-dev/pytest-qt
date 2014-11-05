@@ -380,7 +380,7 @@ def qapp():
 
 
 @pytest.yield_fixture
-def qtbot(qapp):
+def qtbot(qapp, request):
     """
     Fixture used to create a QtBot instance for using during testing.
 
@@ -388,10 +388,26 @@ def qtbot(qapp):
     that they are properly closed after the test ends.
     """
     result = QtBot(qapp)
-    with capture_exceptions() as exceptions:
+    no_capture = request.node.get_marker('qt_no_exception_capture') or \
+                 request.config.getini('qt_no_exception_capture')
+    if no_capture:
         yield result
-
-    if exceptions:
-        pytest.fail(format_captured_exceptions(exceptions))
+    else:
+        with capture_exceptions() as exceptions:
+            yield result
+        if exceptions:
+            pytest.fail(format_captured_exceptions(exceptions))
 
     result._close()
+
+
+def pytest_addoption(parser):
+    parser.addini('qt_no_exception_capture',
+                  'disable automatic exception capture')
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        'markers',
+        "qt_no_exception_capture: Disables pytest-qt's automatic exception "
+        'capture for just one test item.')

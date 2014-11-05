@@ -1,8 +1,10 @@
-import textwrap
 import pytest
 import sys
 from pytestqt.plugin import capture_exceptions, format_captured_exceptions
 from pytestqt.qt_compat import QtGui, Qt, QtCore
+
+
+pytest_plugins = 'pytester'
 
 
 class Receiver(QtCore.QObject):
@@ -46,3 +48,39 @@ def test_format_captured_exceptions():
 
     assert 'Qt exceptions in virtual methods:' in lines
     assert 'ValueError: errors were made' in lines
+
+
+@pytest.mark.parametrize('no_capture_by_marker', [True, False])
+def test_no_capture(testdir, no_capture_by_marker):
+    """
+    Make sure options that disable exception capture are working (either marker
+    or ini configuration value).
+    :type testdir: TmpTestdir
+    """
+    if no_capture_by_marker:
+        marker_code = '@pytest.mark.qt_no_exception_capture'
+    else:
+        marker_code = ''
+        testdir.makeini('''
+            [pytest]
+            qt_no_exception_capture = 1
+        ''')
+    testdir.makepyfile('''
+        import pytest
+        from pytestqt.qt_compat import QtGui, QtCore
+
+        class MyWidget(QtGui.QWidget):
+
+            def mouseReleaseEvent(self, ev):
+                raise RuntimeError
+
+        {marker_code}
+        def test_widget(qtbot):
+            w = MyWidget()
+            qtbot.addWidget(w)
+            qtbot.mouseClick(w, QtCore.Qt.LeftButton)
+    '''.format(marker_code=marker_code))
+    result = testdir.runpytest('-s')
+    # when it fails, it fails with "1 passed, 1 error in", so ensure
+    # it is passing without errors
+    result.stdout.fnmatch_lines('*1 passed in*')
