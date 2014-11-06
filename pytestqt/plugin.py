@@ -391,7 +391,7 @@ def qtbot(qapp, request):
     no_capture = request.node.get_marker('qt_no_exception_capture') or \
                  request.config.getini('qt_no_exception_capture')
     if no_capture:
-        yield result
+        yield result  # pragma: no cover
     else:
         with capture_exceptions() as exceptions:
             yield result
