@@ -102,5 +102,6 @@ Many thanks to:
 - Benjamin Hedrich (`@bh <https://github.com/bh>`_);
 - Benjamin Audren (`@baudren <https://github.com/baudren>`_);
 - Fabio Zadrozny (`@fabioz <https://github.com/fabioz>`_);
+- Datalyze Solutions (`@datalyze-solutions <https://github.com/datalyze-solutions>`_);
 
 .. _tox: http://tox.readthedocs.org
