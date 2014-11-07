@@ -26,8 +26,6 @@ if not on_rtd:  # pragma: no cover
             msg = 'pytest-qt requires either PyQt4 or PySide to be installed'
             raise ImportError(msg)
         USING_PYSIDE = False
-        sip.setapi('QString', 2)
-        sip.setapi('QVariant', 2)
         import PyQt4.QtCore as _QtCore
         QtCore = _QtCore
 
