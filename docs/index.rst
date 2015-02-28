@@ -8,7 +8,7 @@
 pytest-qt
 =========
 
-:Repository: `GitHub <https://github.com/nicoddemus/pytest-qt>`_
+:Repository: `GitHub <https://github.com/pytest-dev/pytest-qt>`_
 :Version: |version|
 :License: `LGPL <http://www.gnu.org/licenses/lgpl-3.0.txt>`_
 :Author: Bruno Oliveira
@@ -52,7 +52,7 @@ Development
 If you intend to develop ``pytest-qt`` itself, use virtualenv_ to
 activate a new fresh environment and execute::
 
-    git clone https://github.com/nicoddemus/pytest-qt.git
+    git clone https://github.com/pytest-dev/pytest-qt.git
     cd pytest-qt
     python setup.py develop
     pip install pyside

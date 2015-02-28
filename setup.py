@@ -41,7 +41,7 @@ setup(
     long_description=open('README.rst').read(),
     license="LGPL",
     keywords="pytest qt test unittest",
-    url="http://github.com/nicoddemus/pytest-qt",
+    url="http://github.com/pytest-dev/pytest-qt",
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',

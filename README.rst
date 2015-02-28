@@ -36,11 +36,11 @@ This allows you to test and make sure your view layer is behaving the way you ex
 .. |downloads| image:: http://img.shields.io/pypi/dm/pytest-qt.png
   :target: https://pypi.python.org/pypi/pytest-qt
   
-.. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-qt.png
-  :target: https://travis-ci.org/nicoddemus/pytest-qt
+.. |ci| image:: http://img.shields.io/travis/pytest-dev/pytest-qt.png
+  :target: https://travis-ci.org/pytest-dev/pytest-qt
 
-.. |coverage| image:: http://img.shields.io/coveralls/nicoddemus/pytest-qt.png
-  :target: https://coveralls.io/r/nicoddemus/pytest-qt
+.. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-qt.png
+  :target: https://coveralls.io/r/pytest-dev/pytest-qt
 
 .. |docs| image:: https://readthedocs.org/projects/pytest-qt/badge/?version=latest
   :target: https://pytest-qt.readthedocs.org
@@ -73,14 +73,14 @@ Change Log
 
 Please consult the `releases page`_.
 
-.. _releases page: https://github.com/nicoddemus/pytest-qt/releases
+.. _releases page: https://github.com/pytest-dev/pytest-qt/releases
 
 Bugs/Requests
 =============
 
 Please report any issues or feature requests in the `issue tracker`_.
 
-.. _issue tracker: https://github.com/nicoddemus/pytest-qt/issues
+.. _issue tracker: https://github.com/pytest-dev/pytest-qt/issues
 
 Contributing
 ============
