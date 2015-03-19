@@ -104,4 +104,11 @@ Many thanks to:
 - Fabio Zadrozny (`@fabioz <https://github.com/fabioz>`_);
 - Datalyze Solutions (`@datalyze-solutions <https://github.com/datalyze-solutions>`_);
 
+**Powered by**
+
+.. |pycharm| image:: https://www.jetbrains.com/pycharm/docs/logo_pycharm.png
+  :target: https://www.jetbrains.com/pycharm
+  
+|pycharm|  
+
 .. _tox: http://tox.readthedocs.org
