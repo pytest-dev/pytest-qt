@@ -8,10 +8,10 @@ virtualenv:
   system_site_packages: true  
 
 env:
- - PYTEST_VERSION=2.5.2 PYTEST_QT_FORCE_PYQT=true
- - PYTEST_VERSION=2.5.2 PYTEST_QT_FORCE_PYQT=false
  - PYTEST_VERSION=2.6.4 PYTEST_QT_FORCE_PYQT=true
  - PYTEST_VERSION=2.6.4 PYTEST_QT_FORCE_PYQT=false
+ - PYTEST_VERSION=2.7.0 PYTEST_QT_FORCE_PYQT=true
+ - PYTEST_VERSION=2.7.0 PYTEST_QT_FORCE_PYQT=false
 
 install:
  - sudo apt-get update
