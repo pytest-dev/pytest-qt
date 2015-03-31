@@ -1,11 +1,16 @@
 language: python
 
 python:
-  - 2.7
-  - 3.4
+  - "2.7_with_system_site_packages"
+  - "3.4_with_system_site_packages"
   
-virtualenv:
-  system_site_packages: true  
+#virtualenv:
+#  system_site_packages: true
+
+matrix:
+  exclude:
+    - python: 2.7
+      env: PYTEST_QT_FORCE_PYQT=5
 
 env:
 # - PYTEST_VERSION=2.6.4 PYTEST_QT_FORCE_PYQT=true
