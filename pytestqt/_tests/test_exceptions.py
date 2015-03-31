@@ -1,7 +1,7 @@
 import pytest
 import sys
 from pytestqt.plugin import capture_exceptions, format_captured_exceptions
-from pytestqt.qt_compat import QtGui, Qt, QtCore
+from pytestqt.qt_compat import QtGui, Qt, QtCore, QApplication
 
 
 pytest_plugins = 'pytester'
@@ -31,7 +31,7 @@ def test_catch_exceptions_in_virtual_methods(qtbot, raise_error):
     tests fail if any.
     """
     v = Receiver(raise_error)
-    app = QtGui.QApplication.instance()
+    app = QApplication.instance()
     app.sendEvent(v, QtCore.QEvent(QtCore.QEvent.User))
     app.sendEvent(v, QtCore.QEvent(QtCore.QEvent.User))
     app.processEvents()
@@ -67,9 +67,9 @@ def test_no_capture(testdir, no_capture_by_marker):
         ''')
     testdir.makepyfile('''
         import pytest
-        from pytestqt.qt_compat import QtGui, QtCore
+        from pytestqt.qt_compat import QWidget, QtCore
 
-        class MyWidget(QtGui.QWidget):
+        class MyWidget(QWidget):
 
             def mouseReleaseEvent(self, ev):
                 raise RuntimeError

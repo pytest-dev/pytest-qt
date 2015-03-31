@@ -6,7 +6,7 @@ import weakref
 
 import pytest
 
-from pytestqt.qt_compat import QtCore, QtGui, QtTest
+from pytestqt.qt_compat import QtCore, QtTest, QApplication
 
 
 def _inject_qtest_methods(cls):
@@ -370,9 +370,9 @@ def qapp():
     fixture that instantiates the QApplication instance that will be used by
     the tests.
     """
-    app = QtGui.QApplication.instance()
+    app = QApplication.instance()
     if app is None:
-        app = QtGui.QApplication([])
+        app = QApplication([])
         yield app
         app.exit()
     else:

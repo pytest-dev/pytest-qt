@@ -12,36 +12,44 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if not on_rtd:  # pragma: no cover
     try:
-        import PySide.QtCore as _QtCore
-        QtCore = _QtCore
+        from PySide import QtCore
         USING_PYSIDE = True
     except ImportError:
         USING_PYSIDE = False
 
-    FORCE_PYQT = os.environ.get('PYTEST_QT_FORCE_PYQT', 'false') == 'true'
+    FORCE_PYQT = os.environ.get('PYTEST_QT_FORCE_PYQT', 'false') != 'false'
+    PYQT_VER = None
     if not USING_PYSIDE or FORCE_PYQT:
         try:
             import sip
         except ImportError:
             msg = 'pytest-qt requires either PyQt4 or PySide to be installed'
             raise ImportError(msg)
+
+        PYQT_VER = os.environ.get['PYTEST_QT_FORCE_PYQT']
+        # backward compatibility
+        if PYQT_VER == 'true':
+            PYQT_VER = '4'
+        if PYQT_VER not in ('4', '5'):
+            raise RuntimeError('Unsupported PyQt version: %s' % PYQT_VER)
+
         USING_PYSIDE = False
-        import PyQt4.QtCore as _QtCore
-        QtCore = _QtCore
 
     if USING_PYSIDE:
-        def _import_module(moduleName):
-            pyside = __import__('PySide', globals(), locals(), [moduleName], 0)
-            return getattr(pyside, moduleName)
+        def _import_module(module_name):
+            pyside = __import__('PySide', globals(), locals(), [module_name], 0)
+            return getattr(pyside, module_name)
     
         Signal = QtCore.Signal
         Slot = QtCore.Slot
         Property = QtCore.Property
     else:
-        def _import_module(moduleName):
-            pyside = __import__('PyQt4', globals(), locals(), [moduleName], 0)
-            return getattr(pyside, moduleName)
-    
+        def _import_module(module_name):
+            pyside = __import__('PyQt%s' % PYQT_VER,
+                                globals(), locals(), [module_name], 0)
+            return getattr(pyside, module_name)
+
+        QtCore = _import_module('QtCore')
         Signal = QtCore.pyqtSignal
         Slot = QtCore.pyqtSlot
         Property = QtCore.pyqtProperty
@@ -51,7 +59,14 @@ if not on_rtd:  # pragma: no cover
     QtTest = _import_module('QtTest')
     Qt = QtCore.Qt
     QEvent = QtCore.QEvent
-    
+    if not USING_PYSIDE and PYQT_VER == '5':
+        _QtWidgets = _import_module('QtWidgets')
+        QApplication = _QtWidgets.QApplication
+        QWidget = _QtWidgets.QWidget
+    else:
+        QApplication = QtGui.QApplication
+        QWidget = QtGui.QWidget
+
 else:  # pragma: no cover
     USING_PYSIDE = True
 
@@ -77,3 +92,5 @@ else:  # pragma: no cover
     QtTest = Mock()
     Qt = Mock()
     QEvent = Mock()
+    QApplication = Mock()
+    QWidget = Mock()
