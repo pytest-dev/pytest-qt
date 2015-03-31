@@ -64,8 +64,8 @@ this order:
 - ``PyQt4``
 - ``PyQt5``
 
-To force a particular version of PyQt_, set the environment variable
-``PYTEST_QT_FORCE_PYQT=4`` or ``PYTEST_QT_FORCE_PYQT=5``.
+To force a particular API, set the environment variable ``PYTEST_QT_API`` to
+``pyside``, ``pyqt4`` or ``pyqt5``.
 
 Documentation
 =============

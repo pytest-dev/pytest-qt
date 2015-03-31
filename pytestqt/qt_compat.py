@@ -11,71 +11,77 @@ import os
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if not on_rtd:  # pragma: no cover
-    try:
-        from PySide import QtCore
-        USING_PYSIDE = True
-    except ImportError:
-        USING_PYSIDE = False
 
-    FORCE_PYQT = os.environ.get('PYTEST_QT_FORCE_PYQT', 'false') != 'false'
-    PYQT_VER = None
-    if not USING_PYSIDE or FORCE_PYQT:
+    def _try_import(name):
         try:
-            import sip
+            __import__(name)
+            return True
         except ImportError:
-            msg = 'pytest-qt requires either PyQt4 or PySide to be installed'
+            return False
+
+    def _guess_qt_api():
+        if _try_import('PySide'):
+            return 'pyside'
+        elif _try_import('PyQt4'):
+            return 'pyqt4'
+        elif _try_import('PyQt5'):
+            return 'pyqt5'
+        else:
+            msg = 'pytest-qt requires either PySide, PyQt4 or PyQt5 to be installed'
             raise ImportError(msg)
 
-        if 'PYTEST_QT_FORCE_PYQT' in os.environ:
-            PYQT_VER = os.environ.get('PYTEST_QT_FORCE_PYQT', '4')
-            # backward compatibility
-            if PYQT_VER == 'true':
-                PYQT_VER = '4'
-            if PYQT_VER not in ('4', '5'):
-                msg = 'Unsupported PyQt version in $PYTEST_QT_FORCE_PYQT: %s'
-                raise RuntimeError(msg % PYQT_VER)
-        else:
-            # give preference for PyQt4 for backward compatibility
-            try:
-                import PyQt4
-                PYQT_VER = '4'
-            except ImportError:
-                import PyQt5
-                PYQT_VER = '5'
-
-        USING_PYSIDE = False
-
-    if USING_PYSIDE:
-        def _import_module(module_name):
-            pyside = __import__('PySide', globals(), locals(), [module_name], 0)
-            return getattr(pyside, module_name)
-    
-        Signal = QtCore.Signal
-        Slot = QtCore.Slot
-        Property = QtCore.Property
+    # backward compatibility support: PYTEST_QT_FORCE_PYQT
+    if os.environ.get('PYTEST_QT_FORCE_PYQT', 'false') == 'true':
+        QT_API = 'pyqt4'
     else:
-        def _import_module(module_name):
-            pyside = __import__('PyQt%s' % PYQT_VER,
-                                globals(), locals(), [module_name], 0)
-            return getattr(pyside, module_name)
+        QT_API = os.environ.get('PYTEST_QT_API')
+        if QT_API is not None:
+            QT_API = QT_API.lower()
+            if QT_API not in ('pyside', 'pyqt4', 'pyqt5'):
+                msg = 'Invalid value for $PYTEST_QT_API: %s'
+                raise RuntimeError(msg % QT_API)
+        else:
+            QT_API = _guess_qt_api()
 
-        QtCore = _import_module('QtCore')
-        Signal = QtCore.pyqtSignal
-        Slot = QtCore.pyqtSlot
-        Property = QtCore.pyqtProperty
-    
-    
+    # backward compatibility
+    USING_PYSIDE = QT_API == 'pyside'
+
+    def _import_module(module_name):
+        m = __import__(_root_module, globals(), locals(), [module_name], 0)
+        return getattr(m, module_name)
+
+    _root_modules = {
+        'pyside': 'PySide',
+        'pyqt4': 'PyQt4',
+        'pyqt5': 'PyQt5',
+    }
+    _root_module = _root_modules[QT_API]
+
+    QtCore = _import_module('QtCore')
     QtGui = _import_module('QtGui')
     QtTest = _import_module('QtTest')
     Qt = QtCore.Qt
     QEvent = QtCore.QEvent
-    if not USING_PYSIDE and PYQT_VER == '5':
-        _QtWidgets = _import_module('QtWidgets')
-        QApplication = _QtWidgets.QApplication
-        QWidget = _QtWidgets.QWidget
-    else:
+
+    if QT_API == 'pyside':
+        Signal = QtCore.Signal
+        Slot = QtCore.Slot
+        Property = QtCore.Property
         QApplication = QtGui.QApplication
         QWidget = QtGui.QWidget
+
+    elif QT_API in ('pyqt4', 'pyqt5'):
+        Signal = QtCore.pyqtSignal
+        Slot = QtCore.pyqtSlot
+        Property = QtCore.pyqtProperty
+
+        if QT_API == 'pyqt5':
+            _QtWidgets = _import_module('QtWidgets')
+            QApplication = _QtWidgets.QApplication
+            QWidget = _QtWidgets.QWidget
+        else:
+            QApplication = QtGui.QApplication
+            QWidget = QtGui.QWidget
 
 else:  # pragma: no cover
     USING_PYSIDE = True
@@ -104,3 +110,4 @@ else:  # pragma: no cover
     QEvent = Mock()
     QApplication = Mock()
     QWidget = Mock()
+    QT_API = '<none>'
