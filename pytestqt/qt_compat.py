@@ -26,7 +26,7 @@ if not on_rtd:  # pragma: no cover
             msg = 'pytest-qt requires either PyQt4 or PySide to be installed'
             raise ImportError(msg)
 
-        PYQT_VER = os.environ.get['PYTEST_QT_FORCE_PYQT']
+        PYQT_VER = os.environ.get('PYTEST_QT_FORCE_PYQT', '4')
         # backward compatibility
         if PYQT_VER == 'true':
             PYQT_VER = '4'
