@@ -199,8 +199,16 @@ class QtBot(object):
 
         :param QWidget widget:
             Widget to wait on.
+
+        .. note:: In Qt5, the actual method called is qWaitForWindowExposed,
+            but this name is kept for backward compatibility
         """
-        QtTest.QTest.qWaitForWindowShown(widget)
+        if hasattr(QtTest.QTest, 'qWaitForWindowShown'):
+            # PyQt4 and PySide
+            QtTest.QTest.qWaitForWindowShown(widget)
+        else:
+            # PyQt5
+            QtTest.QTest.qWaitForWindowExposed(widget)
 
     wait_for_window_shown = waitForWindowShown  # pep-8 alias
 

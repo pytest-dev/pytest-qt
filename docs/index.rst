@@ -26,10 +26,16 @@ Python 2.6 or later, including Python 3+.
 
 Tested with pytest version 2.5.2.
 
-Works with either `PySide` or
-`PyQt`, picking one that is available giving
-preference to `PySide` if both are installed (to force it to use `PyQt`, set
-the environment variable `PYTEST_QT_FORCE_PYQT=true`).
+Works with either ``PySide``, ``PyQt4`` or ``PyQt5``, picking whichever
+is available on the system giving preference to the first one installed in
+this order:
+
+- ``PySide``
+- ``PyQt4``
+- ``PyQt5``
+
+To force a particular version of ``PyQt``, set the environment variable
+``PYTEST_QT_FORCE_PYQT=4`` or ``PYTEST_QT_FORCE_PYQT=5``.
 
 Installation
 ============
