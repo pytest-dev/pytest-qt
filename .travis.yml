@@ -2,45 +2,79 @@ language: python
 
 python:
   - "2.7"
-  - "3.2"
+  - "3.4"
   
-virtualenv:
-  system_site_packages: true
-
-matrix:
-  allow_failures:
-    # unfortunately couldn't find a reliable way to test pyqt5 on travis yet
-    - env: PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
-
 env:
- - PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyqt4
- - PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyside
- - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt4
- - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyside
- - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
+ - PYTEST_VERSION=2.6.4
+ - PYTEST_VERSION=2.7.0
 
+# most of the code below was obtained from https://github.com/harvimt/quamash
+before_install:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+  # Cached Downloads
+  - sudo mkdir -p /downloads
+  - sudo chmod a+rw /downloads
+  - if [ ! -f /downloads/sip.tar.gz ];   then curl -L -o /downloads/sip.tar.gz http://sourceforge.net/projects/pyqt/files/sip/sip-4.16.5/sip-4.16.5.tar.gz; fi
+  - if [ ! -f /downloads/pyqt4.tar.gz ]; then curl -L -o /downloads/pyqt4.tar.gz http://sourceforge.net/projects/pyqt/files/PyQt4/PyQt-4.11.3/PyQt-x11-gpl-4.11.3.tar.gz; fi
+  - if [ ! -f /downloads/pyqt5.tar.gz ]; then curl -L -o /downloads/pyqt5.tar.gz http://sourceforge.net/projects/pyqt/files/PyQt5/PyQt-5.4/PyQt-gpl-5.4.tar.gz; fi
+  # Builds
+  - sudo mkdir -p /builds
+  - sudo chmod a+rw /builds
 install:
- - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
- - sudo apt-get update
- 
- # Qt
- - python install-qt.py
+  # Qt4
+  - sudo apt-get install -y libqt4-dev
+  # Qt5
+  - sudo add-apt-repository -y ppa:beineri/opt-qt54
+  - sudo apt-get update
+  - sudo apt-get install -y qt54base
+  # Builds
+  - pushd /builds
+  # SIP
+  - tar xzf /downloads/sip.tar.gz --keep-newer-files
+  - pushd sip-4.16.5
+  - python configure.py
+  - make
+  - sudo make install
+  - popd
+  # PyQt4
+  - tar xzf /downloads/pyqt4.tar.gz --keep-newer-files
+  - pushd PyQt-x11-gpl-4.11.3
+  - python configure.py -c --confirm-license --no-designer-plugin -e QtCore -e QtTest -e QtGui
+  - make
+  - sudo make install
+  - popd
+  # PyQt5
+  - source /opt/qt54/bin/qt54-env.sh  # switch to Qt5
+  - tar xzf /downloads/pyqt5.tar.gz --keep-newer-files
+  - pushd PyQt-gpl-5.4
+  - python configure.py -c --confirm-license --no-designer-plugin -e QtCore -e QtGui -e QtTest -e QtWidgets
+  - make
+  - sudo make install
+  - popd
+  # Builds Complete
+  - popd
+  # PySide
+  - pip install --find-links wheelhouse/ pyside
+  - python `which pyside_postinstall.py` -install
 
- # PyTest
- - pip uninstall -y pytest
- - pip install pytest==$PYTEST_VERSION
+  # PyTest
+  - pip uninstall -y pytest
+  - pip install pytest==$PYTEST_VERSION
 
- # others
- - pip install coveralls --use-wheel
+  # coveralls
+  - pip install coveralls --use-wheel
 
-before_script:
- - export DISPLAY=:99.0
- - sh -e /etc/init.d/xvfb start
- - sleep 3
+cache:
+  directories:
+    - /downloads
+  apt: true
 
 script:
  - python setup.py develop
- - coverage run --source=pytestqt setup.py test
+ - PYTEST_QT_API=pyqt4 coverage run --source=pytestqt setup.py test
+ - PYTEST_QT_API=pyqt5 coverage run --source=pytestqt setup.py test
+ - PYTEST_QT_API=pyside coverage run --source=pytestqt setup.py test
 
 after_success:
  - coveralls
