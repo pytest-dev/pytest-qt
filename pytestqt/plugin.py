@@ -6,7 +6,7 @@ import weakref
 
 import pytest
 
-from pytestqt.qt_compat import QtCore, QtGui, QtTest
+from pytestqt.qt_compat import QtCore, QtTest, QApplication, QT_API
 
 
 def _inject_qtest_methods(cls):
@@ -199,8 +199,16 @@ class QtBot(object):
 
         :param QWidget widget:
             Widget to wait on.
+
+        .. note:: In Qt5, the actual method called is qWaitForWindowExposed,
+            but this name is kept for backward compatibility
         """
-        QtTest.QTest.qWaitForWindowShown(widget)
+        if hasattr(QtTest.QTest, 'qWaitForWindowShown'): # pragma: no cover
+            # PyQt4 and PySide
+            QtTest.QTest.qWaitForWindowShown(widget)
+        else: # pragma: no cover
+            # PyQt5
+            QtTest.QTest.qWaitForWindowExposed(widget)
 
     wait_for_window_shown = waitForWindowShown  # pep-8 alias
 
@@ -370,9 +378,9 @@ def qapp():
     fixture that instantiates the QApplication instance that will be used by
     the tests.
     """
-    app = QtGui.QApplication.instance()
+    app = QApplication.instance()
     if app is None:
-        app = QtGui.QApplication([])
+        app = QApplication([])
         yield app
         app.exit()
     else:
@@ -411,3 +419,7 @@ def pytest_configure(config):
         'markers',
         "qt_no_exception_capture: Disables pytest-qt's automatic exception "
         'capture for just one test item.')
+
+
+def pytest_report_header():
+    return ['qt-api: %s' % QT_API]

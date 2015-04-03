@@ -56,10 +56,16 @@ Requirements
 
 Python 2.6 or later, including Python 3+.
 
-Works with either PySide_ or
-PyQt_ picking whichever is available on the system, giving
-preference to ``PySide`` if both are installed (to force it to use ``PyQt``, set
-the environment variable ``PYTEST_QT_FORCE_PYQT=true``).
+Works with either PySide_, PyQt_ (``PyQt4`` and ``PyQt5``) picking whichever
+is available on the system, giving preference to the first one installed in
+this order:
+
+- ``PySide``
+- ``PyQt4``
+- ``PyQt5``
+
+To force a particular API, set the environment variable ``PYTEST_QT_API`` to
+``pyside``, ``pyqt4`` or ``pyqt5``.
 
 Documentation
 =============

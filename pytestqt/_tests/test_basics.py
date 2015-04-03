@@ -1,6 +1,7 @@
 import weakref
 import pytest
-from pytestqt.qt_compat import QtGui, Qt, QEvent, QtCore
+from pytestqt.qt_compat import QtGui, Qt, QEvent, QtCore, QApplication, \
+    QWidget
 
 
 def test_basics(qtbot):
@@ -8,8 +9,8 @@ def test_basics(qtbot):
     Basic test that works more like a sanity check to ensure we are setting up a QApplication
     properly and are able to display a simple event_recorder.
     """
-    assert isinstance(QtGui.qApp, QtGui.QApplication)
-    widget = QtGui.QWidget()
+    assert QApplication.instance() is not None
+    widget = QWidget()
     qtbot.addWidget(widget)
     widget.setWindowTitle('W1')
     widget.show()
@@ -62,7 +63,7 @@ def test_stop_for_interaction(qtbot):
     """
     Test qtbot.stopForInteraction()
     """
-    widget = QtGui.QWidget()
+    widget = QWidget()
     qtbot.addWidget(widget)
     qtbot.waitForWindowShown(widget)
     QtCore.QTimer.singleShot(0, widget.close)
@@ -73,13 +74,13 @@ def test_widget_kept_as_weakref(qtbot):
     """
     Test if the widget is kept as a weak reference in QtBot
     """
-    widget = QtGui.QWidget()
+    widget = QWidget()
     qtbot.add_widget(widget)
     widget = weakref.ref(widget)
     assert widget() is None
 
 
-class EventRecorder(QtGui.QWidget):
+class EventRecorder(QWidget):
 
     """
     Widget that records some kind of events sent to it.
@@ -90,7 +91,7 @@ class EventRecorder(QtGui.QWidget):
     """
 
     def __init__(self):
-        QtGui.QWidget.__init__(self)
+        QWidget.__init__(self)
         self._event_types = {}
         self.event_data = None
 
