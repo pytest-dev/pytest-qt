@@ -54,6 +54,7 @@ before_script:
  - sleep 3
 
 script:
+ - export QT_QPA_PLATFORM_PLUGIN_PATH=$HOME/miniconda/envs/test-environment/lib/qt5/plugins/platforms
  - coverage run --source=pytestqt setup.py test
 
 after_success:
