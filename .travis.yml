@@ -2,7 +2,7 @@ language: python
 
 python:
   - "2.7"
-  - "3.2"
+  - "3.4"
   
 virtualenv:
   system_site_packages: true
@@ -13,18 +13,33 @@ matrix:
     - env: PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
 
 env:
- - PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyqt4
- - PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyside
- - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt4
- - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyside
+ #- PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyqt4
+ #- PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyside
+ #- PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt4
+ #- PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyside
  - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
 
 install:
- - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
  - sudo apt-get update
- 
- # Qt
- - python install-qt.py
+
+ - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+     wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh -O miniconda.sh;
+   else
+     wget http://repo.continuum.io/miniconda/Miniconda3-3.4.2-Linux-x86_64.sh -O miniconda.sh;
+   fi
+
+ - bash miniconda.sh -b -p $HOME/miniconda
+ - export PATH="$HOME/miniconda/bin:$PATH"
+ - hash -r
+ - conda config --set always_yes yes --set changeps1 no
+ - conda update -q conda
+ - conda config --add channels jdreaver
+ # Useful for debugging any issues with conda
+ - conda info -a
+
+ - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pyqt5
+ - source activate test-environment
+ - python setup.py develop
 
  # PyTest
  - pip uninstall -y pytest
@@ -39,7 +54,6 @@ before_script:
  - sleep 3
 
 script:
- - python setup.py develop
  - coverage run --source=pytestqt setup.py test
 
 after_success:
