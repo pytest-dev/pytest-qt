@@ -4,8 +4,8 @@ python:
   - "2.7"
   - "3.4"
   
-virtualenv:
-  system_site_packages: true
+#virtualenv:
+#  system_site_packages: true
 
 matrix:
   allow_failures:
