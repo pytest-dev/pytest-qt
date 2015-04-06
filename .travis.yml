@@ -1,23 +1,21 @@
 language: python
 
 python:
-#  - "2.7"
-  - "3.4"
+  - 2.7
+  - 3.4
   
-#virtualenv:
-#  system_site_packages: true
-
 matrix:
   allow_failures:
     # unfortunately couldn't find a reliable way to test pyqt5 on travis yet
     - env: PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
+    # couldn't build pyside with python 3.4
+    - env: PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyside
+      python: 3.4
 
 env:
- #- PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyqt4
- #- PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyside
  - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt4
- #- PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyside
- #- PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
+ - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyside
+ - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
 
 install:
  - sudo apt-get update
@@ -65,7 +63,9 @@ before_script:
  - sleep 3
 
 script:
- - export QT_QPA_PLATFORM_PLUGIN_PATH=$HOME/miniconda/envs/test-environment/lib/qt5/plugins/platforms
+ - if [[ "$PYTEST_QT_API" == "pyqt5" ]]; then
+     export QT_QPA_PLATFORM_PLUGIN_PATH=$HOME/miniconda/envs/test-environment/lib/qt5/plugins/platforms;
+   fi
  - coverage run --source=pytestqt setup.py test
 
 after_success:
