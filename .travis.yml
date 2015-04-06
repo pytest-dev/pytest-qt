@@ -1,7 +1,7 @@
 language: python
 
 python:
-  - "2.7"
+#  - "2.7"
   - "3.4"
   
 #virtualenv:
@@ -15,9 +15,9 @@ matrix:
 env:
  #- PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyqt4
  #- PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyside
- #- PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt4
+ - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt4
  #- PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyside
- - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
+ #- PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
 
 install:
  - sudo apt-get update
@@ -38,7 +38,17 @@ install:
  # Useful for debugging any issues with conda
  - conda info -a
 
- - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pyqt5
+ - if [[ "$PYTEST_QT_API" == "pyqt4" ]]; then
+     export QT_PACKAGE=pyqt;
+   fi
+ - if [[ "$PYTEST_QT_API" == "pyqt5" ]]; then
+     export QT_PACKAGE=pyqt5;
+   fi
+ - if [[ "$PYTEST_QT_API" == "pyside" ]]; then
+     export QT_PACKAGE=pyside;
+   fi
+
+ - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION $QT_PACKAGE
  - source activate test-environment
  - python setup.py develop
 
