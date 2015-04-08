@@ -54,9 +54,9 @@ install:
  # others
  - pip install coveralls --use-wheel
 
-before_install:
+before_script:
  # see https://github.com/pytest-dev/pytest-qt/issues/35
- - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x24"
+ - "/sbin/start-stop-daemon --start --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x24"
 
 script:
  # see https://github.com/pytest-dev/pytest-qt/issues/35
