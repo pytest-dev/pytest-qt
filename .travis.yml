@@ -55,13 +55,11 @@ install:
  - pip install coveralls --use-wheel
 
 before_script:
- # see https://github.com/pytest-dev/pytest-qt/issues/35
- - "/sbin/start-stop-daemon --start --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x24"
+ - export DISPLAY=:99.0
+ - sh -e /etc/init.d/xvfb start
+ - sleep 3
 
 script:
- # see https://github.com/pytest-dev/pytest-qt/issues/35
- - export LIBGL_DEBUG=verbose
-
  - if [[ "$PYTEST_QT_API" == "pyqt5" ]]; then
      export QT_QPA_PLATFORM_PLUGIN_PATH=$HOME/miniconda/envs/test-environment/lib/qt5/plugins/platforms;
    fi
