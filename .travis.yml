@@ -17,9 +17,6 @@ env:
 install:
  - sudo apt-get update
 
- # see https://github.com/pytest-dev/pytest-qt/issues/35
- - sudo apt-get install libgl1-mesa-dri
-
  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
      wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh -O miniconda.sh;
    else
@@ -57,10 +54,9 @@ install:
  # others
  - pip install coveralls --use-wheel
 
-before_script:
- - export DISPLAY=:99.0
- - sh -e /etc/init.d/xvfb start
- - sleep 3
+before_install:
+ # see https://github.com/pytest-dev/pytest-qt/issues/35
+ - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x24"
 
 script:
  # see https://github.com/pytest-dev/pytest-qt/issues/35
