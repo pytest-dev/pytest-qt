@@ -54,16 +54,13 @@ install:
  # others
  - pip install coveralls --use-wheel
 
-before_script:
- - export DISPLAY=:99.0
- - sh -e /etc/init.d/xvfb start
- - sleep 3
-
 script:
  - if [[ "$PYTEST_QT_API" == "pyqt5" ]]; then
      export QT_QPA_PLATFORM_PLUGIN_PATH=$HOME/miniconda/envs/test-environment/lib/qt5/plugins/platforms;
    fi
- - coverage run --source=pytestqt setup.py test
+ # have to setup screen to 24bpp
+ # see: https://github.com/pytest-dev/pytest-qt/issues/35
+ - xvfb-run -s "-screen 0 1280x1024x24" coverage run --source=pytestqt setup.py test
 
 after_success:
  - coveralls
