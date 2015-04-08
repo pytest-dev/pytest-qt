@@ -17,6 +17,9 @@ env:
 install:
  - sudo apt-get update
 
+ # see https://github.com/pytest-dev/pytest-qt/issues/35
+ - sudo apt-get install libgl1-mesa-dri
+
  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
      wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh -O miniconda.sh;
    else
@@ -60,6 +63,9 @@ before_script:
  - sleep 3
 
 script:
+ # see https://github.com/pytest-dev/pytest-qt/issues/35
+ - export LIBGL_DEBUG=verbose
+
  - if [[ "$PYTEST_QT_API" == "pyqt5" ]]; then
      export QT_QPA_PLATFORM_PLUGIN_PATH=$HOME/miniconda/envs/test-environment/lib/qt5/plugins/platforms;
    fi
