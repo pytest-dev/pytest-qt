@@ -383,6 +383,7 @@ def qapp():
         app = QApplication([])
         yield app
         app.exit()
+        app.deleteLater()
     else:
         yield app  # pragma: no cover
 
