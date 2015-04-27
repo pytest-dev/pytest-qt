@@ -63,12 +63,22 @@ if not on_rtd:  # pragma: no cover
     Qt = QtCore.Qt
     QEvent = QtCore.QEvent
 
+    qDebug = QtCore.qDebug
+    qWarning = QtCore.qWarning
+    qCritical = QtCore.qCritical
+    qFatal = QtCore.qFatal
+    QtDebugMsg = QtCore.QtDebugMsg
+    QtWarningMsg = QtCore.QtWarningMsg
+    QtCriticalMsg = QtCore.QtCriticalMsg
+    QtFatalMsg = QtCore.QtFatalMsg
+
     if QT_API == 'pyside':
         Signal = QtCore.Signal
         Slot = QtCore.Slot
         Property = QtCore.Property
         QApplication = QtGui.QApplication
         QWidget = QtGui.QWidget
+        qInstallMsgHandler = QtCore.qInstallMsgHandler
 
     elif QT_API in ('pyqt4', 'pyqt5'):
         Signal = QtCore.pyqtSignal
@@ -79,9 +89,23 @@ if not on_rtd:  # pragma: no cover
             _QtWidgets = _import_module('QtWidgets')
             QApplication = _QtWidgets.QApplication
             QWidget = _QtWidgets.QWidget
+
+            def qInstallMsgHandler(handler):
+                """
+                Installs the given function as a message handler. This
+                will adapt Qt5 message handler signature into Qt4
+                message handler's signature.
+                """
+                def _Qt5MessageHandler(msg_type, context, msg):
+                    handler(msg_type, msg)
+                if handler is not None:
+                    return QtCore.qInstallMessageHandler(_Qt5MessageHandler)
+                else:
+                    return QtCore.qInstallMessageHandler(None)
         else:
             QApplication = QtGui.QApplication
             QWidget = QtGui.QWidget
+            qInstallMsgHandler = QtCore.qInstallMsgHandler
 
 else:  # pragma: no cover
     USING_PYSIDE = True

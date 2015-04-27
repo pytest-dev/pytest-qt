@@ -1,3 +1,4 @@
+import collections
 from contextlib import contextmanager
 import functools
 import sys
@@ -6,7 +7,8 @@ import weakref
 
 import pytest
 
-from pytestqt.qt_compat import QtCore, QtTest, QApplication, QT_API
+from pytestqt.qt_compat import QtCore, QtTest, QApplication, QT_API, \
+    qInstallMsgHandler, QtDebugMsg, QtWarningMsg, QtCriticalMsg, QtFatalMsg
 
 
 def _inject_qtest_methods(cls):
@@ -421,6 +423,78 @@ def pytest_configure(config):
         "qt_no_exception_capture: Disables pytest-qt's automatic exception "
         'capture for just one test item.')
 
+    config.pluginmanager.register(QtLoggingPlugin(config), '_qt_logging')
+
 
 def pytest_report_header():
     return ['qt-api: %s' % QT_API]
+
+
+class QtLoggingPlugin(object):
+    """
+    Pluging responsible for installing a QtMessageHandler before each
+    test and augment reporting if the test failed with the messages captured.
+    """
+
+    def __init__(self, config):
+        self.config = config
+
+    def pytest_runtest_setup(self, item):
+        item.qt_log_handler = _QtMessageCapture()
+        previous_handler = qInstallMsgHandler(item.qt_log_handler.handle)
+        item.qt_previous_handler = previous_handler
+
+    @pytest.mark.hookwrapper
+    def pytest_runtest_makereport(self, item, call):
+        """Add captured Qt messages to test item report if the call failed."""
+
+        outcome = yield
+        report = outcome.result
+
+        if call.when == 'call':
+
+            if not report.passed:
+                long_repr = getattr(report, 'longrepr', None)
+                if hasattr(long_repr, 'addsection'):
+                    lines = []
+                    for msg_type, msg in item.qt_log_handler.messages:
+                        msg_name = _QtMessageCapture.get_msg_name(msg_type)
+                        lines.append('{0}: {1}'.format(msg_name, msg))
+                    if lines:
+                        long_repr.addsection('Captured Qt messages',
+                                             '\n'.join(lines))
+            # Release the handler resources.
+            qInstallMsgHandler(item.qt_previous_handler)
+            del item.qt_previous_handler
+            del item.qt_log_handler
+
+
+class _QtMessageCapture(object):
+    """
+    Captures Qt messages when its `handle` method is installed using
+    qInstallMsgHandler, and stores them into `messages` attribute.
+
+    :attr messages: list of Message named-tuples.
+    """
+
+    Message = collections.namedtuple('Message', 'msg_type, msg')
+
+    def __init__(self):
+        self.messages = []
+
+    def handle(self, msg_type, msg):
+        """
+        Method to be installed using qInstallMsgHandler, stores each message
+        into the `messages` attribute.
+        """
+        self.messages.append(self.Message(msg_type, msg))
+
+    @classmethod
+    def get_msg_name(cls, msg_type):
+        """Returns a string representation of the given QtMsgType enum value."""
+        return {
+            QtDebugMsg: 'QtDebugMsg',
+            QtWarningMsg: 'QtWarningMsg',
+            QtCriticalMsg: 'QtCriticalMsg',
+            QtFatalMsg: 'QtFatalMsg',
+        }[msg_type]
