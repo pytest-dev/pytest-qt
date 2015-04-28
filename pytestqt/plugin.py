@@ -416,6 +416,9 @@ def pytest_addoption(parser):
     parser.addini('qt_no_exception_capture',
                   'disable automatic exception capture')
 
+    parser.addoption('--no-qt-log', dest='qt_log', action='store_false',
+                     default=True)
+
 
 def pytest_configure(config):
     config.addinivalue_line(
@@ -423,7 +426,8 @@ def pytest_configure(config):
         "qt_no_exception_capture: Disables pytest-qt's automatic exception "
         'capture for just one test item.')
 
-    config.pluginmanager.register(QtLoggingPlugin(config), '_qt_logging')
+    if config.getoption('qt_log'):
+        config.pluginmanager.register(QtLoggingPlugin(config), '_qt_logging')
 
 
 def pytest_report_header():
