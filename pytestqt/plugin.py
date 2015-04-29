@@ -491,7 +491,7 @@ class _QtMessageCapture(object):
         Method to be installed using qInstallMsgHandler, stores each message
         into the `messages` attribute.
         """
-        if type(msg) is bytes:
+        if isinstance(msg, bytes):
             msg = msg.decode('utf-8', errors='replace')
         self.messages.append(self.Message(msg_type, msg))
 
