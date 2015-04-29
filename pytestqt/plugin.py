@@ -444,8 +444,8 @@ class QtLoggingPlugin(object):
         self.config = config
 
     def pytest_runtest_setup(self, item):
-        item.qt_log_handler = _QtMessageCapture()
-        previous_handler = qInstallMsgHandler(item.qt_log_handler.handle)
+        item.qt_log_capture = _QtMessageCapture()
+        previous_handler = qInstallMsgHandler(item.qt_log_capture._handle)
         item.qt_previous_handler = previous_handler
 
     @pytest.mark.hookwrapper
@@ -461,7 +461,7 @@ class QtLoggingPlugin(object):
                 long_repr = getattr(report, 'longrepr', None)
                 if hasattr(long_repr, 'addsection'):
                     lines = []
-                    for msg_type, msg in item.qt_log_handler.messages:
+                    for msg_type, msg in item.qt_log_capture.messages:
                         msg_name = _QtMessageCapture.get_msg_name(msg_type)
                         lines.append('{0}: {1}'.format(msg_name, msg))
                     if lines:
@@ -470,7 +470,7 @@ class QtLoggingPlugin(object):
             # Release the handler resources.
             qInstallMsgHandler(item.qt_previous_handler)
             del item.qt_previous_handler
-            del item.qt_log_handler
+            del item.qt_log_capture
 
 
 class _QtMessageCapture(object):
@@ -484,23 +484,37 @@ class _QtMessageCapture(object):
     Message = collections.namedtuple('Message', 'msg_type, msg')
 
     def __init__(self):
-        self.messages = []
+        self._messages = []
 
-    def handle(self, msg_type, msg):
+    def _handle(self, msg_type, msg):
         """
         Method to be installed using qInstallMsgHandler, stores each message
         into the `messages` attribute.
         """
         if isinstance(msg, bytes):
             msg = msg.decode('utf-8', errors='replace')
-        self.messages.append(self.Message(msg_type, msg))
+        self._messages.append(self.Message(msg_type, msg))
+
+    @property
+    def messages(self):
+        """Acess messages captured so far.
+
+        :rtype: list of `Message` namedtuples.
+        """
+        return self._messages[:]
 
     @classmethod
     def get_msg_name(cls, msg_type):
-        """Returns a string representation of the given QtMsgType enum value."""
+        """Return a string representation of the given QtMsgType enum value."""
         return {
             QtDebugMsg: 'QtDebugMsg',
             QtWarningMsg: 'QtWarningMsg',
             QtCriticalMsg: 'QtCriticalMsg',
             QtFatalMsg: 'QtFatalMsg',
         }[msg_type]
+
+
+@pytest.fixture
+def qtlog(request):
+    """Fixture that can access messages captured during testing"""
+    return request._pyfuncitem.qt_log_capture

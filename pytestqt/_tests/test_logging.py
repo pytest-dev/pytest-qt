@@ -1,5 +1,9 @@
 import pytest
 
+from pytestqt.qt_compat import qDebug, qWarning, qCritical, QtDebugMsg, \
+    QtWarningMsg, QtCriticalMsg
+
+
 pytest_plugins = 'pytester'
 
 
@@ -8,11 +12,13 @@ pytest_plugins = 'pytester'
                           (False, True)])
 def test_basic_logging(testdir, test_succeds, qt_log):
     """
+    Test Qt logging capture output.
+
     :type testdir: _pytest.pytester.TmpTestdir
     """
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qDebug, qWarning, qCritical, qFatal
+        from pytestqt.qt_compat import qDebug, qWarning, qCritical
 
         def test_types():
             qDebug('this is a DEBUG message')
@@ -40,3 +46,21 @@ def test_basic_logging(testdir, test_succeds, qt_log):
                 'this is a WARNING message*',
                 'this is a CRITICAL message*',
             ])
+
+
+def test_qtlog_fixture(qtlog):
+    """
+    Test qtlog fixture.
+    """
+    qDebug('this is a DEBUG message')
+    qWarning('this is a WARNING message')
+    qCritical('this is a CRITICAL message')
+    # note that in the messages below, we have an extra space at the end
+    # added by Qt
+    assert qtlog.messages == [
+        (QtDebugMsg, 'this is a DEBUG message '),
+        (QtWarningMsg, 'this is a WARNING message '),
+        (QtCriticalMsg, 'this is a CRITICAL message '),
+    ]
+    with pytest.raises(AttributeError):
+        qtlog.messages = []
