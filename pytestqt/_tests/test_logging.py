@@ -62,5 +62,26 @@ def test_qtlog_fixture(qtlog):
         (QtWarningMsg, 'this is a WARNING message '),
         (QtCriticalMsg, 'this is a CRITICAL message '),
     ]
+    # `messages` attribute is read-only
     with pytest.raises(AttributeError):
         qtlog.messages = []
+
+
+def test_fixture_with_loggin_disabled(testdir):
+    """
+    Test that qtlog fixture doesn't capture anything if logging is disabled
+    in the command line.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qWarning
+
+        def test_types(qtlog):
+            qWarning('message')
+            assert qtlog.messages == []
+        """
+    )
+    res = testdir.runpytest('--no-qt-log')
+    res.stdout.fnmatch_lines('*1 passed*')

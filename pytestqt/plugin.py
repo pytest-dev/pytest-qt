@@ -517,4 +517,7 @@ class _QtMessageCapture(object):
 @pytest.fixture
 def qtlog(request):
     """Fixture that can access messages captured during testing"""
-    return request._pyfuncitem.qt_log_capture
+    if hasattr(request._pyfuncitem, 'qt_log_capture'):
+        return request._pyfuncitem.qt_log_capture
+    else:
+        return _QtMessageCapture()
