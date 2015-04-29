@@ -57,10 +57,11 @@ def test_qtlog_fixture(qtlog):
     qCritical('this is a CRITICAL message')
     # note that in the messages below, we have an extra space at the end
     # added by Qt
-    assert qtlog.messages == [
-        (QtDebugMsg, 'this is a DEBUG message '),
-        (QtWarningMsg, 'this is a WARNING message '),
-        (QtCriticalMsg, 'this is a CRITICAL message '),
+    messages = [(int(m.msg_type), m.msg) for m in qtlog.messages]
+    assert messages == [
+        (int(QtDebugMsg), 'this is a DEBUG message '),
+        (int(QtWarningMsg), 'this is a WARNING message '),
+        (int(QtCriticalMsg), 'this is a CRITICAL message '),
     ]
     # `messages` attribute is read-only
     with pytest.raises(AttributeError):
