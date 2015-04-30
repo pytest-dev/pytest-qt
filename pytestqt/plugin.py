@@ -397,6 +397,7 @@ def qtbot(qapp, request):
     that they are properly closed after the test ends.
     """
     result = QtBot(qapp)
+    assert 0
     no_capture = request.node.get_marker('qt_no_exception_capture') or \
                  request.config.getini('qt_no_exception_capture')
     if no_capture:
