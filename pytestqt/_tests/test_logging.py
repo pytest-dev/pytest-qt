@@ -66,7 +66,7 @@ def test_qtlog_fixture(qtlog):
         qtlog.messages = []
 
 
-def test_fixture_with_loggin_disabled(testdir):
+def test_fixture_with_logging_disabled(testdir):
     """
     Test that qtlog fixture doesn't capture anything if logging is disabled
     in the command line.

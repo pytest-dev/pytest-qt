@@ -497,7 +497,7 @@ class _QtMessageCapture(object):
 
     @property
     def messages(self):
-        """Acess messages captured so far.
+        """Access messages captured so far.
 
         :rtype: list of `Message` namedtuples.
         """
