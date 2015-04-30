@@ -380,12 +380,13 @@ def qapp():
     """
     app = QApplication.instance()
     if app is None:
-        app = QApplication([])
+        global _qapp_instance
+        _qapp_instance = QApplication([])
         yield app
-        app.exit()
-        app.deleteLater()
     else:
         yield app  # pragma: no cover
+
+_qapp_instance = None
 
 
 @pytest.yield_fixture
@@ -397,7 +398,6 @@ def qtbot(qapp, request):
     that they are properly closed after the test ends.
     """
     result = QtBot(qapp)
-    assert 0
     no_capture = request.node.get_marker('qt_no_exception_capture') or \
                  request.config.getini('qt_no_exception_capture')
     if no_capture:
