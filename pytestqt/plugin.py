@@ -161,12 +161,7 @@ class QtBot(object):
 
     """
 
-    def __init__(self, app):
-        """
-        :param QApplication app:
-            The current QApplication instance.
-        """
-        self._app = app
+    def __init__(self):
         self._widgets = []  # list of weakref to QWidget instances
 
     def _close(self):
@@ -177,6 +172,7 @@ class QtBot(object):
             w = w()
             if w is not None:
                 w.close()
+                w.deleteLater()
         self._widgets[:] = []
 
     def addWidget(self, widget):
@@ -230,7 +226,7 @@ class QtBot(object):
             if widget is not None:
                 widget_and_visibility.append((widget, widget.isVisible()))
 
-        self._app.exec_()
+        QApplication.instance().exec_()
 
         for widget, visible in widget_and_visibility:
             widget.setVisible(visible)
@@ -397,7 +393,7 @@ def qtbot(qapp, request):
     Make sure to call addWidget for each top-level widget you create to ensure
     that they are properly closed after the test ends.
     """
-    result = QtBot(qapp)
+    result = QtBot()
     no_capture = request.node.get_marker('qt_no_exception_capture') or \
                  request.config.getini('qt_no_exception_capture')
     if no_capture:
@@ -414,6 +410,14 @@ def qtbot(qapp, request):
 def pytest_addoption(parser):
     parser.addini('qt_no_exception_capture',
                   'disable automatic exception capture')
+
+
+@pytest.mark.hookwrapper
+def pytest_runtest_teardown():
+    yield
+    app = QApplication.instance()
+    if app is not None:
+        app.processEvents()
 
 
 def pytest_configure(config):
