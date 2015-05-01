@@ -443,7 +443,7 @@ def qtlog(request):
     if hasattr(request._pyfuncitem, 'qt_log_capture'):
         return request._pyfuncitem.qt_log_capture
     else:
-        return _QtMessageCapture()
+        return _QtMessageCapture()  # pragma: no cover
 
 
 class QtLoggingPlugin(object):
@@ -471,7 +471,7 @@ class QtLoggingPlugin(object):
 
             if not report.passed:
                 long_repr = getattr(report, 'longrepr', None)
-                if hasattr(long_repr, 'addsection'):
+                if hasattr(long_repr, 'addsection'):  # pragma: no cover
                     lines = []
                     for rec in item.qt_log_capture.records:
                         log_format = self.config.getoption('qt_log_format')
@@ -533,25 +533,11 @@ class Record(object):
         self._log_type_name = self._get_log_type_name(msg_type)
         self._when = datetime.datetime.now()
 
-    @property
-    def message(self):
-        return self._message
-
-    @property
-    def type(self):
-        return self._type
-
-    @property
-    def type_name(self):
-        return self._type_name
-
-    @property
-    def log_type_name(self):
-        return self._log_type_name
-
-    @property
-    def when(self):
-        return self._when
+    message = property(lambda self: self._message)
+    type = property(lambda self: self._type)
+    type_name = property(lambda self: self._type_name)
+    log_type_name = property(lambda self: self._log_type_name)
+    when = property(lambda self: self._when)
 
     @classmethod
     def _get_msg_type_name(cls, msg_type):
