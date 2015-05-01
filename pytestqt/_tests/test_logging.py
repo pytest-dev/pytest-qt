@@ -1,3 +1,4 @@
+import datetime
 import pytest
 
 from pytestqt.qt_compat import qDebug, qWarning, qCritical, QtDebugMsg, \
@@ -84,3 +85,26 @@ def test_fixture_with_logging_disabled(testdir):
     )
     res = testdir.runpytest('--no-qt-log')
     res.stdout.fnmatch_lines('*1 passed*')
+
+
+def test_logging_formatting(testdir):
+    """
+    Test custom formatting for logging messages.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qWarning
+        def test_types():
+            qWarning('this is a WARNING message')
+            assert 0
+        """
+    )
+    f = '{rec.type_name} {rec.log_type_name} {rec.when:%Y-%m-%d}: {rec.message}'
+    res = testdir.runpytest('--qt-log-format={}'.format(f))
+    today = '{0:%Y-%m-%d}'.format(datetime.datetime.now())
+    res.stdout.fnmatch_lines([
+        '*-- Captured Qt messages --*',
+        'QtWarningMsg WARNING {0}: this is a WARNING message*'.format(today),
+    ])

@@ -4,6 +4,7 @@ import functools
 import sys
 import traceback
 import weakref
+import datetime
 
 import pytest
 
@@ -418,6 +419,8 @@ def pytest_addoption(parser):
 
     parser.addoption('--no-qt-log', dest='qt_log', action='store_false',
                      default=True)
+    parser.addoption('--qt-log-format', dest='qt_log_format',
+                     default='{rec.type_name}: {rec.message}')
 
 
 def pytest_configure(config):
@@ -470,8 +473,9 @@ class QtLoggingPlugin(object):
                 long_repr = getattr(report, 'longrepr', None)
                 if hasattr(long_repr, 'addsection'):
                     lines = []
-                    for r in item.qt_log_capture.records:
-                        lines.append('{r.type_name}: {r.message}'.format(r=r))
+                    for rec in item.qt_log_capture.records:
+                        log_format = self.config.getoption('qt_log_format')
+                        lines.append(log_format.format(rec=rec))
                     if lines:
                         long_repr.addsection('Captured Qt messages',
                                              '\n'.join(lines))
@@ -519,6 +523,7 @@ class Record(object):
     :attr str log_type_name:
         type name similar to the logging package, for example ``DEBUG``,
         ``WARNING``, etc.
+    :attr datetime.datetime when: when the message was sent
     """
 
     def __init__(self, msg_type, message):
@@ -526,6 +531,7 @@ class Record(object):
         self._message = message
         self._type_name = self._get_msg_type_name(msg_type)
         self._log_type_name = self._get_log_type_name(msg_type)
+        self._when = datetime.datetime.now()
 
     @property
     def message(self):
@@ -542,6 +548,10 @@ class Record(object):
     @property
     def log_type_name(self):
         return self._log_type_name
+
+    @property
+    def when(self):
+        return self._when
 
     @classmethod
     def _get_msg_type_name(cls, msg_type):
