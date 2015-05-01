@@ -461,9 +461,8 @@ class QtLoggingPlugin(object):
                 long_repr = getattr(report, 'longrepr', None)
                 if hasattr(long_repr, 'addsection'):
                     lines = []
-                    for msg_type, msg in item.qt_log_capture.messages:
-                        msg_name = _QtMessageCapture.get_msg_name(msg_type)
-                        lines.append('{0}: {1}'.format(msg_name, msg))
+                    for m in item.qt_log_capture.messages:
+                        lines.append('{m.type_name}: {m.message}'.format(m=m))
                     if lines:
                         long_repr.addsection('Captured Qt messages',
                                              '\n'.join(lines))
@@ -481,19 +480,17 @@ class _QtMessageCapture(object):
     :attr messages: list of Message named-tuples.
     """
 
-    Message = collections.namedtuple('Message', 'msg_type, msg')
-
     def __init__(self):
         self._messages = []
 
-    def _handle(self, msg_type, msg):
+    def _handle(self, msg_type, message):
         """
         Method to be installed using qInstallMsgHandler, stores each message
         into the `messages` attribute.
         """
-        if isinstance(msg, bytes):
-            msg = msg.decode('utf-8', errors='replace')
-        self._messages.append(self.Message(msg_type, msg))
+        if isinstance(message, bytes):
+            message = message.decode('utf-8', errors='replace')
+        self._messages.append(Message(msg_type, message))
 
     @property
     def messages(self):
@@ -503,15 +500,40 @@ class _QtMessageCapture(object):
         """
         return self._messages[:]
 
+
+class Message(object):
+
+    def __init__(self, msg_type, message):
+        self._type = msg_type
+        self._message = message
+        self._type_name = self._get_msg_type_name(msg_type)
+
+    @property
+    def message(self):
+        return self._message
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def type_name(self):
+        return self._type_name
+
     @classmethod
-    def get_msg_name(cls, msg_type):
-        """Return a string representation of the given QtMsgType enum value."""
-        return {
-            QtDebugMsg: 'QtDebugMsg',
-            QtWarningMsg: 'QtWarningMsg',
-            QtCriticalMsg: 'QtCriticalMsg',
-            QtFatalMsg: 'QtFatalMsg',
-        }[msg_type]
+    def _get_msg_type_name(cls, msg_type):
+        """
+        Return a string representation of the given QtMsgType enum
+        value.
+        """
+        if not getattr(cls, '_type_name_map', None):
+            cls._type_name_map = {
+                QtDebugMsg: 'QtDebugMsg',
+                QtWarningMsg: 'QtWarningMsg',
+                QtCriticalMsg: 'QtCriticalMsg',
+                QtFatalMsg: 'QtFatalMsg',
+            }
+        return cls._type_name_map[msg_type]
 
 
 @pytest.fixture

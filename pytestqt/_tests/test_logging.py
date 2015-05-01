@@ -55,7 +55,7 @@ def test_qtlog_fixture(qtlog):
     qDebug('this is a DEBUG message')
     qWarning('this is a WARNING message')
     qCritical('this is a CRITICAL message')
-    messages = [(m.msg_type, m.msg.strip()) for m in qtlog.messages]
+    messages = [(m.type, m.message.strip()) for m in qtlog.messages]
     assert messages == [
         (QtDebugMsg, 'this is a DEBUG message'),
         (QtWarningMsg, 'this is a WARNING message'),
