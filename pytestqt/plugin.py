@@ -434,6 +434,15 @@ def pytest_report_header():
     return ['qt-api: %s' % QT_API]
 
 
+@pytest.fixture
+def qtlog(request):
+    """Fixture that can access messages captured during testing"""
+    if hasattr(request._pyfuncitem, 'qt_log_capture'):
+        return request._pyfuncitem.qt_log_capture
+    else:
+        return _QtMessageCapture()
+
+
 class QtLoggingPlugin(object):
     """
     Pluging responsible for installing a QtMessageHandler before each
@@ -461,12 +470,12 @@ class QtLoggingPlugin(object):
                 long_repr = getattr(report, 'longrepr', None)
                 if hasattr(long_repr, 'addsection'):
                     lines = []
-                    for m in item.qt_log_capture.messages:
-                        lines.append('{m.type_name}: {m.message}'.format(m=m))
+                    for r in item.qt_log_capture.records:
+                        lines.append('{r.type_name}: {r.message}'.format(r=r))
                     if lines:
                         long_repr.addsection('Captured Qt messages',
                                              '\n'.join(lines))
-            # Release the handler resources.
+
             qInstallMsgHandler(item.qt_previous_handler)
             del item.qt_previous_handler
             del item.qt_log_capture
@@ -477,11 +486,11 @@ class _QtMessageCapture(object):
     Captures Qt messages when its `handle` method is installed using
     qInstallMsgHandler, and stores them into `messages` attribute.
 
-    :attr messages: list of Message named-tuples.
+    :attr messages: list of Record named-tuples.
     """
 
     def __init__(self):
-        self._messages = []
+        self._records = []
 
     def _handle(self, msg_type, message):
         """
@@ -490,23 +499,33 @@ class _QtMessageCapture(object):
         """
         if isinstance(message, bytes):
             message = message.decode('utf-8', errors='replace')
-        self._messages.append(Message(msg_type, message))
+        self._records.append(Record(msg_type, message))
 
     @property
-    def messages(self):
+    def records(self):
         """Access messages captured so far.
 
-        :rtype: list of `Message` namedtuples.
+        :rtype: list of `Record` instances.
         """
-        return self._messages[:]
+        return self._records[:]
 
 
-class Message(object):
+class Record(object):
+    """Hold information about a message sent by one of Qt log functions.
+
+    :attr str message: message contents.
+    :attr Qt.QtMsgType type: enum that identifies message type
+    :attr str type_name: `type` as a string
+    :attr str log_type_name:
+        type name similar to the logging package, for example ``DEBUG``,
+        ``WARNING``, etc.
+    """
 
     def __init__(self, msg_type, message):
         self._type = msg_type
         self._message = message
         self._type_name = self._get_msg_type_name(msg_type)
+        self._log_type_name = self._get_log_type_name(msg_type)
 
     @property
     def message(self):
@@ -519,6 +538,10 @@ class Message(object):
     @property
     def type_name(self):
         return self._type_name
+
+    @property
+    def log_type_name(self):
+        return self._log_type_name
 
     @classmethod
     def _get_msg_type_name(cls, msg_type):
@@ -535,11 +558,17 @@ class Message(object):
             }
         return cls._type_name_map[msg_type]
 
-
-@pytest.fixture
-def qtlog(request):
-    """Fixture that can access messages captured during testing"""
-    if hasattr(request._pyfuncitem, 'qt_log_capture'):
-        return request._pyfuncitem.qt_log_capture
-    else:
-        return _QtMessageCapture()
+    @classmethod
+    def _get_log_type_name(cls, msg_type):
+        """
+        Return a string representation of the given QtMsgType enum
+        value in the same style used by the builtin logging package.
+        """
+        if not getattr(cls, '_log_type_name_map', None):
+            cls._log_type_name_map = {
+                QtDebugMsg: 'DEBUG',
+                QtWarningMsg: 'WARNING',
+                QtCriticalMsg: 'CRITICAL',
+                QtFatalMsg: 'FATAL',
+            }
+        return cls._log_type_name_map[msg_type]

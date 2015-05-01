@@ -55,15 +55,15 @@ def test_qtlog_fixture(qtlog):
     qDebug('this is a DEBUG message')
     qWarning('this is a WARNING message')
     qCritical('this is a CRITICAL message')
-    messages = [(m.type, m.message.strip()) for m in qtlog.messages]
-    assert messages == [
+    records = [(m.type, m.message.strip()) for m in qtlog.records]
+    assert records == [
         (QtDebugMsg, 'this is a DEBUG message'),
         (QtWarningMsg, 'this is a WARNING message'),
         (QtCriticalMsg, 'this is a CRITICAL message'),
     ]
-    # `messages` attribute is read-only
+    # `records` attribute is read-only
     with pytest.raises(AttributeError):
-        qtlog.messages = []
+        qtlog.records = []
 
 
 def test_fixture_with_logging_disabled(testdir):
@@ -79,7 +79,7 @@ def test_fixture_with_logging_disabled(testdir):
 
         def test_types(qtlog):
             qWarning('message')
-            assert qtlog.messages == []
+            assert qtlog.records == []
         """
     )
     res = testdir.runpytest('--no-qt-log')
