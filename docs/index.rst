@@ -140,6 +140,8 @@ created earlier::
 Waiting for threads, processes, etc.
 ====================================
 
+.. versionadded:: 1.2
+
 If your program has long running computations running in other threads or
 processes, you can use :meth:`qtbot.waitSignal <pytestqt.plugin.QtBot.waitSignal>`
 to block a test until a signal is emitted (such as ``QThread.finished``) or a
@@ -163,6 +165,8 @@ ensuring the results are correct::
 
 Exceptions in virtual methods
 =============================
+
+.. versionadded:: 1.1
 
 It is common in Qt programming to override virtual C++ methods to customize
 behavior, like listening for mouse events, implement drawing routines, etc.

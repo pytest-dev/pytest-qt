@@ -239,6 +239,8 @@ class QtBot(object):
 
     def waitSignal(self, signal=None, timeout=1000):
         """
+        .. versionadded:: 1.2
+        
         Stops current test until a signal is triggered.
 
         Used to stop the control flow of a test until a signal is emitted, or
@@ -267,7 +269,6 @@ class QtBot(object):
         .. note::
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
-
         """
         blocker = SignalBlocker(timeout=timeout)
         if signal is not None:
