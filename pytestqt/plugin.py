@@ -202,7 +202,7 @@ class QtBot(object):
         if hasattr(QtTest.QTest, 'qWaitForWindowShown'): # pragma: no cover
             # PyQt4 and PySide
             QtTest.QTest.qWaitForWindowShown(widget)
-        else: # pragma: no cover
+        else:  # pragma: no cover
             # PyQt5
             QtTest.QTest.qWaitForWindowExposed(widget)
 
@@ -382,6 +382,8 @@ def qapp():
     else:
         yield app  # pragma: no cover
 
+# holds a global QApplication instance created in the qapp fixture; keeping
+# this reference alive avoids it being garbage collected too early
 _qapp_instance = None
 
 
@@ -414,6 +416,10 @@ def pytest_addoption(parser):
 
 @pytest.mark.hookwrapper
 def pytest_runtest_teardown():
+    """
+    Hook called after each test tear down, to process any pending events and
+    avoiding leaking events to the next test.
+    """
     yield
     app = QApplication.instance()
     if app is not None:

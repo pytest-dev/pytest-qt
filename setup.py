@@ -32,7 +32,7 @@ setup(
     entry_points={
         'pytest11': ['pytest-qt = pytestqt.plugin'],
     },
-    install_requires=['pytest>=2.3.4'],
+    install_requires=['pytest>=2.7.0'],
 
     # metadata for upload to PyPI
     author="Bruno Oliveira",
