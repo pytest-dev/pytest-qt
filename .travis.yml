@@ -1,30 +1,51 @@
 language: python
 
 python:
-  - "2.7"
-  - "3.2"
+  - 2.7
+  - 3.4
   
-virtualenv:
-  system_site_packages: true
-
 matrix:
   allow_failures:
     # unfortunately couldn't find a reliable way to test pyqt5 on travis yet
     - env: PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
 
 env:
- - PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyqt4
- - PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyside
  - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt4
  - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyside
  - PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
 
 install:
- - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
  - sudo apt-get update
- 
- # Qt
- - python install-qt.py
+
+ - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+     wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh -O miniconda.sh;
+   else
+     wget http://repo.continuum.io/miniconda/Miniconda3-3.4.2-Linux-x86_64.sh -O miniconda.sh;
+   fi
+
+ - bash miniconda.sh -b -p $HOME/miniconda
+ - export PATH="$HOME/miniconda/bin:$PATH"
+ - hash -r
+ - conda config --set always_yes yes --set changeps1 no
+ - conda update -q conda
+ - conda config --add channels nicoddemus
+ - conda config --add channels jdreaver
+ # Useful for debugging any issues with conda
+ - conda info -a
+
+ - if [[ "$PYTEST_QT_API" == "pyqt4" ]]; then
+     export QT_PACKAGE=pyqt;
+   fi
+ - if [[ "$PYTEST_QT_API" == "pyqt5" ]]; then
+     export QT_PACKAGE=pyqt5;
+   fi
+ - if [[ "$PYTEST_QT_API" == "pyside" ]]; then
+     export QT_PACKAGE=pyside;
+   fi
+
+ - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION $QT_PACKAGE
+ - source activate test-environment
+ - python setup.py develop
 
  # PyTest
  - pip uninstall -y pytest
@@ -34,12 +55,17 @@ install:
  - pip install coveralls --use-wheel
 
 before_script:
+ # screen must be 24bpp otherwise pyqt5 crashes
+ # see: https://github.com/pytest-dev/pytest-qt/issues/35
+ - export XVFBARGS="-screen 0 1280x1024x24"
  - export DISPLAY=:99.0
  - sh -e /etc/init.d/xvfb start
  - sleep 3
 
 script:
- - python setup.py develop
+ - if [[ "$PYTEST_QT_API" == "pyqt5" ]]; then
+     export QT_QPA_PLATFORM_PLUGIN_PATH=$HOME/miniconda/envs/test-environment/lib/qt5/plugins/platforms;
+   fi
  - coverage run --source=pytestqt setup.py test
 
 after_success:
