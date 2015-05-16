@@ -1,8 +1,12 @@
-'''
-Initial sources from https://github.com/epage/PythonUtils.
+"""
+Provide a common way to import Qt classes used by pytest-qt in a unique manner,
+abstracting API differences between PyQt4, PyQt5 and PySide.
 
-Modified to support other modules besides QtCore.
-'''
+.. note:: This module is not part of pytest-qt public API, hence its interface
+may change between releases and users should not rely on it.
+
+Based on from https://github.com/epage/PythonUtils.
+"""
 
 from __future__ import with_statement
 from __future__ import division
