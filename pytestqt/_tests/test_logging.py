@@ -149,3 +149,28 @@ def test_logging_fails_tests(testdir, level, expect_passes):
         ])
     lines.append('*{0} passed*'.format(expect_passes))
     res.stdout.fnmatch_lines(lines)
+
+
+def test_logging_fails_tests_mark(testdir):
+    """
+    Test mark overrides what's configured in the ini file.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = CRITICAL
+        """
+    )
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qWarning, qCritical, qDebug
+        import pytest
+        @pytest.mark.qt_log_level_fail('WARNING')
+        def test_1():
+            qWarning('message')
+        """
+    )
+    res = testdir.inline_run()
+    res.assertoutcome(failed=1)

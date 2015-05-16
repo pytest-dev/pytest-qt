@@ -435,6 +435,10 @@ def pytest_configure(config):
         "qt_no_exception_capture: Disables pytest-qt's automatic exception "
         'capture for just one test item.')
 
+    config.addinivalue_line(
+        'markers',
+        'qt_log_level_fail: overrides qt_log_level_fail ini option.')
+
     if config.getoption('qt_log'):
         config.pluginmanager.register(QtLoggingPlugin(config), '_qt_logging')
 
@@ -476,7 +480,13 @@ class QtLoggingPlugin(object):
         report = outcome.result
 
         log_format = self.config.getoption('qt_log_format')
-        log_fail_level = self.config.getini('qt_log_level_fail')
+
+        m = item.get_marker('qt_log_level_fail')
+        if m:
+            log_fail_level = m.args[0]
+        else:
+            log_fail_level = self.config.getini('qt_log_level_fail')
+        assert log_fail_level in QtLoggingPlugin.LOG_FAIL_OPTIONS
 
         if call.when == 'call':
 
