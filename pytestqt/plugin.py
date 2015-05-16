@@ -1,10 +1,12 @@
-import collections
 from contextlib import contextmanager
 import functools
 import sys
 import traceback
 import weakref
 import datetime
+
+from py._code.code import TerminalRepr
+from py._code.code import ReprFileLocation
 
 import pytest
 
@@ -58,7 +60,6 @@ def _inject_qtest_methods(cls):
 
 @_inject_qtest_methods
 class QtBot(object):
-
     """
     Instances of this class are responsible for sending events to `Qt` objects (usually widgets),
     simulating user input.
@@ -206,10 +207,10 @@ class QtBot(object):
         .. note:: In Qt5, the actual method called is qWaitForWindowExposed,
             but this name is kept for backward compatibility
         """
-        if hasattr(QtTest.QTest, 'qWaitForWindowShown'): # pragma: no cover
+        if hasattr(QtTest.QTest, 'qWaitForWindowShown'):  # pragma: no cover
             # PyQt4 and PySide
             QtTest.QTest.qWaitForWindowShown(widget)
-        else: # pragma: no cover
+        else:  # pragma: no cover
             # PyQt5
             QtTest.QTest.qWaitForWindowExposed(widget)
 
@@ -281,7 +282,6 @@ class QtBot(object):
 
 
 class SignalBlocker(object):
-
     """
     Returned by :meth:`QtBot.waitSignal` method.
 
@@ -417,6 +417,12 @@ def pytest_addoption(parser):
     parser.addini('qt_no_exception_capture',
                   'disable automatic exception capture')
 
+    default_log_fail = QtLoggingPlugin.LOG_FAIL_OPTIONS[0]
+    parser.addini('qt_log_level_fail',
+                  'log level in which tests can fail: {0} (default: "{1}")'
+                  .format(QtLoggingPlugin.LOG_FAIL_OPTIONS, default_log_fail),
+                  default=default_log_fail)
+
     parser.addoption('--no-qt-log', dest='qt_log', action='store_false',
                      default=True)
     parser.addoption('--qt-log-format', dest='qt_log_format',
@@ -452,6 +458,8 @@ class QtLoggingPlugin(object):
     test and augment reporting if the test failed with the messages captured.
     """
 
+    LOG_FAIL_OPTIONS = ['NO', 'CRITICAL', 'WARNING', 'DEBUG']
+
     def __init__(self, config):
         self.config = config
 
@@ -467,14 +475,25 @@ class QtLoggingPlugin(object):
         outcome = yield
         report = outcome.result
 
+        log_format = self.config.getoption('qt_log_format')
+        log_fail_level = self.config.getini('qt_log_level_fail')
+
         if call.when == 'call':
+
+            if log_fail_level != 'NO' and report.outcome != 'failed':
+                for rec in item.qt_log_capture.records:
+                    if rec.matches_level(log_fail_level):
+                        report.outcome = 'failed'
+                        if report.longrepr is None:
+                            report.longrepr = \
+                                _QtLogLevelErrorRepr(item, log_fail_level)
+                        break
 
             if not report.passed:
                 long_repr = getattr(report, 'longrepr', None)
                 if hasattr(long_repr, 'addsection'):  # pragma: no cover
                     lines = []
                     for rec in item.qt_log_capture.records:
-                        log_format = self.config.getoption('qt_log_format')
                         lines.append(log_format.format(rec=rec))
                     if lines:
                         long_repr.addsection('Captured Qt messages',
@@ -568,3 +587,35 @@ class Record(object):
                 QtFatalMsg: 'FATAL',
             }
         return cls._log_type_name_map[msg_type]
+
+    def matches_level(self, level):
+        if level == 'DEBUG':
+            return self.log_type_name in {'DEBUG', 'WARNING', 'CRITICAL'}
+        elif level == 'WARNING':
+            return self.log_type_name in {'WARNING', 'CRITICAL'}
+        elif level == 'CRITICAL':
+            return self.log_type_name in {'CRITICAL'}
+        else:
+            raise ValueError('log_fail_level unknown: {0}'.format(level))
+
+
+class _QtLogLevelErrorRepr(TerminalRepr):
+    """
+    TerminalRepr of a test which didn't fail by normal means, but emitted
+    messages at or above the allowed level.
+    """
+
+    def __init__(self, item, level):
+        msg = 'Failure: Qt messages with level {0} or above emitted'
+        path, line, _ = item.location
+        self.fileloc = ReprFileLocation(path, line, msg.format(level.upper()))
+        self.sections = []
+
+    def addsection(self, name, content, sep="-"):
+        self.sections.append((name, content, sep))
+
+    def toterminal(self, out):
+        self.fileloc.toterminal(out)
+        for name, content, sep in self.sections:
+            out.sep(sep, name)
+            out.line(content)

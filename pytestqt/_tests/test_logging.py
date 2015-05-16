@@ -1,9 +1,9 @@
 import datetime
+
 import pytest
 
 from pytestqt.qt_compat import qDebug, qWarning, qCritical, QtDebugMsg, \
     QtWarningMsg, QtCriticalMsg
-
 
 pytest_plugins = 'pytester'
 
@@ -108,3 +108,44 @@ def test_logging_formatting(testdir):
         '*-- Captured Qt messages --*',
         'QtWarningMsg WARNING {0}: this is a WARNING message*'.format(today),
     ])
+
+
+@pytest.mark.parametrize('level, expect_passes',
+                         [('DEBUG', 1), ('WARNING', 2), ('CRITICAL', 3),
+                          ('NO', 4)],
+                         )
+def test_logging_fails_tests(testdir, level, expect_passes):
+    """
+    Test qt_log_level_fail ini option.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = {level}
+        """.format(level=level)
+    )
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qWarning, qCritical, qDebug
+        def test_1():
+            qDebug('this is a DEBUG message')
+        def test_2():
+            qWarning('this is a WARNING message')
+        def test_3():
+            qCritical('this is a CRITICAL message')
+        def test_4():
+            assert 1
+        """
+    )
+    res = testdir.runpytest()
+    lines = []
+    if level != 'NO':
+        lines.extend([
+            '*Failure: Qt messages with level {0} or above emitted*'.format(
+                level.upper()),
+            '*-- Captured Qt messages --*',
+        ])
+    lines.append('*{0} passed*'.format(expect_passes))
+    res.stdout.fnmatch_lines(lines)
