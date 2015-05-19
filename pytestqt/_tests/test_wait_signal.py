@@ -18,38 +18,53 @@ def test_signal_blocker_exception(qtbot):
         qtbot.waitSignal(None, None).wait()
 
 
-def explicit_wait(qtbot, signal, timeout):
+def explicit_wait(qtbot, signal, timeout, raising, raises):
     """
     Explicit wait for the signal using blocker API.
     """
-    blocker = qtbot.waitSignal(signal, timeout)
+    blocker = qtbot.waitSignal(signal, timeout, raising=raising)
     assert not blocker.signal_triggered
-    blocker.wait()
+    if raises:
+        with pytest.raises(qtbot.SignalTimeout):
+            blocker.wait()
+    else:
+        blocker.wait()
     return blocker
 
 
-def context_manager_wait(qtbot, signal, timeout):
+def context_manager_wait(qtbot, signal, timeout, raising, raises):
     """
     Waiting for signal using context manager API.
     """
-    with qtbot.waitSignal(signal, timeout) as blocker:
-        pass
+    if raises:
+        with pytest.raises(qtbot.SignalTimeout):
+            with qtbot.waitSignal(signal, timeout, raising=raising) as blocker:
+                pass
+    else:
+        with qtbot.waitSignal(signal, timeout, raising=raising) as blocker:
+            pass
     return blocker
 
 
 @pytest.mark.parametrize(
-    ('wait_function', 'emit_delay', 'timeout', 'expected_signal_triggered'),
+    ('wait_function', 'emit_delay', 'timeout', 'expected_signal_triggered',
+     'raising'),
     [
-        (explicit_wait, 500, 2000, True),
-        (explicit_wait, 500, None, True),
-        (context_manager_wait, 500, 2000, True),
-        (context_manager_wait, 500, None, True),
-        (explicit_wait, 2000, 500, False),
-        (context_manager_wait, 2000, 500, False),
+        (explicit_wait, 500, 2000, True, False),
+        (explicit_wait, 500, None, True, False),
+        (context_manager_wait, 500, 2000, True, False),
+        (context_manager_wait, 500, None, True, False),
+        (explicit_wait, 2000, 500, False, False),
+        (context_manager_wait, 2000, 500, False, False),
+
+        (explicit_wait, 2000, 500, False, True),
+        (context_manager_wait, 2000, 500, False, True),
+        (explicit_wait, 2000, 500, False, True),
+        (context_manager_wait, 2000, 500, False, True),
     ] * 2  # Running all tests twice to catch a QTimer segfault, see #42/#43.
 )
 def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
-                          expected_signal_triggered):
+                          expected_signal_triggered, raising):
     """
     Testing for a signal in different conditions, ensuring we are obtaining
     the expected results.
@@ -62,7 +77,9 @@ def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
 
     # block signal until either signal is emitted or timeout is reached
     start_time = time.time()
-    blocker = wait_function(qtbot, signaller.signal, timeout)
+    raises = raising and not expected_signal_triggered
+    blocker = wait_function(qtbot, signaller.signal, timeout, raising=raising,
+                            raises=raises)
 
     # Check that event loop exited.
     assert not blocker._loop.isRunning()

@@ -161,6 +161,15 @@ class QtBot(object):
 
     """
 
+    class SignalTimeout(Exception):
+        """
+        .. versionadded:: 1.4
+
+        The exception thrown by :meth:`QtBot.waitSignal` if the *raising*
+        parameter has been given and there was a timeout.
+        """
+        pass
+
     def __init__(self):
         self._widgets = []  # list of weakref to QWidget instances
 
@@ -233,10 +242,10 @@ class QtBot(object):
 
     stop = stopForInteraction
 
-    def waitSignal(self, signal=None, timeout=1000):
+    def waitSignal(self, signal=None, timeout=1000, raising=False):
         """
         .. versionadded:: 1.2
-        
+
         Stops current test until a signal is triggered.
 
         Used to stop the control flow of a test until a signal is emitted, or
@@ -255,10 +264,16 @@ class QtBot(object):
            long_function_that_calls_signal()
            blocker.wait()
 
+        .. versionadded:: 1.4
+           The *raising* parameter.
+
         :param Signal signal:
             A signal to wait for. Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
+        :param bool raising:
+            If :class:`QtBot.TimeoutError` should be raised if a timeout
+            occured.
         :returns:
             ``SignalBlocker`` object. Call ``SignalBlocker.wait()`` to wait.
 
@@ -266,7 +281,7 @@ class QtBot(object):
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
         """
-        blocker = SignalBlocker(timeout=timeout)
+        blocker = SignalBlocker(timeout=timeout, raising=raising)
         if signal is not None:
             blocker.connect(signal)
         return blocker
@@ -288,13 +303,17 @@ class SignalBlocker(object):
     :ivar bool signal_triggered: set to ``True`` if a signal was triggered, or
         ``False`` if timeout was reached instead. Until :meth:`wait` is called,
         this is set to ``None``.
+
+    :ivar bool raising:
+        If :class:`QtBot.TimeoutError` should be raised if a timeout occured.
     """
 
-    def __init__(self, timeout=1000):
+    def __init__(self, timeout=1000, raising=False):
         self._loop = QtCore.QEventLoop()
         self._signals = []
         self.timeout = timeout
         self.signal_triggered = False
+        self.raising = raising
 
     def wait(self):
         """
@@ -308,7 +327,7 @@ class SignalBlocker(object):
         if self.timeout is None and len(self._signals) == 0:
             raise ValueError("No signals or timeout specified.")
         if self.timeout is not None:
-            QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
+            QtCore.QTimer.singleShot(self.timeout, self._quit_loop_by_timeout)
         self._loop.exec_()
 
     def connect(self, signal):
@@ -327,6 +346,17 @@ class SignalBlocker(object):
         """
         self.signal_triggered = True
         self._loop.quit()
+
+    def _quit_loop_by_timeout(self):
+        """
+        quits the event loop and marks that we finished because of a timeout.
+        """
+        assert not self.signal_triggered
+        self._loop.quit()
+        if self.raising:
+            raise QtBot.SignalTimeout("Didn't get signal after %sms." %
+                                      self.timeout)
+
 
     def __enter__(self):
         return self
