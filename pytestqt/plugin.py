@@ -72,6 +72,7 @@ class QtBot(object):
     **Signals**
 
     .. automethod:: waitSignal
+    .. automethod:: waitSignals
 
     **Raw QTest API**
 
@@ -236,7 +237,7 @@ class QtBot(object):
     def waitSignal(self, signal=None, timeout=1000):
         """
         .. versionadded:: 1.2
-        
+
         Stops current test until a signal is triggered.
 
         Used to stop the control flow of a test until a signal is emitted, or
@@ -272,6 +273,50 @@ class QtBot(object):
         return blocker
 
     wait_signal = waitSignal  # pep-8 alias
+
+    def waitSignals(self, signals=None, timeout=1000):
+        """
+        .. versionadded:: 1.4
+
+        Stops current test until all given signals are triggered.
+
+        Used to stop the control flow of a test until all given signals are
+        emitted, or a number of milliseconds, specified by ``timeout``, has
+        elapsed.
+
+        Best used as a context manager::
+
+           with qtbot.waitSignals(signal, timeout=1000):
+               long_function_that_calls_signal()
+
+        Also, you can use the :class:`MultiSignalBlocker` directly if the
+        context manager form is not convenient::
+
+           blocker = qtbot.waitSignals(signal, timeout=1000)
+           blocker.connect(other_signal)
+           long_function_that_calls_signal()
+           blocker.wait()
+
+        :param list signals:
+            A list of :class:`Signal`s to wait for. Set to ``None`` to just use
+            timeout.
+        :param int timeout:
+            How many milliseconds to wait before resuming control flow.
+        :returns:
+            ``MultiSignalBlocker`` object. Call ``MultiSignalBlocker.wait()``
+            to wait.
+
+        .. note::
+           Cannot have both ``signals`` and ``timeout`` equal ``None``, or
+           else you will block indefinitely. We throw an error if this occurs.
+        """
+        blocker = MultiSignalBlocker(timeout=timeout)
+        if signals is not None:
+            for signal in signals:
+                blocker.add_signal(signal)
+        return blocker
+
+    wait_signals = waitSignals  # pep-8 alias
 
 
 class SignalBlocker(object):
@@ -327,6 +372,72 @@ class SignalBlocker(object):
         """
         self.signal_triggered = True
         self._loop.quit()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.wait()
+
+
+class MultiSignalBlocker(object):
+
+    """
+    Returned by :meth:`QtBot.waitSignals` method.
+
+    .. automethod:: wait
+    .. automethod:: add_signal
+
+    :ivar int timeout: maximum time to wait for a signal to be triggered. Can
+        be changed before :meth:`wait` is called.
+
+    :ivar bool signals_triggered: set to ``True`` if all signals were
+        triggered, or ``False`` if timeout was reached instead. Until
+        :meth:`wait` is called, this is set to ``None``.
+    """
+
+    def __init__(self, timeout=1000):
+        self._loop = QtCore.QEventLoop()
+        self._signals = {}
+        self.timeout = timeout
+        self.signals_triggered = False
+
+    def wait(self):
+        """
+        Waits until either a connected signal is triggered or timeout is reached.
+
+        :raise ValueError: if no signals are connected and timeout is None; in
+            this case it would wait forever.
+        """
+        if self.signals_triggered:
+            return
+        if self.timeout is None and not self._signals:
+            raise ValueError("No signals or timeout specified.")
+        if self.timeout is not None:
+            QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
+        self._loop.exec_()
+
+    def add_signal(self, signal):
+        """
+        Adds the given signal to the list of signals which :meth:`wait()` waits
+        for.
+
+        :param signal: QtCore.Signal
+        """
+        self._signals[signal] = False
+        signal.connect(functools.partial(self._signal_emitted, signal))
+
+    def _signal_emitted(self, signal):
+        """
+        Called when a given signal is emitted.
+
+        If all expected signals have been emitted, quits the event loop and
+        marks that we finished because signals.
+        """
+        self._signals[signal] = True
+        if all(self._signals.values()):
+            self.signals_triggered = True
+            self._loop.quit()
 
     def __enter__(self):
         return self
