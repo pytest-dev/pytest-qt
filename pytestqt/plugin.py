@@ -327,8 +327,11 @@ class SignalBlocker(object):
         if self.timeout is None and len(self._signals) == 0:
             raise ValueError("No signals or timeout specified.")
         if self.timeout is not None:
-            QtCore.QTimer.singleShot(self.timeout, self._quit_loop_by_timeout)
+            QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
         self._loop.exec_()
+        if not self.signal_triggered and self.raising:
+            raise QtBot.SignalTimeout("Didn't get signal after %sms." %
+                                      self.timeout)
 
     def connect(self, signal):
         """
@@ -346,17 +349,6 @@ class SignalBlocker(object):
         """
         self.signal_triggered = True
         self._loop.quit()
-
-    def _quit_loop_by_timeout(self):
-        """
-        quits the event loop and marks that we finished because of a timeout.
-        """
-        assert not self.signal_triggered
-        self._loop.quit()
-        if self.raising:
-            raise QtBot.SignalTimeout("Didn't get signal after %sms." %
-                                      self.timeout)
-
 
     def __enter__(self):
         return self
