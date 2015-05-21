@@ -24,4 +24,4 @@ else:
         pkg = 'python3-pyside'
     else:
         pkg = 'python-pyside'
-    install([pkg, pkg + '-dbg'])
+    install([pkg])
