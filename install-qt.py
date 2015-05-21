@@ -22,5 +22,5 @@ else:
     if py3k:
         run('sudo apt-get install -qq python3-pyside{,-dbg}')
     else:
-        run('sudo apt-get install -qq python-pyside')
+        run('sudo apt-get install -qq python-pyside{,-dbg}')
 
