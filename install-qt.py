@@ -4,23 +4,24 @@ and python version. Meant to be used in travis-ci.
 '''
 import os
 import sys
+import subprocess
 
-def run(cmd):
-    print(cmd)
-    r = os.system(cmd)
-    if r != 0:
-        sys.exit('command %s failed with status %s' % (cmd, r))
+
+def install(packages):
+    print('Installing %s...' % ', '.join(packages))
+    subprocess.check_call(['sudo', 'apt-get', 'install', '-qq'] + packages)
 
 py3k = sys.version_info[0] == 3
 if os.environ['PYTEST_QT_API'] in ('pyqt4', 'pyqt5'):
     pyqt_ver = os.environ['PYTEST_QT_API'][-1]
     if py3k:
-        run('sudo apt-get install -qq python3-pyqt%s{,-dbg}' % pyqt_ver)
+        pkg = 'python3-pyqt%s' % pyqt_ver
     else:
-        run('sudo apt-get install -qq python-qt%s{,-dbg}' % pyqt_ver)
+        pkg = 'python-qt%s' % pyqt_ver
+    install([pkg, pkg + '-dbg'])
 else:
     if py3k:
-        run('sudo apt-get install -qq python3-pyside{,-dbg}')
+        pkg = 'python3-pyside'
     else:
-        run('sudo apt-get install -qq python-pyside{,-dbg}')
-
+        pkg = 'python-pyside'
+    install([pkg, pkg + '-dbg'])
