@@ -46,7 +46,7 @@ def context_manager_wait(qtbot, signal, timeout):
         (context_manager_wait, 500, None, True),
         (explicit_wait, 2000, 500, False),
         (context_manager_wait, 2000, 500, False),
-    ]
+    ] * 2  # Running all tests twice to catch a QTimer segfault, see #42/#43.
 )
 def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
                           expected_signal_triggered):
@@ -55,7 +55,10 @@ def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
     the expected results.
     """
     signaller = Signaller()
-    QtCore.QTimer.singleShot(emit_delay, signaller.signal.emit)
+    timer = QtCore.QTimer()
+    timer.setSingleShot(True)
+    timer.timeout.connect(signaller.signal.emit)
+    timer.start(emit_delay)
 
     # block signal until either signal is emitted or timeout is reached
     start_time = time.time()
