@@ -46,7 +46,7 @@ def context_manager_wait(qtbot, signal, timeout):
         (context_manager_wait, 500, None, True),
         (explicit_wait, 2000, 500, False),
         (context_manager_wait, 2000, 500, False),
-    ]
+    ] * 2  # Running all tests twice to catch a QTimer segfault, see #42/#43.
 )
 def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
                           expected_signal_triggered):
