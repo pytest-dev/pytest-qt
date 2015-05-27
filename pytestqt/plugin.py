@@ -319,25 +319,29 @@ class QtBot(object):
     wait_signals = waitSignals  # pep-8 alias
 
 
-class SignalBlocker(object):
+class AbstractSignalBlocker(object):
 
     """
-    Returned by :meth:`QtBot.waitSignal` method.
+    Base class for :class:`SignalBlocker` and :class:`MultiSignalBlocker`.
 
-    .. automethod:: wait
-    .. automethod:: connect
+    Provides :meth:`wait` and a context manager protocol, but no means to add
+    new signals and to detect when the signals should be considered "done".
+    This needs to be implemented by subclasses.
+
+    Subclasses also need to provide ``self._signals`` which should evaluate to
+    ``False`` if no signals were configured.
 
     :ivar int timeout: maximum time to wait for a signal to be triggered. Can
         be changed before :meth:`wait` is called.
 
-    :ivar bool signal_triggered: set to ``True`` if a signal was triggered, or
-        ``False`` if timeout was reached instead. Until :meth:`wait` is called,
-        this is set to ``None``.
+    :ivar bool signal_triggered: set to ``True`` if a signal (or all signals in
+        case of :class:MultipleSignalBlocker:) was triggered, or ``False`` if
+        timeout was reached instead. Until :meth:`wait` is called, this is set
+        to ``None``.
     """
 
     def __init__(self, timeout=1000):
         self._loop = QtCore.QEventLoop()
-        self._signals = []
         self.timeout = timeout
         self.signal_triggered = False
 
@@ -350,11 +354,32 @@ class SignalBlocker(object):
         """
         if self.signal_triggered:
             return
-        if self.timeout is None and len(self._signals) == 0:
+        if self.timeout is None and not self._signals:
             raise ValueError("No signals or timeout specified.")
         if self.timeout is not None:
             QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
         self._loop.exec_()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.wait()
+
+
+class SignalBlocker(AbstractSignalBlocker):
+
+    """
+    Returned by :meth:`QtBot.waitSignal` method.
+
+    .. automethod:: wait
+    .. automethod:: connect
+
+    """
+
+    def __init__(self, timeout=1000):
+        super(SignalBlocker, self).__init__(timeout)
+        self._signals = []
 
     def connect(self, signal):
         """
@@ -373,49 +398,19 @@ class SignalBlocker(object):
         self.signal_triggered = True
         self._loop.quit()
 
-    def __enter__(self):
-        return self
 
-    def __exit__(self, type, value, traceback):
-        self.wait()
-
-
-class MultiSignalBlocker(object):
+class MultiSignalBlocker(AbstractSignalBlocker):
 
     """
     Returned by :meth:`QtBot.waitSignals` method.
 
     .. automethod:: wait
     .. automethod:: add_signal
-
-    :ivar int timeout: maximum time to wait for a signal to be triggered. Can
-        be changed before :meth:`wait` is called.
-
-    :ivar bool signals_triggered: set to ``True`` if all signals were
-        triggered, or ``False`` if timeout was reached instead. Until
-        :meth:`wait` is called, this is set to ``None``.
     """
 
     def __init__(self, timeout=1000):
-        self._loop = QtCore.QEventLoop()
+        super(MultiSignalBlocker, self).__init__(timeout)
         self._signals = {}
-        self.timeout = timeout
-        self.signals_triggered = False
-
-    def wait(self):
-        """
-        Waits until either a connected signal is triggered or timeout is reached.
-
-        :raise ValueError: if no signals are connected and timeout is None; in
-            this case it would wait forever.
-        """
-        if self.signals_triggered:
-            return
-        if self.timeout is None and not self._signals:
-            raise ValueError("No signals or timeout specified.")
-        if self.timeout is not None:
-            QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
-        self._loop.exec_()
 
     def add_signal(self, signal):
         """
@@ -436,14 +431,8 @@ class MultiSignalBlocker(object):
         """
         self._signals[signal] = True
         if all(self._signals.values()):
-            self.signals_triggered = True
+            self.signal_triggered = True
             self._loop.quit()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self.wait()
 
 
 @contextmanager

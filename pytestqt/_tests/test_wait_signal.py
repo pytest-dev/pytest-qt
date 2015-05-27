@@ -25,10 +25,7 @@ def explicit_wait(qtbot, signal, timeout, multiple):
     """
     func = qtbot.waitSignals if multiple else qtbot.waitSignal
     blocker = func(signal, timeout)
-    if multiple:
-        assert not blocker.signals_triggered
-    else:
-        assert not blocker.signal_triggered
+    assert not blocker.signal_triggered
     blocker.wait()
     return blocker
 
@@ -87,7 +84,7 @@ def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
 
 @pytest.mark.parametrize(
     ('wait_function', 'emit_delay_1', 'emit_delay_2', 'timeout',
-     'expected_signals_triggered'),
+     'expected_signal_triggered'),
     [
         (explicit_wait, 500, 600, 2000, True),
         (explicit_wait, 500, 600, None, True),
@@ -103,7 +100,7 @@ def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
 )
 def test_signal_triggered_multiple(qtbot, wait_function, emit_delay_1,
                                    emit_delay_2, timeout,
-                                   expected_signals_triggered):
+                                   expected_signal_triggered):
     """
     Testing for a signal in different conditions, ensuring we are obtaining
     the expected results.
@@ -129,7 +126,7 @@ def test_signal_triggered_multiple(qtbot, wait_function, emit_delay_1,
     assert not blocker._loop.isRunning()
 
     # ensure that either signal was triggered or timeout occurred
-    assert blocker.signals_triggered == expected_signals_triggered
+    assert blocker.signal_triggered == expected_signal_triggered
 
     # Check that we exited by the earliest parameter; timeout = None means
     # wait forever, so ensure we waited at most 4 times emit-delay
@@ -160,4 +157,4 @@ def test_explicit_emit_multiple(qtbot):
         signaller.signal.emit()
         signaller.signal_2.emit()
 
-    assert waiting.signals_triggered
+    assert waiting.signal_triggered
