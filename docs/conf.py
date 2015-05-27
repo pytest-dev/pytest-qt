@@ -94,10 +94,10 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if on_rtd:
-    html_theme = 'default'
+    html_theme = 'classic'
 else:
     #html_theme = 'agogo'
-    html_theme = 'sphinxdoc'
+    html_theme = 'alabaster'
     #html_theme = 'scrolls'
     #html_theme = 'nature'
     #html_theme = 'haiku'
