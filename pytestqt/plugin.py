@@ -161,15 +161,6 @@ class QtBot(object):
 
     """
 
-    class SignalTimeout(Exception):
-        """
-        .. versionadded:: 1.4
-
-        The exception thrown by :meth:`QtBot.waitSignal` if the *raising*
-        parameter has been given and there was a timeout.
-        """
-        pass
-
     def __init__(self):
         self._widgets = []  # list of weakref to QWidget instances
 
@@ -272,8 +263,8 @@ class QtBot(object):
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
-            If :class:`QtBot.TimeoutError` should be raised if a timeout
-            occured.
+            If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
+            should be raised if a timeout occurred.
         :returns:
             ``SignalBlocker`` object. Call ``SignalBlocker.wait()`` to wait.
 
@@ -305,7 +296,7 @@ class SignalBlocker(object):
         this is set to ``None``.
 
     :ivar bool raising:
-        If :class:`QtBot.TimeoutError` should be raised if a timeout occured.
+        If :class:`SignalTimeoutError` should be raised if a timeout occurred.
     """
 
     def __init__(self, timeout=1000, raising=False):
@@ -330,13 +321,16 @@ class SignalBlocker(object):
             QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
         self._loop.exec_()
         if not self.signal_triggered and self.raising:
-            raise QtBot.SignalTimeout("Didn't get signal after %sms." %
+            raise SignalTimeoutError("Didn't get signal after %sms." %
                                       self.timeout)
 
     def connect(self, signal):
         """
-        Connects to the given signal, making :meth:`wait()` return once this signal
-        is emitted.
+        Connects to the given signal, making :meth:`wait()` return once
+        this signal is emitted.
+
+        More than one signal can be connected, in which case **any** one of
+        them will make ``wait()`` return.
 
         :param signal: QtCore.Signal
         """
@@ -355,6 +349,19 @@ class SignalBlocker(object):
 
     def __exit__(self, type, value, traceback):
         self.wait()
+
+
+class SignalTimeoutError(Exception):
+    """
+    .. versionadded:: 1.4
+
+    The exception thrown by :meth:`QtBot.waitSignal` if the *raising*
+    parameter has been given and there was a timeout.
+    """
+    pass
+
+# provide easy access to SignalTimeoutError to qtbot fixtures
+QtBot.SignalTimeoutError = SignalTimeoutError
 
 
 @contextmanager
