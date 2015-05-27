@@ -163,6 +163,11 @@ ensuring the results are correct::
         assert_application_results(app)
 
 
+.. versionadded:: 1.4
+
+Additionally, you can pass ``raising=True`` to raise a
+:class:`SignalTimeoutError` if the timeout is reached.
+
 Exceptions in virtual methods
 =============================
 
@@ -237,6 +242,8 @@ SignalBlocker
 -------------
 
 .. autoclass:: SignalBlocker
+
+.. autoclass:: SignalTimeoutError
 
 Versioning
 ==========

@@ -25,7 +25,7 @@ def explicit_wait(qtbot, signal, timeout, raising, raises):
     blocker = qtbot.waitSignal(signal, timeout, raising=raising)
     assert not blocker.signal_triggered
     if raises:
-        with pytest.raises(qtbot.SignalTimeout):
+        with pytest.raises(qtbot.SignalTimeoutError):
             blocker.wait()
     else:
         blocker.wait()
@@ -37,7 +37,7 @@ def context_manager_wait(qtbot, signal, timeout, raising, raises):
     Waiting for signal using context manager API.
     """
     if raises:
-        with pytest.raises(qtbot.SignalTimeout):
+        with pytest.raises(qtbot.SignalTimeoutError):
             with qtbot.waitSignal(signal, timeout, raising=raising) as blocker:
                 pass
     else:
@@ -75,9 +75,9 @@ def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
     timer.timeout.connect(signaller.signal.emit)
     timer.start(emit_delay)
 
-    # block signal until either signal is emitted or timeout is reached
     start_time = time.time()
     raises = raising and not expected_signal_triggered
+
     blocker = wait_function(qtbot, signaller.signal, timeout, raising=raising,
                             raises=raises)
 
