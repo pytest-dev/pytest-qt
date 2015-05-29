@@ -98,8 +98,10 @@ else:  # pragma: no cover
         def __getattr__(cls, name):
             if name in ('__file__', '__path__'):
                 return '/dev/null'
-            elif name == '__name__':
+            elif name in ('__name__', '__qualname__'):
                 return name
+            elif name == '__annotations__':
+                return {}
             else:
                 return Mock()
     
