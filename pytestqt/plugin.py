@@ -234,7 +234,7 @@ class QtBot(object):
 
     stop = stopForInteraction
 
-    def waitSignal(self, signal=None, timeout=1000):
+    def waitSignal(self, signal=None, timeout=1000, raising=False):
         """
         .. versionadded:: 1.2
 
@@ -256,10 +256,16 @@ class QtBot(object):
            long_function_that_calls_signal()
            blocker.wait()
 
+        .. versionadded:: 1.4
+           The *raising* parameter.
+
         :param Signal signal:
             A signal to wait for. Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
+        :param bool raising:
+            If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
+            should be raised if a timeout occurred.
         :returns:
             ``SignalBlocker`` object. Call ``SignalBlocker.wait()`` to wait.
 
@@ -267,14 +273,14 @@ class QtBot(object):
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
         """
-        blocker = SignalBlocker(timeout=timeout)
+        blocker = SignalBlocker(timeout=timeout, raising=raising)
         if signal is not None:
             blocker.connect(signal)
         return blocker
 
     wait_signal = waitSignal  # pep-8 alias
 
-    def waitSignals(self, signals=None, timeout=1000):
+    def waitSignals(self, signals=None, timeout=1000, raising=False):
         """
         .. versionadded:: 1.4
 
@@ -302,6 +308,9 @@ class QtBot(object):
             timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
+        :param bool raising:
+            If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
+            should be raised if a timeout occurred.
         :returns:
             ``MultiSignalBlocker`` object. Call ``MultiSignalBlocker.wait()``
             to wait.
@@ -310,7 +319,7 @@ class QtBot(object):
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
         """
-        blocker = MultiSignalBlocker(timeout=timeout)
+        blocker = MultiSignalBlocker(timeout=timeout, raising=raising)
         if signals is not None:
             for signal in signals:
                 blocker.add_signal(signal)
@@ -335,15 +344,19 @@ class AbstractSignalBlocker(object):
         be changed before :meth:`wait` is called.
 
     :ivar bool signal_triggered: set to ``True`` if a signal (or all signals in
-        case of :class:MultipleSignalBlocker:) was triggered, or ``False`` if
-        timeout was reached instead. Until :meth:`wait` is called, this is set
-        to ``None``.
+        case of :class:MultipleSignalBlocker:) was triggered, or
+        ``False`` if timeout was reached instead. Until :meth:`wait` is called,
+        this is set to ``None``.
+
+    :ivar bool raising:
+        If :class:`SignalTimeoutError` should be raised if a timeout occurred.
     """
 
-    def __init__(self, timeout=1000):
+    def __init__(self, timeout=1000, raising=False):
         self._loop = QtCore.QEventLoop()
         self.timeout = timeout
         self.signal_triggered = False
+        self.raising = raising
 
     def wait(self):
         """
@@ -359,6 +372,9 @@ class AbstractSignalBlocker(object):
         if self.timeout is not None:
             QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
         self._loop.exec_()
+        if not self.signal_triggered and self.raising:
+            raise SignalTimeoutError("Didn't get signal after %sms." %
+                                      self.timeout)
 
     def __enter__(self):
         return self
@@ -377,14 +393,17 @@ class SignalBlocker(AbstractSignalBlocker):
 
     """
 
-    def __init__(self, timeout=1000):
-        super(SignalBlocker, self).__init__(timeout)
+    def __init__(self, timeout=1000, raising=False):
+        super(SignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = []
 
     def connect(self, signal):
         """
-        Connects to the given signal, making :meth:`wait()` return once this signal
-        is emitted.
+        Connects to the given signal, making :meth:`wait()` return once
+        this signal is emitted.
+
+        More than one signal can be connected, in which case **any** one of
+        them will make ``wait()`` return.
 
         :param signal: QtCore.Signal
         """
@@ -408,8 +427,8 @@ class MultiSignalBlocker(AbstractSignalBlocker):
     .. automethod:: add_signal
     """
 
-    def __init__(self, timeout=1000):
-        super(MultiSignalBlocker, self).__init__(timeout)
+    def __init__(self, timeout=1000, raising=False):
+        super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = {}
 
     def add_signal(self, signal):
@@ -433,6 +452,19 @@ class MultiSignalBlocker(AbstractSignalBlocker):
         if all(self._signals.values()):
             self.signal_triggered = True
             self._loop.quit()
+
+
+class SignalTimeoutError(Exception):
+    """
+    .. versionadded:: 1.4
+
+    The exception thrown by :meth:`QtBot.waitSignal` if the *raising*
+    parameter has been given and there was a timeout.
+    """
+    pass
+
+# provide easy access to SignalTimeoutError to qtbot fixtures
+QtBot.SignalTimeoutError = SignalTimeoutError
 
 
 @contextmanager
