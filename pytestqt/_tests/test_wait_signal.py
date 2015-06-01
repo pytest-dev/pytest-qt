@@ -1,11 +1,11 @@
-import pytest
 import time
+
+import pytest
 
 from pytestqt.qt_compat import QtCore, Signal
 
 
 class Signaller(QtCore.QObject):
-
     signal = Signal()
     signal_2 = Signal()
 
@@ -24,7 +24,7 @@ def explicit_wait(qtbot, signal, timeout, multiple, raising, raises):
     Explicit wait for the signal using blocker API.
     """
     func = qtbot.waitSignals if multiple else qtbot.waitSignal
-    blocker = func(signal, timeout, raising=raising)    
+    blocker = func(signal, timeout, raising=raising)
     assert not blocker.signal_triggered
     if raises:
         with pytest.raises(qtbot.SignalTimeoutError):
@@ -38,7 +38,7 @@ def context_manager_wait(qtbot, signal, timeout, multiple, raising, raises):
     """
     Waiting for signal using context manager API.
     """
-    func = qtbot.waitSignals if multiple else qtbot.waitSignal    
+    func = qtbot.waitSignals if multiple else qtbot.waitSignal
     if raises:
         with pytest.raises(qtbot.SignalTimeoutError):
             with func(signal, timeout, raising=raising) as blocker:
@@ -66,24 +66,20 @@ def context_manager_wait(qtbot, signal, timeout, multiple, raising, raises):
         (context_manager_wait, 2000, 500, False, True),
     ]
 )
-def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
+def test_signal_triggered(qtbot, single_shot, wait_function, emit_delay, timeout,
                           expected_signal_triggered, raising):
     """
     Testing for a signal in different conditions, ensuring we are obtaining
     the expected results.
     """
     signaller = Signaller()
-
-    timer = QtCore.QTimer()
-    timer.setSingleShot(True)
-    timer.timeout.connect(signaller.signal.emit)
-    timer.start(emit_delay)
+    single_shot(signaller.signal, emit_delay)
 
     start_time = time.time()
     raises = raising and not expected_signal_triggered
 
     blocker = wait_function(qtbot, signaller.signal, timeout, raising=raising,
-                            raises=raises, multiple=False)    
+                            raises=raises, multiple=False)
 
     # Check that event loop exited.
     assert not blocker._loop.isRunning()
@@ -113,9 +109,12 @@ def test_signal_triggered(qtbot, wait_function, emit_delay, timeout,
         (context_manager_wait, 2000, 2000, 500, False, False),
         (context_manager_wait, 500, 2000, 1000, False, False),
         (context_manager_wait, 2000, 500, 1000, False, False),
+        (context_manager_wait, 2000, 500, 1000, False, True),
+        (context_manager_wait, 500, 2000, 1000, False, True),
     ]
 )
-def test_signal_triggered_multiple(qtbot, wait_function, emit_delay_1,
+def test_signal_triggered_multiple(qtbot, single_shot, wait_function,
+                                   emit_delay_1,
                                    emit_delay_2, timeout,
                                    expected_signal_triggered, raising):
     """
@@ -123,21 +122,14 @@ def test_signal_triggered_multiple(qtbot, wait_function, emit_delay_1,
     the expected results.
     """
     signaller = Signaller()
-
-    timer = QtCore.QTimer()
-    timer.setSingleShot(True)
-    timer.timeout.connect(signaller.signal.emit)
-    timer.start(emit_delay_1)
-
-    timer2 = QtCore.QTimer()
-    timer2.setSingleShot(True)
-    timer2.timeout.connect(signaller.signal_2.emit)
-    timer2.start(emit_delay_2)
+    single_shot(signaller.signal, emit_delay_1)
+    single_shot(signaller.signal_2, emit_delay_2)
 
     raises = raising and not expected_signal_triggered
     start_time = time.time()
     blocker = wait_function(qtbot, [signaller.signal, signaller.signal_2],
-                            timeout, multiple=True, raising=raising, raises=raises)
+                            timeout, multiple=True, raising=raising,
+                            raises=raises)
 
     # Check that event loop exited.
     assert not blocker._loop.isRunning()
@@ -175,3 +167,24 @@ def test_explicit_emit_multiple(qtbot):
         signaller.signal_2.emit()
 
     assert waiting.signal_triggered
+
+
+@pytest.yield_fixture
+def single_shot():
+    """
+    Fixture that provides a callback with signature: (signal, delay) that
+    triggers that signal once after the given delay in ms.
+
+    The fixture is responsible for cleaning up after the timers.
+    """
+    def shoot(signal, delay):
+        timer = QtCore.QTimer()
+        timer.setSingleShot(True)
+        timer.timeout.connect(signal.emit)
+        timer.start(delay)
+        timers.append(timer)
+
+    timers = []
+    yield shoot
+    for t in timers:
+        t.stop()
