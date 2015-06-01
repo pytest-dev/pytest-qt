@@ -19,14 +19,14 @@ def test_signal_blocker_exception(qtbot):
         qtbot.waitSignal(None, None).wait()
 
 
-def explicit_wait(qtbot, signal, timeout, multiple, raising, raises):
+def explicit_wait(qtbot, signal, timeout, multiple, raising, should_raise):
     """
     Explicit wait for the signal using blocker API.
     """
     func = qtbot.waitSignals if multiple else qtbot.waitSignal
     blocker = func(signal, timeout, raising=raising)
     assert not blocker.signal_triggered
-    if raises:
+    if should_raise:
         with pytest.raises(qtbot.SignalTimeoutError):
             blocker.wait()
     else:
@@ -34,12 +34,13 @@ def explicit_wait(qtbot, signal, timeout, multiple, raising, raises):
     return blocker
 
 
-def context_manager_wait(qtbot, signal, timeout, multiple, raising, raises):
+def context_manager_wait(qtbot, signal, timeout, multiple, raising,
+                         should_raise):
     """
     Waiting for signal using context manager API.
     """
     func = qtbot.waitSignals if multiple else qtbot.waitSignal
-    if raises:
+    if should_raise:
         with pytest.raises(qtbot.SignalTimeoutError):
             with func(signal, timeout, raising=raising) as blocker:
                 pass
@@ -66,8 +67,8 @@ def context_manager_wait(qtbot, signal, timeout, multiple, raising, raises):
         (context_manager_wait, 2000, 500, False, True),
     ]
 )
-def test_signal_triggered(qtbot, single_shot, wait_function, emit_delay, timeout,
-                          expected_signal_triggered, raising):
+def test_signal_triggered(qtbot, single_shot, wait_function, emit_delay,
+                          timeout, expected_signal_triggered, raising):
     """
     Testing for a signal in different conditions, ensuring we are obtaining
     the expected results.
@@ -76,10 +77,10 @@ def test_signal_triggered(qtbot, single_shot, wait_function, emit_delay, timeout
     single_shot(signaller.signal, emit_delay)
 
     start_time = time.time()
-    raises = raising and not expected_signal_triggered
+    should_raise = raising and not expected_signal_triggered
 
     blocker = wait_function(qtbot, signaller.signal, timeout, raising=raising,
-                            raises=raises, multiple=False)
+                            should_raise=should_raise, multiple=False)
 
     # Check that event loop exited.
     assert not blocker._loop.isRunning()
@@ -114,8 +115,7 @@ def test_signal_triggered(qtbot, single_shot, wait_function, emit_delay, timeout
     ]
 )
 def test_signal_triggered_multiple(qtbot, single_shot, wait_function,
-                                   emit_delay_1,
-                                   emit_delay_2, timeout,
+                                   emit_delay_1, emit_delay_2, timeout,
                                    expected_signal_triggered, raising):
     """
     Testing for a signal in different conditions, ensuring we are obtaining
@@ -125,11 +125,11 @@ def test_signal_triggered_multiple(qtbot, single_shot, wait_function,
     single_shot(signaller.signal, emit_delay_1)
     single_shot(signaller.signal_2, emit_delay_2)
 
-    raises = raising and not expected_signal_triggered
+    should_raise = raising and not expected_signal_triggered
     start_time = time.time()
     blocker = wait_function(qtbot, [signaller.signal, signaller.signal_2],
                             timeout, multiple=True, raising=raising,
-                            raises=raises)
+                            should_raise=should_raise)
 
     # Check that event loop exited.
     assert not blocker._loop.isRunning()
@@ -177,6 +177,7 @@ def single_shot():
 
     The fixture is responsible for cleaning up after the timers.
     """
+
     def shoot(signal, delay):
         timer = QtCore.QTimer()
         timer.setSingleShot(True)
