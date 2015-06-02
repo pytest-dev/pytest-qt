@@ -170,14 +170,14 @@ raising
 .. versionadded:: 1.4
 
 Additionally, you can pass ``raising=True`` to raise a
-:class:`SignalTimeoutError` if the timeout is reached before the signal
-is triggered::
+:class:`qtbot.SignalTimeoutError <SignalTimeoutError>` if the timeout is
+reached before the signal is triggered::
 
     def test_long_computation(qtbot):
         ...
         with qtbot.waitSignal(app.worker.finished, raising=True) as blocker:
             app.worker.start()
-        # if timeout is reached, SignalTimeoutError will be raised at this point
+        # if timeout is reached, qtbot.SignalTimeoutError will be raised at this point
         assert_application_results(app)
 
 
@@ -199,7 +199,7 @@ the new ``raising`` parameter::
                 w.start()
 
         # this will be reached after all workers emit their "finished"
-        # signal or a SignalTimeoutError will be raised
+        # signal or a qtbot.SignalTimeoutError will be raised
         assert_application_results(app)
 
 Exceptions in virtual methods
