@@ -10,7 +10,7 @@ virtualenv:
 matrix:
   allow_failures:
     # unfortunately couldn't find a reliable way to test pyqt5 on travis yet
-    - env: PYTEST_VERSION=2.7.0 PYTEST_QT_API=pyqt5
+    - env: PYTEST_VERSION=2.7.1 PYTEST_QT_API=pyqt5
 
 env:
  - PYTEST_VERSION=2.6.4 PYTEST_QT_API=pyqt4
