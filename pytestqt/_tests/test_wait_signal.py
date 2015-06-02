@@ -67,7 +67,7 @@ def context_manager_wait(qtbot, signal, timeout, multiple, raising,
         (context_manager_wait, 200, 100, False, True),
     ]
 )
-def test_signal_triggered(qtbot, single_shot, wait_function, emit_delay,
+def test_signal_triggered(qtbot, single_shot, stop_watch, wait_function, emit_delay,
                           timeout, expected_signal_triggered, raising):
     """
     Testing for a signal in different conditions, ensuring we are obtaining
@@ -76,9 +76,9 @@ def test_signal_triggered(qtbot, single_shot, wait_function, emit_delay,
     signaller = Signaller()
     single_shot(signaller.signal, emit_delay)
 
-    start_time = time.time()
     should_raise = raising and not expected_signal_triggered
 
+    stop_watch.start()
     blocker = wait_function(qtbot, signaller.signal, timeout, raising=raising,
                             should_raise=should_raise, multiple=False)
 
@@ -88,12 +88,7 @@ def test_signal_triggered(qtbot, single_shot, wait_function, emit_delay,
     # ensure that either signal was triggered or timeout occurred
     assert blocker.signal_triggered == expected_signal_triggered
 
-    # Check that we exited by the earliest parameter; timeout = None means
-    # wait forever, so ensure we waited at most 4 times emit-delay
-    if timeout is None:
-        timeout = emit_delay * 4
-    max_wait_ms = max(emit_delay, timeout)
-    assert time.time() - start_time < (max_wait_ms / 1000.0)
+    stop_watch.check(timeout, emit_delay)
 
 
 @pytest.mark.parametrize(
@@ -114,7 +109,7 @@ def test_signal_triggered(qtbot, single_shot, wait_function, emit_delay,
         (context_manager_wait, 50, 200, 100, False, True),
     ]
 )
-def test_signal_triggered_multiple(qtbot, single_shot, wait_function,
+def test_signal_triggered_multiple(qtbot, single_shot, stop_watch, wait_function,
                                    emit_delay_1, emit_delay_2, timeout,
                                    expected_signal_triggered, raising):
     """
@@ -126,7 +121,8 @@ def test_signal_triggered_multiple(qtbot, single_shot, wait_function,
     single_shot(signaller.signal_2, emit_delay_2)
 
     should_raise = raising and not expected_signal_triggered
-    start_time = time.time()
+
+    stop_watch.start()
     blocker = wait_function(qtbot, [signaller.signal, signaller.signal_2],
                             timeout, multiple=True, raising=raising,
                             should_raise=should_raise)
@@ -137,12 +133,7 @@ def test_signal_triggered_multiple(qtbot, single_shot, wait_function,
     # ensure that either signal was triggered or timeout occurred
     assert blocker.signal_triggered == expected_signal_triggered
 
-    # Check that we exited by the earliest parameter; timeout = None means
-    # wait forever, so ensure we waited at most 4 times emit-delay
-    if timeout is None:
-        timeout = max(emit_delay_1, emit_delay_2) * 4
-    max_wait_ms = max(emit_delay_1, emit_delay_2, timeout)
-    assert time.time() - start_time < (max_wait_ms / 1000.0)
+    stop_watch.check(timeout, emit_delay_1, emit_delay_2)
 
 
 def test_explicit_emit(qtbot):
@@ -189,3 +180,33 @@ def single_shot():
     yield shoot
     for t in timers:
         t.stop()
+
+
+@pytest.fixture
+def stop_watch():
+    """
+    Fixture that makes it easier for tests to ensure signals emitted and
+    timeouts are being respected in waitSignal and waitSignals tests.
+    """
+
+    class StopWatch:
+
+        def __init__(self):
+            self._start_time = None
+
+        def start(self):
+            self._start_time = time.time()
+
+        def check(self, timeout, *delays):
+            """
+            Make sure either timeout (if given) or at most of the given
+            delays used to trigger a signal has passed.
+            """
+            if timeout is None:
+                timeout = max(delays) * 1.1  # 10% tolerance
+            max_wait_ms = max(delays + (timeout,))
+            assert time.time() - self._start_time < (max_wait_ms / 1000.0)
+
+    return StopWatch()
+
+
