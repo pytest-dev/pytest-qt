@@ -50,31 +50,40 @@ def context_manager_wait(qtbot, signal, timeout, multiple, raising,
     return blocker
 
 
-@pytest.mark.parametrize(
-    ('wait_function', 'emit_delay', 'timeout', 'expected_signal_triggered',
-     'raising'),
-    [
-        (explicit_wait, 100, 200, True, False),
-        (explicit_wait, 100, None, True, False),
-        (context_manager_wait, 100, 200, True, False),
-        (context_manager_wait, 100, None, True, False),
-        (explicit_wait, 200, 100, False, False),
-        (context_manager_wait, 200, 100, False, False),
+def build_signal_tests_variants(params):
+    """
+    Helper function to use with pytest's parametrize, to generate additional
+    combinations of parameters in a parametrize call:
+    - explicit wait and context-manager wait
+    - raising True and False (since we check for the correct behavior inside
+      each test).
+    """
+    result = []
+    for param in params:
+        for wait_function in (explicit_wait, context_manager_wait):
+            for raising in (True, False):
+                result.append(param + (wait_function, raising))
+    return result
 
-        (explicit_wait, 200, 100, False, True),
-        (context_manager_wait, 200, 100, False, True),
-        (explicit_wait, 200, 100, False, True),
-        (context_manager_wait, 200, 100, False, True),
-    ]
+
+@pytest.mark.parametrize(
+    ('delay', 'timeout', 'expected_signal_triggered',
+     'wait_function', 'raising'),
+    build_signal_tests_variants([
+        # delay, timeout, expected_signal_triggered
+        (100, None, True),
+        (100, 200, True),
+        (200, 100, False),
+    ])
 )
-def test_signal_triggered(qtbot, single_shot, stop_watch, wait_function, emit_delay,
+def test_signal_triggered(qtbot, single_shot, stop_watch, wait_function, delay,
                           timeout, expected_signal_triggered, raising):
     """
     Testing for a signal in different conditions, ensuring we are obtaining
     the expected results.
     """
     signaller = Signaller()
-    single_shot(signaller.signal, emit_delay)
+    single_shot(signaller.signal, delay)
 
     should_raise = raising and not expected_signal_triggered
 
@@ -88,37 +97,33 @@ def test_signal_triggered(qtbot, single_shot, stop_watch, wait_function, emit_de
     # ensure that either signal was triggered or timeout occurred
     assert blocker.signal_triggered == expected_signal_triggered
 
-    stop_watch.check(timeout, emit_delay)
+    stop_watch.check(timeout, delay)
 
 
 @pytest.mark.parametrize(
-    ('wait_function', 'emit_delay_1', 'emit_delay_2', 'timeout',
-     'expected_signal_triggered', 'raising'),
-    [
-        (explicit_wait, 100, 150, 200, True, False),
-        (explicit_wait, 100, 150, None, True, False),
-        (context_manager_wait, 100, 150, 200, True, False),
-        (context_manager_wait, 100, 150, None, True, False),
-        (explicit_wait, 200, 200, 50, False, False),
-        (explicit_wait, 100, 200, 150, False, False),
-        (explicit_wait, 200, 50, 100, False, False),
-        (context_manager_wait, 200, 200, 50, False, False),
-        (context_manager_wait, 50, 200, 100, False, False),
-        (context_manager_wait, 200, 50, 100, False, False),
-        (context_manager_wait, 200, 50, 100, False, True),
-        (context_manager_wait, 50, 200, 100, False, True),
-    ]
+    ('delay_1', 'delay_2', 'timeout', 'expected_signal_triggered',
+     'wait_function', 'raising'),
+    build_signal_tests_variants([
+        # delay1, delay2, timeout, expected_signal_triggered
+        (100, 150, 200, True),
+        (150, 100, 200, True),
+        (100, 150, None, True),
+        (200, 200, 100, False),
+        (100, 200, 150, False),
+        (200, 100, 100, False),
+        (100, 500, 200, False),
+    ])
 )
 def test_signal_triggered_multiple(qtbot, single_shot, stop_watch, wait_function,
-                                   emit_delay_1, emit_delay_2, timeout,
+                                   delay_1, delay_2, timeout,
                                    expected_signal_triggered, raising):
     """
     Testing for a signal in different conditions, ensuring we are obtaining
     the expected results.
     """
     signaller = Signaller()
-    single_shot(signaller.signal, emit_delay_1)
-    single_shot(signaller.signal_2, emit_delay_2)
+    single_shot(signaller.signal, delay_1)
+    single_shot(signaller.signal_2, delay_2)
 
     should_raise = raising and not expected_signal_triggered
 
@@ -133,7 +138,7 @@ def test_signal_triggered_multiple(qtbot, single_shot, stop_watch, wait_function
     # ensure that either signal was triggered or timeout occurred
     assert blocker.signal_triggered == expected_signal_triggered
 
-    stop_watch.check(timeout, emit_delay_1, emit_delay_2)
+    stop_watch.check(timeout, delay_1, delay_2)
 
 
 def test_explicit_emit(qtbot):
@@ -203,7 +208,7 @@ def stop_watch():
             delays used to trigger a signal has passed.
             """
             if timeout is None:
-                timeout = max(delays) * 1.1  # 10% tolerance
+                timeout = max(delays) * 1.2  # 20% tolerance
             max_wait_ms = max(delays + (timeout,))
             assert time.time() - self._start_time < (max_wait_ms / 1000.0)
 
