@@ -17,6 +17,8 @@ def test_signal_blocker_exception(qtbot):
     """
     with pytest.raises(ValueError):
         qtbot.waitSignal(None, None).wait()
+    with pytest.raises(ValueError):
+        qtbot.waitSignals([], None).wait()
 
 
 def explicit_wait(qtbot, signal, timeout, multiple, raising, should_raise):
