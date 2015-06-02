@@ -252,9 +252,11 @@ class QtBot(object):
         manager form is not convenient::
 
            blocker = qtbot.waitSignal(signal, timeout=1000)
-           blocker.connect(other_signal)
+           blocker.connect(another_signal)
            long_function_that_calls_signal()
            blocker.wait()
+
+        Any additional signal, when triggered, will make :meth:`wait` return.
 
         .. versionadded:: 1.4
            The *raising* parameter.
@@ -286,20 +288,19 @@ class QtBot(object):
 
         Stops current test until all given signals are triggered.
 
-        Used to stop the control flow of a test until all given signals are
-        emitted, or a number of milliseconds, specified by ``timeout``, has
-        elapsed.
+        Used to stop the control flow of a test until all (and only
+        all) signals are emitted, or a number of milliseconds, specified by
+        ``timeout``, has elapsed.
 
         Best used as a context manager::
 
-           with qtbot.waitSignals(signal, timeout=1000):
-               long_function_that_calls_signal()
+           with qtbot.waitSignals([signal1, signal2], timeout=1000):
+               long_function_that_calls_signals()
 
         Also, you can use the :class:`MultiSignalBlocker` directly if the
         context manager form is not convenient::
 
-           blocker = qtbot.waitSignals(signal, timeout=1000)
-           blocker.connect(other_signal)
+           blocker = qtbot.waitSignals(signals, timeout=1000)
            long_function_that_calls_signal()
            blocker.wait()
 
@@ -322,13 +323,13 @@ class QtBot(object):
         blocker = MultiSignalBlocker(timeout=timeout, raising=raising)
         if signals is not None:
             for signal in signals:
-                blocker.add_signal(signal)
+                blocker._add_signal(signal)
         return blocker
 
     wait_signals = waitSignals  # pep-8 alias
 
 
-class AbstractSignalBlocker(object):
+class _AbstractSignalBlocker(object):
 
     """
     Base class for :class:`SignalBlocker` and :class:`MultiSignalBlocker`.
@@ -340,16 +341,6 @@ class AbstractSignalBlocker(object):
     Subclasses also need to provide ``self._signals`` which should evaluate to
     ``False`` if no signals were configured.
 
-    :ivar int timeout: maximum time to wait for a signal to be triggered. Can
-        be changed before :meth:`wait` is called.
-
-    :ivar bool signal_triggered: set to ``True`` if a signal (or all signals in
-        case of :class:MultipleSignalBlocker:) was triggered, or
-        ``False`` if timeout was reached instead. Until :meth:`wait` is called,
-        this is set to ``None``.
-
-    :ivar bool raising:
-        If :class:`SignalTimeoutError` should be raised if a timeout occurred.
     """
 
     def __init__(self, timeout=1000, raising=False):
@@ -383,14 +374,24 @@ class AbstractSignalBlocker(object):
         self.wait()
 
 
-class SignalBlocker(AbstractSignalBlocker):
+class SignalBlocker(_AbstractSignalBlocker):
 
     """
     Returned by :meth:`QtBot.waitSignal` method.
 
+    :ivar int timeout: maximum time to wait for a signal to be triggered. Can
+        be changed before :meth:`wait` is called.
+
+    :ivar bool signal_triggered: set to ``True`` if a signal (or all signals in
+        case of :class:`MultipleSignalBlocker`) was triggered, or
+        ``False`` if timeout was reached instead. Until :meth:`wait` is called,
+        this is set to ``None``.
+
+    :ivar bool raising:
+        If :class:`SignalTimeoutError` should be raised if a timeout occurred.
+
     .. automethod:: wait
     .. automethod:: connect
-
     """
 
     def __init__(self, timeout=1000, raising=False):
@@ -418,20 +419,25 @@ class SignalBlocker(AbstractSignalBlocker):
         self._loop.quit()
 
 
-class MultiSignalBlocker(AbstractSignalBlocker):
+class MultiSignalBlocker(_AbstractSignalBlocker):
 
     """
-    Returned by :meth:`QtBot.waitSignals` method.
+    Returned by :meth:`QtBot.waitSignals` method, blocks until all signals
+    connected to it are triggered or the timeout is reached.
+
+    Variables identical to :class:`SignalBlocker`:
+        - ``timeout``
+        - ``signal_triggered``
+        - ``raising``
 
     .. automethod:: wait
-    .. automethod:: add_signal
     """
 
     def __init__(self, timeout=1000, raising=False):
         super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = {}
 
-    def add_signal(self, signal):
+    def _add_signal(self, signal):
         """
         Adds the given signal to the list of signals which :meth:`wait()` waits
         for.

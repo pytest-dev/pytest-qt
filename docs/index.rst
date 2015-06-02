@@ -163,10 +163,44 @@ ensuring the results are correct::
         assert_application_results(app)
 
 
+
+raising
+-------
+
 .. versionadded:: 1.4
 
 Additionally, you can pass ``raising=True`` to raise a
-:class:`SignalTimeoutError` if the timeout is reached.
+:class:`SignalTimeoutError` if the timeout is reached before the signal
+is triggered::
+
+    def test_long_computation(qtbot):
+        ...
+        with qtbot.waitSignal(app.worker.finished, raising=True) as blocker:
+            app.worker.start()
+        # if timeout is reached, SignalTimeoutError will be raised at this point
+        assert_application_results(app)
+
+
+waitSignals
+-----------
+
+.. versionadded:: 1.4
+
+If you have to wait until **all** signals in a list are triggered, use
+:meth:`qtbot.waitSignals <pytestqt.plugin.QtBot.waitSignals>`, which receives
+a list of signals instead of a single signal. As with
+:meth:`qtbot.waitSignal <pytestqt.plugin.QtBot.waitSignal>`, it also supports
+the new ``raising`` parameter::
+
+    def test_workers(qtbot):
+        workers = spawn_workers()
+        with qtbot.waitSignal([w.finished for w in workers], raising=True):
+            for w in workers:
+                w.start()
+
+        # this will be reached after all workers emit their "finished"
+        # signal or a SignalTimeoutError will be raised
+        assert_application_results(app)
 
 Exceptions in virtual methods
 =============================
@@ -238,10 +272,11 @@ QtBot
 .. module:: pytestqt.plugin
 .. autoclass:: QtBot
 
-SignalBlocker
--------------
+Signals
+-------
 
 .. autoclass:: SignalBlocker
+.. autoclass:: MultiSignalBlocker
 
 .. autoclass:: SignalTimeoutError
 
