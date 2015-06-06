@@ -1,21 +1,29 @@
 Reference
 =========
 
+.. module:: pytestqt.plugin
+
 QtBot
 -----
 
-.. module:: pytestqt.plugin
 .. autoclass:: QtBot
 
-Signals
--------
+SignalBlocker
+-------------
 
 .. autoclass:: SignalBlocker
+
+MultiSignalBlocker
+------------------
+
 .. autoclass:: MultiSignalBlocker
+
+SignalTimeoutError
+------------------
 
 .. autoclass:: SignalTimeoutError
 
-Log Capture
------------
+Record
+------
 
 .. autoclass:: Record
