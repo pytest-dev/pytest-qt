@@ -294,8 +294,8 @@ class QtBot(object):
         Stops current test until all given signals are triggered.
 
         Used to stop the control flow of a test until all (and only
-        all) signals are emitted, or a number of milliseconds, specified by
-        ``timeout``, has elapsed.
+        all) signals are emitted or the number of milliseconds specified by
+        ``timeout`` has elapsed.
 
         Best used as a context manager::
 
@@ -723,14 +723,15 @@ class _QtMessageCapture(object):
 class Record(object):
     """Hold information about a message sent by one of Qt log functions.
 
-    :attr str message: message contents.
-    :attr Qt.QtMsgType type: enum that identifies message type
-    :attr str type_name: `type` as a string
-    :attr str log_type_name:
-        type name similar to the logging package, for example ``DEBUG``,
-        ``WARNING``, etc.
-    :attr datetime.datetime when: when the message was sent
-    :attr ignored: If this record matches a regex from the "qt_log_ignore"
+    :ivar str message: message contents.
+    :ivar Qt.QtMsgType type: enum that identifies message type
+    :ivar str type_name: ``type`` as string: ``"QtDebugMsg"``,
+        ``"QtWarningMsg"`` or ``"QtCriticalMsg"``.
+    :ivar str log_type_name:
+        type name similar to the logging package: ``DEBUG``,
+        ``WARNING`` and ``CRITICAL``.
+    :ivar datetime.datetime when: when the message was captured
+    :ivar bool ignored: If this record matches a regex from the "qt_log_ignore"
         option.
     """
 
