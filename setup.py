@@ -1,33 +1,17 @@
-import sys
+import re
 
 from setuptools import setup
-from setuptools.command.test import test as TestCommand
-
-import pytestqt
 
 
-class PyTest(TestCommand):
-    """
-    Overrides setup "test" command, taken from here:
-    http://pytest.org/latest/goodpractises.html
-    """
-
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        # import here, cause outside the eggs aren't loaded
-        import pytest
-
-        errno = pytest.main([])
-        sys.exit(errno)
+with open('pytestqt/__init__.py') as f:
+    m = re.search("version = '(.*)'", f.read())
+    assert m is not None
+    version = m.group(1)
 
 
 setup(
     name="pytest-qt",
-    version=pytestqt.version,
+    version=version,
     packages=['pytestqt'],
     entry_points={
         'pytest11': ['pytest-qt = pytestqt.plugin'],
@@ -56,5 +40,4 @@ setup(
         'Topic :: Software Development :: User Interfaces',
     ],
     tests_requires=['pytest'],
-    cmdclass={'test': PyTest},
 )
