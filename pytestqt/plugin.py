@@ -3,10 +3,16 @@ import functools
 import sys
 import traceback
 import weakref
+import datetime
+
+from py._code.code import TerminalRepr
+from py._code.code import ReprFileLocation
 
 import pytest
+import re
 
-from pytestqt.qt_compat import QtCore, QtTest, QApplication, QT_API
+from pytestqt.qt_compat import QtCore, QtTest, QApplication, QT_API, \
+    qInstallMsgHandler, QtDebugMsg, QtWarningMsg, QtCriticalMsg, QtFatalMsg
 
 
 def _inject_qtest_methods(cls):
@@ -55,7 +61,6 @@ def _inject_qtest_methods(cls):
 
 @_inject_qtest_methods
 class QtBot(object):
-
     """
     Instances of this class are responsible for sending events to `Qt` objects (usually widgets),
     simulating user input.
@@ -200,7 +205,7 @@ class QtBot(object):
         .. note:: In Qt5, the actual method called is qWaitForWindowExposed,
             but this name is kept for backward compatibility
         """
-        if hasattr(QtTest.QTest, 'qWaitForWindowShown'): # pragma: no cover
+        if hasattr(QtTest.QTest, 'qWaitForWindowShown'):  # pragma: no cover
             # PyQt4 and PySide
             QtTest.QTest.qWaitForWindowShown(widget)
         else:  # pragma: no cover
@@ -289,8 +294,8 @@ class QtBot(object):
         Stops current test until all given signals are triggered.
 
         Used to stop the control flow of a test until all (and only
-        all) signals are emitted, or a number of milliseconds, specified by
-        ``timeout``, has elapsed.
+        all) signals are emitted or the number of milliseconds specified by
+        ``timeout`` has elapsed.
 
         Best used as a context manager::
 
@@ -552,6 +557,20 @@ def pytest_addoption(parser):
     parser.addini('qt_no_exception_capture',
                   'disable automatic exception capture')
 
+    default_log_fail = QtLoggingPlugin.LOG_FAIL_OPTIONS[0]
+    parser.addini('qt_log_level_fail',
+                  'log level in which tests can fail: {0} (default: "{1}")'
+                  .format(QtLoggingPlugin.LOG_FAIL_OPTIONS, default_log_fail),
+                  default=default_log_fail)
+    parser.addini('qt_log_ignore',
+                  'list of regexes for messages that should not cause a tests '
+                  'to fails', type='linelist')
+
+    parser.addoption('--no-qt-log', dest='qt_log', action='store_false',
+                     default=True)
+    parser.addoption('--qt-log-format', dest='qt_log_format',
+                     default='{rec.type_name}: {rec.message}')
+
 
 @pytest.mark.hookwrapper
 def pytest_runtest_teardown():
@@ -571,6 +590,224 @@ def pytest_configure(config):
         "qt_no_exception_capture: Disables pytest-qt's automatic exception "
         'capture for just one test item.')
 
+    config.addinivalue_line(
+        'markers',
+        'qt_log_level_fail: overrides qt_log_level_fail ini option.')
+    config.addinivalue_line(
+        'markers',
+        'qt_log_ignore: overrides qt_log_ignore ini option.')
+
+    if config.getoption('qt_log'):
+        config.pluginmanager.register(QtLoggingPlugin(config), '_qt_logging')
+
 
 def pytest_report_header():
     return ['qt-api: %s' % QT_API]
+
+
+@pytest.fixture
+def qtlog(request):
+    """Fixture that can access messages captured during testing"""
+    if hasattr(request._pyfuncitem, 'qt_log_capture'):
+        return request._pyfuncitem.qt_log_capture
+    else:
+        return _QtMessageCapture([])  # pragma: no cover
+
+
+class QtLoggingPlugin(object):
+    """
+    Pluging responsible for installing a QtMessageHandler before each
+    test and augment reporting if the test failed with the messages captured.
+    """
+
+    LOG_FAIL_OPTIONS = ['NO', 'CRITICAL', 'WARNING', 'DEBUG']
+
+    def __init__(self, config):
+        self.config = config
+
+    def pytest_runtest_setup(self, item):
+        m = item.get_marker('qt_log_ignore')
+        if m:
+            ignore_regexes = m.args
+        else:
+            ignore_regexes = self.config.getini('qt_log_ignore')
+        item.qt_log_capture = _QtMessageCapture(ignore_regexes)
+        previous_handler = qInstallMsgHandler(item.qt_log_capture._handle)
+        item.qt_previous_handler = previous_handler
+
+    @pytest.mark.hookwrapper
+    def pytest_runtest_makereport(self, item, call):
+        """Add captured Qt messages to test item report if the call failed."""
+
+        outcome = yield
+        report = outcome.result
+
+        m = item.get_marker('qt_log_level_fail')
+        if m:
+            log_fail_level = m.args[0]
+        else:
+            log_fail_level = self.config.getini('qt_log_level_fail')
+        assert log_fail_level in QtLoggingPlugin.LOG_FAIL_OPTIONS
+
+        if call.when == 'call':
+
+            # make test fail if any records were captured which match
+            # log_fail_level
+            if log_fail_level != 'NO' and report.outcome != 'failed':
+                for rec in item.qt_log_capture.records:
+                    if rec.matches_level(log_fail_level) and not rec.ignored:
+                        report.outcome = 'failed'
+                        if report.longrepr is None:
+                            report.longrepr = \
+                                _QtLogLevelErrorRepr(item, log_fail_level)
+                        break
+
+            # if test has failed, add recorded messages to its terminal
+            # representation
+            if not report.passed:
+                long_repr = getattr(report, 'longrepr', None)
+                if hasattr(long_repr, 'addsection'):  # pragma: no cover
+                    log_format = self.config.getoption('qt_log_format')
+                    lines = []
+                    for rec in item.qt_log_capture.records:
+                        suffix = ' (IGNORED)' if rec.ignored else ''
+                        lines.append(log_format.format(rec=rec) + suffix)
+                    if lines:
+                        long_repr.addsection('Captured Qt messages',
+                                             '\n'.join(lines))
+
+            qInstallMsgHandler(item.qt_previous_handler)
+            del item.qt_previous_handler
+            del item.qt_log_capture
+
+
+class _QtMessageCapture(object):
+    """
+    Captures Qt messages when its `handle` method is installed using
+    qInstallMsgHandler, and stores them into `messages` attribute.
+
+    :attr _records: list of Record instances.
+    :attr _ignore_regexes: list of regexes (as strings) that define if a record
+        should be ignored.
+    """
+
+    def __init__(self, ignore_regexes):
+        self._records = []
+        self._ignore_regexes = ignore_regexes or []
+
+    def _handle(self, msg_type, message):
+        """
+        Method to be installed using qInstallMsgHandler, stores each message
+        into the `messages` attribute.
+        """
+        if isinstance(message, bytes):
+            message = message.decode('utf-8', 'replace')
+
+        ignored = False
+        for regex in self._ignore_regexes:
+            if re.search(regex, message) is not None:
+                ignored = True
+                break
+
+        self._records.append(Record(msg_type, message, ignored))
+
+    @property
+    def records(self):
+        """Access messages captured so far.
+
+        :rtype: list of `Record` instances.
+        """
+        return self._records[:]
+
+
+class Record(object):
+    """Hold information about a message sent by one of Qt log functions.
+
+    :ivar str message: message contents.
+    :ivar Qt.QtMsgType type: enum that identifies message type
+    :ivar str type_name: ``type`` as string: ``"QtDebugMsg"``,
+        ``"QtWarningMsg"`` or ``"QtCriticalMsg"``.
+    :ivar str log_type_name:
+        type name similar to the logging package: ``DEBUG``,
+        ``WARNING`` and ``CRITICAL``.
+    :ivar datetime.datetime when: when the message was captured
+    :ivar bool ignored: If this record matches a regex from the "qt_log_ignore"
+        option.
+    """
+
+    def __init__(self, msg_type, message, ignored):
+        self._type = msg_type
+        self._message = message
+        self._type_name = self._get_msg_type_name(msg_type)
+        self._log_type_name = self._get_log_type_name(msg_type)
+        self._when = datetime.datetime.now()
+        self._ignored = ignored
+
+    message = property(lambda self: self._message)
+    type = property(lambda self: self._type)
+    type_name = property(lambda self: self._type_name)
+    log_type_name = property(lambda self: self._log_type_name)
+    when = property(lambda self: self._when)
+    ignored = property(lambda self: self._ignored)
+
+    @classmethod
+    def _get_msg_type_name(cls, msg_type):
+        """
+        Return a string representation of the given QtMsgType enum
+        value.
+        """
+        if not getattr(cls, '_type_name_map', None):
+            cls._type_name_map = {
+                QtDebugMsg: 'QtDebugMsg',
+                QtWarningMsg: 'QtWarningMsg',
+                QtCriticalMsg: 'QtCriticalMsg',
+                QtFatalMsg: 'QtFatalMsg',
+            }
+        return cls._type_name_map[msg_type]
+
+    @classmethod
+    def _get_log_type_name(cls, msg_type):
+        """
+        Return a string representation of the given QtMsgType enum
+        value in the same style used by the builtin logging package.
+        """
+        if not getattr(cls, '_log_type_name_map', None):
+            cls._log_type_name_map = {
+                QtDebugMsg: 'DEBUG',
+                QtWarningMsg: 'WARNING',
+                QtCriticalMsg: 'CRITICAL',
+                QtFatalMsg: 'FATAL',
+            }
+        return cls._log_type_name_map[msg_type]
+
+    def matches_level(self, level):
+        if level == 'DEBUG':
+            return self.log_type_name in ('DEBUG', 'WARNING', 'CRITICAL')
+        elif level == 'WARNING':
+            return self.log_type_name in ('WARNING', 'CRITICAL')
+        elif level == 'CRITICAL':
+            return self.log_type_name in ('CRITICAL',)
+        else:
+            raise ValueError('log_fail_level unknown: {0}'.format(level))
+
+
+class _QtLogLevelErrorRepr(TerminalRepr):
+    """
+    TerminalRepr of a test which didn't fail by normal means, but emitted
+    messages at or above the allowed level.
+    """
+
+    def __init__(self, item, level):
+        msg = 'Failure: Qt messages with level {0} or above emitted'
+        path, line, _ = item.location
+        self.fileloc = ReprFileLocation(path, line, msg.format(level.upper()))
+        self.sections = []
+
+    def addsection(self, name, content, sep="-"):
+        self.sections.append((name, content, sep))
+
+    def toterminal(self, out):
+        self.fileloc.toterminal(out)
+        for name, content, sep in self.sections:
+            out.sep(sep, name)
+            out.line(content)

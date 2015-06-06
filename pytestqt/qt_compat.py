@@ -1,8 +1,12 @@
-'''
-Initial sources from https://github.com/epage/PythonUtils.
+"""
+Provide a common way to import Qt classes used by pytest-qt in a unique manner,
+abstracting API differences between PyQt4, PyQt5 and PySide.
 
-Modified to support other modules besides QtCore.
-'''
+.. note:: This module is not part of pytest-qt public API, hence its interface
+may change between releases and users should not rely on it.
+
+Based on from https://github.com/epage/PythonUtils.
+"""
 
 from __future__ import with_statement
 from __future__ import division
@@ -63,12 +67,22 @@ if not on_rtd:  # pragma: no cover
     Qt = QtCore.Qt
     QEvent = QtCore.QEvent
 
+    qDebug = QtCore.qDebug
+    qWarning = QtCore.qWarning
+    qCritical = QtCore.qCritical
+    qFatal = QtCore.qFatal
+    QtDebugMsg = QtCore.QtDebugMsg
+    QtWarningMsg = QtCore.QtWarningMsg
+    QtCriticalMsg = QtCore.QtCriticalMsg
+    QtFatalMsg = QtCore.QtFatalMsg
+
     if QT_API == 'pyside':
         Signal = QtCore.Signal
         Slot = QtCore.Slot
         Property = QtCore.Property
         QApplication = QtGui.QApplication
         QWidget = QtGui.QWidget
+        qInstallMsgHandler = QtCore.qInstallMsgHandler
 
     elif QT_API in ('pyqt4', 'pyqt5'):
         Signal = QtCore.pyqtSignal
@@ -79,9 +93,23 @@ if not on_rtd:  # pragma: no cover
             _QtWidgets = _import_module('QtWidgets')
             QApplication = _QtWidgets.QApplication
             QWidget = _QtWidgets.QWidget
+
+            def qInstallMsgHandler(handler):
+                """
+                Installs the given function as a message handler. This
+                will adapt Qt5 message handler signature into Qt4
+                message handler's signature.
+                """
+                def _Qt5MessageHandler(msg_type, context, msg):
+                    handler(msg_type, msg)
+                if handler is not None:
+                    return QtCore.qInstallMessageHandler(_Qt5MessageHandler)
+                else:
+                    return QtCore.qInstallMessageHandler(None)
         else:
             QApplication = QtGui.QApplication
             QWidget = QtGui.QWidget
+            qInstallMsgHandler = QtCore.qInstallMsgHandler
 
 else:  # pragma: no cover
     USING_PYSIDE = True
@@ -112,4 +140,13 @@ else:  # pragma: no cover
     QEvent = Mock()
     QApplication = Mock()
     QWidget = Mock()
+    qInstallMsgHandler = Mock()
+    qDebug = Mock()
+    qWarning = Mock()
+    qCritical = Mock()
+    qFatal = Mock()
+    QtDebugMsg = Mock()
+    QtWarningMsg = Mock()
+    QtCriticalMsg = Mock()
+    QtFatalMsg = Mock()
     QT_API = '<none>'
