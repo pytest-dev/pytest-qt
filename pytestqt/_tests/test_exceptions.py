@@ -1,40 +1,47 @@
 import pytest
 import sys
-from pytestqt.plugin import capture_exceptions, format_captured_exceptions
-from pytestqt.qt_compat import QtGui, Qt, QtCore, QApplication
+from pytestqt.plugin import format_captured_exceptions
 
 
 pytest_plugins = 'pytester'
 
 
-class Receiver(QtCore.QObject):
-    """
-    Dummy QObject subclass that raises an error on receiving events if
-    `raise_error` is True.
-    """
-
-    def __init__(self, raise_error, *args, **kwargs):
-        QtCore.QObject.__init__(self, *args, **kwargs)
-        self._raise_error = raise_error
-
-
-    def event(self, ev):
-        if self._raise_error:
-            raise ValueError('mistakes were made')
-        return QtCore.QObject.event(self, ev)
-
-
-@pytest.mark.parametrize('raise_error', [False, pytest.mark.xfail(True)])
-def test_catch_exceptions_in_virtual_methods(qtbot, raise_error):
+@pytest.mark.parametrize('raise_error', [False, True])
+def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
     """
     Catch exceptions that happen inside Qt virtual methods and make the
     tests fail if any.
+
+    :type testdir: _pytest.pytester.TmpTestdir
     """
-    v = Receiver(raise_error)
-    app = QApplication.instance()
-    app.sendEvent(v, QtCore.QEvent(QtCore.QEvent.User))
-    app.sendEvent(v, QtCore.QEvent(QtCore.QEvent.User))
-    app.processEvents()
+    testdir.makepyfile('''
+        from pytestqt.qt_compat import QtCore, QApplication
+
+        class Receiver(QtCore.QObject):
+
+            def event(self, ev):
+                if {raise_error}:
+                    raise ValueError('mistakes were made')
+                return QtCore.QObject.event(self, ev)
+
+
+        def test_exceptions(qtbot):
+            v = Receiver()
+            app = QApplication.instance()
+            app.sendEvent(v, QtCore.QEvent(QtCore.QEvent.User))
+            app.sendEvent(v, QtCore.QEvent(QtCore.QEvent.User))
+            app.processEvents()
+
+    '''.format(raise_error=raise_error))
+    result = testdir.runpytest()
+    if raise_error:
+        result.stdout.fnmatch_lines([
+            '*Qt exceptions in virtual methods:*',
+            '*ValueError: mistakes were made*',
+            '*1 error*',
+        ])
+    else:
+        result.stdout.fnmatch_lines('*1 passed*')
 
 
 def test_format_captured_exceptions():
@@ -55,6 +62,7 @@ def test_no_capture(testdir, no_capture_by_marker):
     """
     Make sure options that disable exception capture are working (either marker
     or ini configuration value).
+
     :type testdir: TmpTestdir
     """
     if no_capture_by_marker:
@@ -80,7 +88,5 @@ def test_no_capture(testdir, no_capture_by_marker):
             qtbot.addWidget(w)
             qtbot.mouseClick(w, QtCore.Qt.LeftButton)
     '''.format(marker_code=marker_code))
-    result = testdir.runpytest('-s')
-    # when it fails, it fails with "1 passed, 1 error in", so ensure
-    # it is passing without errors
-    result.stdout.fnmatch_lines('*1 passed in*')
+    res = testdir.inline_run()
+    res.assertoutcome(passed=1)
