@@ -6,5 +6,6 @@ __pycache__
 /pytest_qt.egg-info
 /build
 /dist
+/.tox
 .env*
 .coverage

@@ -140,6 +140,8 @@ created earlier::
 Waiting for threads, processes, etc.
 ====================================
 
+.. versionadded:: 1.2
+
 If your program has long running computations running in other threads or
 processes, you can use :meth:`qtbot.waitSignal <pytestqt.plugin.QtBot.waitSignal>`
 to block a test until a signal is emitted (such as ``QThread.finished``) or a
@@ -161,8 +163,49 @@ ensuring the results are correct::
         assert_application_results(app)
 
 
+
+raising
+-------
+
+.. versionadded:: 1.4
+
+Additionally, you can pass ``raising=True`` to raise a
+:class:`qtbot.SignalTimeoutError <SignalTimeoutError>` if the timeout is
+reached before the signal is triggered::
+
+    def test_long_computation(qtbot):
+        ...
+        with qtbot.waitSignal(app.worker.finished, raising=True) as blocker:
+            app.worker.start()
+        # if timeout is reached, qtbot.SignalTimeoutError will be raised at this point
+        assert_application_results(app)
+
+
+waitSignals
+-----------
+
+.. versionadded:: 1.4
+
+If you have to wait until **all** signals in a list are triggered, use
+:meth:`qtbot.waitSignals <pytestqt.plugin.QtBot.waitSignals>`, which receives
+a list of signals instead of a single signal. As with
+:meth:`qtbot.waitSignal <pytestqt.plugin.QtBot.waitSignal>`, it also supports
+the new ``raising`` parameter::
+
+    def test_workers(qtbot):
+        workers = spawn_workers()
+        with qtbot.waitSignal([w.finished for w in workers], raising=True):
+            for w in workers:
+                w.start()
+
+        # this will be reached after all workers emit their "finished"
+        # signal or a qtbot.SignalTimeoutError will be raised
+        assert_application_results(app)
+
 Exceptions in virtual methods
 =============================
+
+.. versionadded:: 1.1
 
 It is common in Qt programming to override virtual C++ methods to customize
 behavior, like listening for mouse events, implement drawing routines, etc.
@@ -229,10 +272,13 @@ QtBot
 .. module:: pytestqt.plugin
 .. autoclass:: QtBot
 
-SignalBlocker
--------------
+Signals
+-------
 
 .. autoclass:: SignalBlocker
+.. autoclass:: MultiSignalBlocker
+
+.. autoclass:: SignalTimeoutError
 
 Versioning
 ==========

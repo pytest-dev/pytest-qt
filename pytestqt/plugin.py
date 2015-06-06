@@ -76,6 +76,7 @@ class QtBot(object):
     **Signals**
 
     .. automethod:: waitSignal
+    .. automethod:: waitSignals
 
     **Raw QTest API**
 
@@ -165,12 +166,7 @@ class QtBot(object):
 
     """
 
-    def __init__(self, app):
-        """
-        :param QApplication app:
-            The current QApplication instance.
-        """
-        self._app = app
+    def __init__(self):
         self._widgets = []  # list of weakref to QWidget instances
 
     def _close(self):
@@ -181,6 +177,7 @@ class QtBot(object):
             w = w()
             if w is not None:
                 w.close()
+                w.deleteLater()
         self._widgets[:] = []
 
     def addWidget(self, widget):
@@ -234,15 +231,17 @@ class QtBot(object):
             if widget is not None:
                 widget_and_visibility.append((widget, widget.isVisible()))
 
-        self._app.exec_()
+        QApplication.instance().exec_()
 
         for widget, visible in widget_and_visibility:
             widget.setVisible(visible)
 
     stop = stopForInteraction
 
-    def waitSignal(self, signal=None, timeout=1000):
+    def waitSignal(self, signal=None, timeout=1000, raising=False):
         """
+        .. versionadded:: 1.2
+
         Stops current test until a signal is triggered.
 
         Used to stop the control flow of a test until a signal is emitted, or
@@ -257,50 +256,102 @@ class QtBot(object):
         manager form is not convenient::
 
            blocker = qtbot.waitSignal(signal, timeout=1000)
-           blocker.connect(other_signal)
+           blocker.connect(another_signal)
            long_function_that_calls_signal()
            blocker.wait()
+
+        Any additional signal, when triggered, will make :meth:`wait` return.
+
+        .. versionadded:: 1.4
+           The *raising* parameter.
 
         :param Signal signal:
             A signal to wait for. Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
+        :param bool raising:
+            If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
+            should be raised if a timeout occurred.
         :returns:
             ``SignalBlocker`` object. Call ``SignalBlocker.wait()`` to wait.
 
         .. note::
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
-
         """
-        blocker = SignalBlocker(timeout=timeout)
+        blocker = SignalBlocker(timeout=timeout, raising=raising)
         if signal is not None:
             blocker.connect(signal)
         return blocker
 
     wait_signal = waitSignal  # pep-8 alias
 
+    def waitSignals(self, signals=None, timeout=1000, raising=False):
+        """
+        .. versionadded:: 1.4
 
-class SignalBlocker(object):
+        Stops current test until all given signals are triggered.
+
+        Used to stop the control flow of a test until all (and only
+        all) signals are emitted, or a number of milliseconds, specified by
+        ``timeout``, has elapsed.
+
+        Best used as a context manager::
+
+           with qtbot.waitSignals([signal1, signal2], timeout=1000):
+               long_function_that_calls_signals()
+
+        Also, you can use the :class:`MultiSignalBlocker` directly if the
+        context manager form is not convenient::
+
+           blocker = qtbot.waitSignals(signals, timeout=1000)
+           long_function_that_calls_signal()
+           blocker.wait()
+
+        :param list signals:
+            A list of :class:`Signal`s to wait for. Set to ``None`` to just use
+            timeout.
+        :param int timeout:
+            How many milliseconds to wait before resuming control flow.
+        :param bool raising:
+            If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
+            should be raised if a timeout occurred.
+        :returns:
+            ``MultiSignalBlocker`` object. Call ``MultiSignalBlocker.wait()``
+            to wait.
+
+        .. note::
+           Cannot have both ``signals`` and ``timeout`` equal ``None``, or
+           else you will block indefinitely. We throw an error if this occurs.
+        """
+        blocker = MultiSignalBlocker(timeout=timeout, raising=raising)
+        if signals is not None:
+            for signal in signals:
+                blocker._add_signal(signal)
+        return blocker
+
+    wait_signals = waitSignals  # pep-8 alias
+
+
+class _AbstractSignalBlocker(object):
+
     """
-    Returned by :meth:`QtBot.waitSignal` method.
+    Base class for :class:`SignalBlocker` and :class:`MultiSignalBlocker`.
 
-    .. automethod:: wait
-    .. automethod:: connect
+    Provides :meth:`wait` and a context manager protocol, but no means to add
+    new signals and to detect when the signals should be considered "done".
+    This needs to be implemented by subclasses.
 
-    :ivar int timeout: maximum time to wait for a signal to be triggered. Can
-        be changed before :meth:`wait` is called.
+    Subclasses also need to provide ``self._signals`` which should evaluate to
+    ``False`` if no signals were configured.
 
-    :ivar bool signal_triggered: set to ``True`` if a signal was triggered, or
-        ``False`` if timeout was reached instead. Until :meth:`wait` is called,
-        this is set to ``None``.
     """
 
-    def __init__(self, timeout=1000):
+    def __init__(self, timeout=1000, raising=False):
         self._loop = QtCore.QEventLoop()
-        self._signals = []
         self.timeout = timeout
         self.signal_triggered = False
+        self.raising = raising
 
     def wait(self):
         """
@@ -311,16 +362,53 @@ class SignalBlocker(object):
         """
         if self.signal_triggered:
             return
-        if self.timeout is None and len(self._signals) == 0:
+        if self.timeout is None and not self._signals:
             raise ValueError("No signals or timeout specified.")
         if self.timeout is not None:
             QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
         self._loop.exec_()
+        if not self.signal_triggered and self.raising:
+            raise SignalTimeoutError("Didn't get signal after %sms." %
+                                      self.timeout)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.wait()
+
+
+class SignalBlocker(_AbstractSignalBlocker):
+
+    """
+    Returned by :meth:`QtBot.waitSignal` method.
+
+    :ivar int timeout: maximum time to wait for a signal to be triggered. Can
+        be changed before :meth:`wait` is called.
+
+    :ivar bool signal_triggered: set to ``True`` if a signal (or all signals in
+        case of :class:`MultipleSignalBlocker`) was triggered, or
+        ``False`` if timeout was reached instead. Until :meth:`wait` is called,
+        this is set to ``None``.
+
+    :ivar bool raising:
+        If :class:`SignalTimeoutError` should be raised if a timeout occurred.
+
+    .. automethod:: wait
+    .. automethod:: connect
+    """
+
+    def __init__(self, timeout=1000, raising=False):
+        super(SignalBlocker, self).__init__(timeout, raising=raising)
+        self._signals = []
 
     def connect(self, signal):
         """
-        Connects to the given signal, making :meth:`wait()` return once this signal
-        is emitted.
+        Connects to the given signal, making :meth:`wait()` return once
+        this signal is emitted.
+
+        More than one signal can be connected, in which case **any** one of
+        them will make ``wait()`` return.
 
         :param signal: QtCore.Signal
         """
@@ -334,11 +422,59 @@ class SignalBlocker(object):
         self.signal_triggered = True
         self._loop.quit()
 
-    def __enter__(self):
-        return self
 
-    def __exit__(self, type, value, traceback):
-        self.wait()
+class MultiSignalBlocker(_AbstractSignalBlocker):
+
+    """
+    Returned by :meth:`QtBot.waitSignals` method, blocks until all signals
+    connected to it are triggered or the timeout is reached.
+
+    Variables identical to :class:`SignalBlocker`:
+        - ``timeout``
+        - ``signal_triggered``
+        - ``raising``
+
+    .. automethod:: wait
+    """
+
+    def __init__(self, timeout=1000, raising=False):
+        super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
+        self._signals = {}
+
+    def _add_signal(self, signal):
+        """
+        Adds the given signal to the list of signals which :meth:`wait()` waits
+        for.
+
+        :param signal: QtCore.Signal
+        """
+        self._signals[signal] = False
+        signal.connect(functools.partial(self._signal_emitted, signal))
+
+    def _signal_emitted(self, signal):
+        """
+        Called when a given signal is emitted.
+
+        If all expected signals have been emitted, quits the event loop and
+        marks that we finished because signals.
+        """
+        self._signals[signal] = True
+        if all(self._signals.values()):
+            self.signal_triggered = True
+            self._loop.quit()
+
+
+class SignalTimeoutError(Exception):
+    """
+    .. versionadded:: 1.4
+
+    The exception thrown by :meth:`QtBot.waitSignal` if the *raising*
+    parameter has been given and there was a timeout.
+    """
+    pass
+
+# provide easy access to SignalTimeoutError to qtbot fixtures
+QtBot.SignalTimeoutError = SignalTimeoutError
 
 
 @contextmanager
@@ -383,12 +519,15 @@ def qapp():
     """
     app = QApplication.instance()
     if app is None:
-        app = QApplication([])
+        global _qapp_instance
+        _qapp_instance = QApplication([])
         yield app
-        app.exit()
-        app.deleteLater()
     else:
         yield app  # pragma: no cover
+
+# holds a global QApplication instance created in the qapp fixture; keeping
+# this reference alive avoids it being garbage collected too early
+_qapp_instance = None
 
 
 @pytest.yield_fixture
@@ -399,7 +538,7 @@ def qtbot(qapp, request):
     Make sure to call addWidget for each top-level widget you create to ensure
     that they are properly closed after the test ends.
     """
-    result = QtBot(qapp)
+    result = QtBot()
     no_capture = request.node.get_marker('qt_no_exception_capture') or \
                  request.config.getini('qt_no_exception_capture')
     if no_capture:
@@ -427,6 +566,18 @@ def pytest_addoption(parser):
                      default=True)
     parser.addoption('--qt-log-format', dest='qt_log_format',
                      default='{rec.type_name}: {rec.message}')
+
+
+@pytest.mark.hookwrapper
+def pytest_runtest_teardown():
+    """
+    Hook called after each test tear down, to process any pending events and
+    avoiding leaking events to the next test.
+    """
+    yield
+    app = QApplication.instance()
+    if app is not None:
+        app.processEvents()
 
 
 def pytest_configure(config):
