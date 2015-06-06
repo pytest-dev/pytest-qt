@@ -265,3 +265,29 @@ def test_logging_fails_ignore_mark(testdir, mark_regex):
     res = testdir.inline_run()
     passed = 1 if mark_regex == 'WM_DESTROY.*sent' else 0
     res.assertoutcome(passed=passed, failed=int(not passed))
+
+
+@pytest.mark.parametrize('apply_mark', [True, False])
+def test_logging_fails_ignore_mark_multiple(testdir, apply_mark):
+    """
+    Make sure qt_log_ignore mark supports multiple arguments.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    if apply_mark:
+        mark = '@pytest.mark.qt_log_ignore("WM_DESTROY", "WM_PAINT")'
+    else:
+        mark = ''
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qWarning, qCritical
+        import pytest
+        @pytest.mark.qt_log_level_fail('CRITICAL')
+        {mark}
+        def test1():
+            qCritical('WM_PAINT was sent')
+        """.format(mark=mark)
+    )
+    res = testdir.inline_run()
+    passed = 1 if apply_mark else 0
+    res.assertoutcome(passed=passed, failed=int(not passed))
