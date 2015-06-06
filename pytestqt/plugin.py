@@ -9,6 +9,7 @@ from py._code.code import TerminalRepr
 from py._code.code import ReprFileLocation
 
 import pytest
+import re
 
 from pytestqt.qt_compat import QtCore, QtTest, QApplication, QT_API, \
     qInstallMsgHandler, QtDebugMsg, QtWarningMsg, QtCriticalMsg, QtFatalMsg
@@ -561,6 +562,9 @@ def pytest_addoption(parser):
                   'log level in which tests can fail: {0} (default: "{1}")'
                   .format(QtLoggingPlugin.LOG_FAIL_OPTIONS, default_log_fail),
                   default=default_log_fail)
+    parser.addini('qt_log_ignore',
+                  'list of regexes for messages that should not cause a tests '
+                  'to fails', type='linelist')
 
     parser.addoption('--no-qt-log', dest='qt_log', action='store_false',
                      default=True)
@@ -604,7 +608,7 @@ def qtlog(request):
     if hasattr(request._pyfuncitem, 'qt_log_capture'):
         return request._pyfuncitem.qt_log_capture
     else:
-        return _QtMessageCapture()  # pragma: no cover
+        return _QtMessageCapture([])  # pragma: no cover
 
 
 class QtLoggingPlugin(object):
@@ -619,7 +623,8 @@ class QtLoggingPlugin(object):
         self.config = config
 
     def pytest_runtest_setup(self, item):
-        item.qt_log_capture = _QtMessageCapture()
+        item.qt_log_capture = _QtMessageCapture(
+            item.config.getini('qt_log_ignore'))
         previous_handler = qInstallMsgHandler(item.qt_log_capture._handle)
         item.qt_previous_handler = previous_handler
 
@@ -630,8 +635,6 @@ class QtLoggingPlugin(object):
         outcome = yield
         report = outcome.result
 
-        log_format = self.config.getoption('qt_log_format')
-
         m = item.get_marker('qt_log_level_fail')
         if m:
             log_fail_level = m.args[0]
@@ -641,21 +644,27 @@ class QtLoggingPlugin(object):
 
         if call.when == 'call':
 
+            # make test fail if any records were captured which match
+            # log_fail_level
             if log_fail_level != 'NO' and report.outcome != 'failed':
                 for rec in item.qt_log_capture.records:
-                    if rec.matches_level(log_fail_level):
+                    if rec.matches_level(log_fail_level) and not rec.ignored:
                         report.outcome = 'failed'
                         if report.longrepr is None:
                             report.longrepr = \
                                 _QtLogLevelErrorRepr(item, log_fail_level)
                         break
 
+            # if test has failed, add recorded messages to its terminal
+            # representation
             if not report.passed:
                 long_repr = getattr(report, 'longrepr', None)
                 if hasattr(long_repr, 'addsection'):  # pragma: no cover
+                    log_format = self.config.getoption('qt_log_format')
                     lines = []
                     for rec in item.qt_log_capture.records:
-                        lines.append(log_format.format(rec=rec))
+                        suffix = ' (IGNORED)' if rec.ignored else ''
+                        lines.append(log_format.format(rec=rec) + suffix)
                     if lines:
                         long_repr.addsection('Captured Qt messages',
                                              '\n'.join(lines))
@@ -670,11 +679,14 @@ class _QtMessageCapture(object):
     Captures Qt messages when its `handle` method is installed using
     qInstallMsgHandler, and stores them into `messages` attribute.
 
-    :attr messages: list of Record named-tuples.
+    :attr _records: list of Record instances.
+    :attr _ignore_regexes: list of regexes (as strings) that define if a record
+        should be ignored.
     """
 
-    def __init__(self):
+    def __init__(self, ignore_regexes):
         self._records = []
+        self._ignore_regexes = ignore_regexes or []
 
     def _handle(self, msg_type, message):
         """
@@ -683,7 +695,14 @@ class _QtMessageCapture(object):
         """
         if isinstance(message, bytes):
             message = message.decode('utf-8', 'replace')
-        self._records.append(Record(msg_type, message))
+
+        ignored = False
+        for regex in self._ignore_regexes:
+            if re.search(regex, message) is not None:
+                ignored = True
+                break
+
+        self._records.append(Record(msg_type, message, ignored))
 
     @property
     def records(self):
@@ -704,20 +723,24 @@ class Record(object):
         type name similar to the logging package, for example ``DEBUG``,
         ``WARNING``, etc.
     :attr datetime.datetime when: when the message was sent
+    :attr ignored: If this record matches a regex from the "qt_log_ignore"
+        option.
     """
 
-    def __init__(self, msg_type, message):
+    def __init__(self, msg_type, message, ignored):
         self._type = msg_type
         self._message = message
         self._type_name = self._get_msg_type_name(msg_type)
         self._log_type_name = self._get_log_type_name(msg_type)
         self._when = datetime.datetime.now()
+        self._ignored = ignored
 
     message = property(lambda self: self._message)
     type = property(lambda self: self._type)
     type_name = property(lambda self: self._type_name)
     log_type_name = property(lambda self: self._log_type_name)
     when = property(lambda self: self._when)
+    ignored = property(lambda self: self._ignored)
 
     @classmethod
     def _get_msg_type_name(cls, msg_type):
@@ -751,11 +774,11 @@ class Record(object):
 
     def matches_level(self, level):
         if level == 'DEBUG':
-            return self.log_type_name in set(['DEBUG', 'WARNING', 'CRITICAL'])
+            return self.log_type_name in ('DEBUG', 'WARNING', 'CRITICAL')
         elif level == 'WARNING':
-            return self.log_type_name in set(['WARNING', 'CRITICAL'])
+            return self.log_type_name in ('WARNING', 'CRITICAL')
         elif level == 'CRITICAL':
-            return self.log_type_name in set(['CRITICAL'])
+            return self.log_type_name in ('CRITICAL',)
         else:
             raise ValueError('log_fail_level unknown: {0}'.format(level))
 

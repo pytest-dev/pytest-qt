@@ -174,3 +174,61 @@ def test_logging_fails_tests_mark(testdir):
     )
     res = testdir.inline_run()
     res.assertoutcome(failed=1)
+
+
+def test_logging_fails_ignore(testdir):
+    """
+    Test qt_log_ignore config option.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = CRITICAL
+        qt_log_ignore = WM_DESTROY.*sent
+        """
+    )
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qWarning, qCritical
+        import pytest
+
+        def test1():
+            qCritical('a critical message')
+        def test2():
+            qCritical('WM_DESTROY was sent')
+        def test3():
+            qCritical('WM_DESTROY was sent')
+            assert 0
+        def test4():
+            qCritical('WM_DESTROY was sent')
+            qCritical('another critical message')
+        """
+    )
+    res = testdir.runpytest()
+    lines = [
+        # test1 fails because it has emitted a CRITICAL message and that message
+        # does not match any regex in qt_log_ignore
+        '*_ test1 _*',
+        '*Failure: Qt messages with level CRITICAL or above emitted*',
+        '*QtCriticalMsg: a critical message*',
+
+        # test2 succeeds because its message matches qt_log_ignore
+
+        # test3 fails because of an assert, but the ignored message should
+        # still appear in the failure message
+        '*_ test3 _*',
+        '*AssertionError*',
+        '*QtCriticalMsg: WM_DESTROY was sent*(IGNORED)*',
+
+        # test4 fails because one message is ignored but the other isn't
+        '*_ test4 _*',
+        '*Failure: Qt messages with level CRITICAL or above emitted*',
+        '*QtCriticalMsg: WM_DESTROY was sent*(IGNORED)*',
+        '*QtCriticalMsg: another critical message*',
+
+        # summary
+        '*3 failed, 1 passed*',
+    ]
+    res.stdout.fnmatch_lines(lines)
