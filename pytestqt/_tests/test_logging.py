@@ -186,7 +186,9 @@ def test_logging_fails_ignore(testdir):
         """
         [pytest]
         qt_log_level_fail = CRITICAL
-        qt_log_ignore = WM_DESTROY.*sent
+        qt_log_ignore =
+            WM_DESTROY.*sent
+            WM_PAINT not handled
         """
     )
     testdir.makepyfile(
@@ -202,7 +204,7 @@ def test_logging_fails_ignore(testdir):
             qCritical('WM_DESTROY was sent')
             assert 0
         def test4():
-            qCritical('WM_DESTROY was sent')
+            qCritical('WM_PAINT not handled')
             qCritical('another critical message')
         """
     )
@@ -225,7 +227,7 @@ def test_logging_fails_ignore(testdir):
         # test4 fails because one message is ignored but the other isn't
         '*_ test4 _*',
         '*Failure: Qt messages with level CRITICAL or above emitted*',
-        '*QtCriticalMsg: WM_DESTROY was sent*(IGNORED)*',
+        '*QtCriticalMsg: WM_PAINT not handled*(IGNORED)*',
         '*QtCriticalMsg: another critical message*',
 
         # summary
