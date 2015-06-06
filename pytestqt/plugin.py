@@ -593,6 +593,9 @@ def pytest_configure(config):
     config.addinivalue_line(
         'markers',
         'qt_log_level_fail: overrides qt_log_level_fail ini option.')
+    config.addinivalue_line(
+        'markers',
+        'qt_log_ignore: overrides qt_log_ignore ini option.')
 
     if config.getoption('qt_log'):
         config.pluginmanager.register(QtLoggingPlugin(config), '_qt_logging')
@@ -623,8 +626,12 @@ class QtLoggingPlugin(object):
         self.config = config
 
     def pytest_runtest_setup(self, item):
-        item.qt_log_capture = _QtMessageCapture(
-            item.config.getini('qt_log_ignore'))
+        m = item.get_marker('qt_log_ignore')
+        if m:
+            ignore_regexes = m.args
+        else:
+            ignore_regexes = self.config.getini('qt_log_ignore')
+        item.qt_log_capture = _QtMessageCapture(ignore_regexes)
         previous_handler = qInstallMsgHandler(item.qt_log_capture._handle)
         item.qt_previous_handler = previous_handler
 

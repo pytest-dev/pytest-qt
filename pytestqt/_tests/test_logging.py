@@ -232,3 +232,34 @@ def test_logging_fails_ignore(testdir):
         '*3 failed, 1 passed*',
     ]
     res.stdout.fnmatch_lines(lines)
+
+
+@pytest.mark.parametrize('mark_regex', ['WM_DESTROY.*sent', 'no-match', None])
+def test_logging_fails_ignore_mark(testdir, mark_regex):
+    """
+    Test qt_log_ignore mark overrides config option.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = CRITICAL
+        """
+    )
+    if mark_regex:
+        mark = '@pytest.mark.qt_log_ignore("{0}")'.format(mark_regex)
+    else:
+        mark = ''
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qWarning, qCritical
+        import pytest
+        {mark}
+        def test1():
+            qCritical('WM_DESTROY was sent')
+        """.format(mark=mark)
+    )
+    res = testdir.inline_run()
+    passed = 1 if mark_regex == 'WM_DESTROY.*sent' else 0
+    res.assertoutcome(passed=passed, failed=int(not passed))
