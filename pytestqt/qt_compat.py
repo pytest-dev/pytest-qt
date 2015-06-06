@@ -140,4 +140,13 @@ else:  # pragma: no cover
     QEvent = Mock()
     QApplication = Mock()
     QWidget = Mock()
+    qInstallMsgHandler = Mock()
+    qDebug = Mock()
+    qWarning = Mock()
+    qCritical = Mock()
+    qFatal = Mock()
+    QtDebugMsg = Mock()
+    QtWarningMsg = Mock()
+    QtCriticalMsg = Mock()
+    QtFatalMsg = Mock()
     QT_API = '<none>'
