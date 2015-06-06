@@ -102,7 +102,7 @@ def test_logging_formatting(testdir):
         """
     )
     f = '{rec.type_name} {rec.log_type_name} {rec.when:%Y-%m-%d}: {rec.message}'
-    res = testdir.runpytest('--qt-log-format={}'.format(f))
+    res = testdir.runpytest('--qt-log-format={0}'.format(f))
     today = '{0:%Y-%m-%d}'.format(datetime.datetime.now())
     res.stdout.fnmatch_lines([
         '*-- Captured Qt messages --*',

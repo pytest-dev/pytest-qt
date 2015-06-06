@@ -682,7 +682,7 @@ class _QtMessageCapture(object):
         into the `messages` attribute.
         """
         if isinstance(message, bytes):
-            message = message.decode('utf-8', errors='replace')
+            message = message.decode('utf-8', 'replace')
         self._records.append(Record(msg_type, message))
 
     @property
@@ -751,11 +751,11 @@ class Record(object):
 
     def matches_level(self, level):
         if level == 'DEBUG':
-            return self.log_type_name in {'DEBUG', 'WARNING', 'CRITICAL'}
+            return self.log_type_name in set(['DEBUG', 'WARNING', 'CRITICAL'])
         elif level == 'WARNING':
-            return self.log_type_name in {'WARNING', 'CRITICAL'}
+            return self.log_type_name in set(['WARNING', 'CRITICAL'])
         elif level == 'CRITICAL':
-            return self.log_type_name in {'CRITICAL'}
+            return self.log_type_name in set(['CRITICAL'])
         else:
             raise ValueError('log_fail_level unknown: {0}'.format(level))
 
