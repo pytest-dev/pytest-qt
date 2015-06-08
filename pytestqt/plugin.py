@@ -799,8 +799,9 @@ class _QtLogLevelErrorRepr(TerminalRepr):
 
     def __init__(self, item, level):
         msg = 'Failure: Qt messages with level {0} or above emitted'
-        path, line, _ = item.location
-        self.fileloc = ReprFileLocation(path, line, msg.format(level.upper()))
+        path, line_index, _ = item.location
+        self.fileloc = ReprFileLocation(path, lineno=line_index + 1,
+                                        message=msg.format(level.upper()))
         self.sections = []
 
     def addsection(self, name, content, sep="-"):

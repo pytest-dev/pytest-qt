@@ -291,3 +291,27 @@ def test_logging_fails_ignore_mark_multiple(testdir, apply_mark):
     res = testdir.inline_run()
     passed = 1 if apply_mark else 0
     res.assertoutcome(passed=passed, failed=int(not passed))
+
+
+def test_logging_fails_lineno(testdir):
+    """
+    Test that tests when failing because log messages were emitted report
+    the correct line number.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = WARNING
+        """
+    )
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qWarning
+        def test_foo():
+            qWarning('this is a WARNING message')
+        """
+    )
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines('*test_logging_fails_lineno.py:2: Failure:*')
