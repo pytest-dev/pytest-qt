@@ -3,7 +3,7 @@ import datetime
 import pytest
 
 from pytestqt.qt_compat import qDebug, qWarning, qCritical, QtDebugMsg, \
-    QtWarningMsg, QtCriticalMsg
+    QtWarningMsg, QtCriticalMsg, QT_API
 
 pytest_plugins = 'pytester'
 
@@ -36,9 +36,9 @@ def test_basic_logging(testdir, test_succeds, qt_log):
         if qt_log:
             res.stdout.fnmatch_lines([
                 '*-- Captured Qt messages --*',
-                'QtDebugMsg: this is a DEBUG message*',
-                'QtWarningMsg: this is a WARNING message*',
-                'QtCriticalMsg: this is a CRITICAL message*',
+                '*QtDebugMsg: this is a DEBUG message*',
+                '*QtWarningMsg: this is a WARNING message*',
+                '*QtCriticalMsg: this is a CRITICAL message*',
             ])
         else:
             res.stdout.fnmatch_lines([
@@ -293,7 +293,7 @@ def test_logging_fails_ignore_mark_multiple(testdir, apply_mark):
     res.assertoutcome(passed=passed, failed=int(not passed))
 
 
-def test_logging_fails_lineno(testdir):
+def test_lineno_failure(testdir):
     """
     Test that tests when failing because log messages were emitted report
     the correct line number.
@@ -310,8 +310,17 @@ def test_logging_fails_lineno(testdir):
         """
         from pytestqt.qt_compat import qWarning
         def test_foo():
+            assert foo() == 10
+        def foo():
             qWarning('this is a WARNING message')
+            return 10
         """
     )
     res = testdir.runpytest()
-    res.stdout.fnmatch_lines('*test_logging_fails_lineno.py:2: Failure:*')
+    if QT_API == 'pyqt5':
+        res.stdout.fnmatch_lines([
+            '*test_lineno_failure.py:2: Failure*',
+            '*test_lineno_failure.py:foo:5: QtWarning*'],
+        )
+    else:
+        res.stdout.fnmatch_lines('*test_lineno_failure.py:2: Failure*')

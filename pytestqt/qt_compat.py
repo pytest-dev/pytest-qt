@@ -101,7 +101,7 @@ if not on_rtd:  # pragma: no cover
                 message handler's signature.
                 """
                 def _Qt5MessageHandler(msg_type, context, msg):
-                    handler(msg_type, msg)
+                    handler(msg_type, msg, context)
                 if handler is not None:
                     return QtCore.qInstallMessageHandler(_Qt5MessageHandler)
                 else:
