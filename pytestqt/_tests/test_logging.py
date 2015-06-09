@@ -119,6 +119,35 @@ def test_disable_qtlog_context_manager(testdir, use_context_manager):
     res.assertoutcome(passed=passed, failed=int(not passed))
 
 
+@pytest.mark.parametrize('use_mark', [True, False])
+def test_disable_qtlog_mark(testdir, use_mark):
+    """
+    Test mark which disables logging capture for a test.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = CRITICAL
+        """
+    )
+    mark = '@pytest.mark.no_qt_log' if use_mark else ''
+
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qCritical
+        import pytest
+        {mark}
+        def test_1():
+            qCritical('message')
+        """.format(mark=mark)
+    )
+    res = testdir.inline_run()
+    passed = 1 if use_mark else 0
+    res.assertoutcome(passed=passed, failed=int(not passed))
+
+
 def test_logging_formatting(testdir):
     """
     Test custom formatting for logging messages.

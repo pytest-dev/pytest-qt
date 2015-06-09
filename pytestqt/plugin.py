@@ -631,6 +631,8 @@ class QtLoggingPlugin(object):
         self.config = config
 
     def pytest_runtest_setup(self, item):
+        if item.get_marker('no_qt_log'):
+            return
         m = item.get_marker('qt_log_ignore')
         if m:
             ignore_regexes = m.args
@@ -644,16 +646,18 @@ class QtLoggingPlugin(object):
         """Add captured Qt messages to test item report if the call failed."""
 
         outcome = yield
-        report = outcome.result
-
-        m = item.get_marker('qt_log_level_fail')
-        if m:
-            log_fail_level = m.args[0]
-        else:
-            log_fail_level = self.config.getini('qt_log_level_fail')
-        assert log_fail_level in QtLoggingPlugin.LOG_FAIL_OPTIONS
+        if not hasattr(item, 'qt_log_capture'):
+            return
 
         if call.when == 'call':
+            report = outcome.result
+
+            m = item.get_marker('qt_log_level_fail')
+            if m:
+                log_fail_level = m.args[0]
+            else:
+                log_fail_level = self.config.getini('qt_log_level_fail')
+            assert log_fail_level in QtLoggingPlugin.LOG_FAIL_OPTIONS
 
             # make test fail if any records were captured which match
             # log_fail_level
