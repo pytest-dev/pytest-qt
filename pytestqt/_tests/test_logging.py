@@ -87,6 +87,38 @@ def test_fixture_with_logging_disabled(testdir):
     res.stdout.fnmatch_lines('*1 passed*')
 
 
+@pytest.mark.parametrize('use_context_manager', [True, False])
+def test_disable_qtlog_context_manager(testdir, use_context_manager):
+    """
+    Test qtlog.disabled() context manager.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = CRITICAL
+        """
+    )
+
+    if use_context_manager:
+        code = 'with qtlog.disabled():'
+    else:
+        code = 'if 1:'
+
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qCritical
+        def test_1(qtlog):
+            {code}
+                qCritical('message')
+        """.format(code=code)
+    )
+    res = testdir.inline_run()
+    passed = 1 if use_context_manager else 0
+    res.assertoutcome(passed=passed, failed=int(not passed))
+
+
 def test_logging_formatting(testdir):
     """
     Test custom formatting for logging messages.

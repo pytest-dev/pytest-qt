@@ -637,8 +637,7 @@ class QtLoggingPlugin(object):
         else:
             ignore_regexes = self.config.getini('qt_log_ignore')
         item.qt_log_capture = _QtMessageCapture(ignore_regexes)
-        previous_handler = qInstallMsgHandler(item.qt_log_capture._handle)
-        item.qt_previous_handler = previous_handler
+        item.qt_log_capture._start()
 
     @pytest.mark.hookwrapper
     def pytest_runtest_makereport(self, item, call):
@@ -682,8 +681,7 @@ class QtLoggingPlugin(object):
                         long_repr.addsection('Captured Qt messages',
                                              '\n'.join(lines))
 
-            qInstallMsgHandler(item.qt_previous_handler)
-            del item.qt_previous_handler
+            item.qt_log_capture._stop()
             del item.qt_log_capture
 
 
@@ -700,6 +698,25 @@ class _QtMessageCapture(object):
     def __init__(self, ignore_regexes):
         self._records = []
         self._ignore_regexes = ignore_regexes or []
+        self._previous_handler = None
+
+    def _start(self):
+        self._previous_handler = qInstallMsgHandler(self._handle)
+
+    def _stop(self):
+        qInstallMsgHandler(self._previous_handler)
+
+    @contextmanager
+    def disabled(self):
+        """
+        Context manager that temporarily disables logging capture while
+        inside it.
+        """
+        self._stop()
+        try:
+            yield
+        finally:
+            self._start()
 
     _Context = namedtuple('_Context', 'file function line')
 
