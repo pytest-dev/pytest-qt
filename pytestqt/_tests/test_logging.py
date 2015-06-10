@@ -325,3 +325,32 @@ def test_lineno_failure(testdir):
         ])
     else:
         res.stdout.fnmatch_lines('*test_lineno_failure.py:2: Failure*')
+
+
+@pytest.mark.skipif(QT_API != 'pyqt5',
+                    reason='Context information only available in PyQt5')
+def test_context_none(testdir):
+    """
+    Sometimes PyQt5 will emit a context with some/all attributes set as None
+    instead of appropriate file, function and line number.
+
+    Test that when this happens the plugin doesn't break.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import QtWarningMsg
+
+        def test_foo(request):
+            log_capture = request.node.qt_log_capture
+            context = log_capture._Context(None, None, None)
+            log_capture._handle(QtWarningMsg, "WARNING message", context)
+            assert 0
+        """
+    )
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines([
+        '*Failure*',
+        '*None:None:None:*',
+    ])
