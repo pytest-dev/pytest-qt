@@ -13,7 +13,8 @@ import pytest
 import re
 
 from pytestqt.qt_compat import QtCore, QtTest, QApplication, QT_API, \
-    qInstallMsgHandler, QtDebugMsg, QtWarningMsg, QtCriticalMsg, QtFatalMsg
+    qInstallMsgHandler, qInstallMessageHandler, QtDebugMsg, QtWarningMsg, \
+    QtCriticalMsg, QtFatalMsg
 
 
 def _inject_qtest_methods(cls):
@@ -692,7 +693,7 @@ class QtLoggingPlugin(object):
 class _QtMessageCapture(object):
     """
     Captures Qt messages when its `handle` method is installed using
-    qInstallMsgHandler, and stores them into `messages` attribute.
+    qInstallMsgHandler, and stores them into `records` attribute.
 
     :attr _records: list of Record instances.
     :attr _ignore_regexes: list of regexes (as strings) that define if a record
@@ -705,10 +706,26 @@ class _QtMessageCapture(object):
         self._previous_handler = None
 
     def _start(self):
-        self._previous_handler = qInstallMsgHandler(self._handle)
+        """
+        Start receiving messages from Qt.
+        """
+        if qInstallMsgHandler:
+            previous_handler = qInstallMsgHandler(self._handle_no_context)
+        else:
+            assert qInstallMessageHandler
+            previous_handler = qInstallMessageHandler(self._handle_with_context)
+        self._previous_handler = previous_handler
 
     def _stop(self):
-        qInstallMsgHandler(self._previous_handler)
+        """
+        Stop receiving messages from Qt, restoring the previously installed
+        handler.
+        """
+        if qInstallMsgHandler:
+            qInstallMsgHandler(self._previous_handler)
+        else:
+            assert qInstallMessageHandler
+            qInstallMessageHandler(self._previous_handler)
 
     @contextmanager
     def disabled(self):
@@ -724,10 +741,13 @@ class _QtMessageCapture(object):
 
     _Context = namedtuple('_Context', 'file function line')
 
-    def _handle(self, msg_type, message, context=None):
+    def _append_new_record(self, msg_type, message, context):
         """
-        Method to be installed using qInstallMsgHandler, stores each message
-        into the `messages` attribute.
+        Creates a new Record instance and stores it.
+
+        :param msg_type: Qt message typ
+        :param message: message string, if bytes it will be converted to str.
+        :param context: QMessageLogContext object or None
         """
         def to_unicode(s):
             if isinstance(s, bytes):
@@ -750,6 +770,20 @@ class _QtMessageCapture(object):
             )
 
         self._records.append(Record(msg_type, message, ignored, context))
+
+    def _handle_no_context(self, msg_type, message):
+        """
+        Method to be installed using qInstallMsgHandler (Qt4),
+        stores each message into the `_records` attribute.
+        """
+        self._append_new_record(msg_type, message, context=None)
+
+    def _handle_with_context(self, msg_type, context, message):
+        """
+        Method to be installed using qInstallMessageHandler (Qt5),
+        stores each message into the `_records` attribute.
+        """
+        self._append_new_record(msg_type, message, context=context)
 
     @property
     def records(self):

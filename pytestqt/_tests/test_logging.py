@@ -8,10 +8,10 @@ from pytestqt.qt_compat import qDebug, qWarning, qCritical, QtDebugMsg, \
 pytest_plugins = 'pytester'
 
 
-@pytest.mark.parametrize('test_succeds, qt_log',
+@pytest.mark.parametrize('test_succeeds, qt_log',
                          [(True, True), (True, False), (False, False),
                           (False, True)])
-def test_basic_logging(testdir, test_succeds, qt_log):
+def test_basic_logging(testdir, test_succeeds, qt_log):
     """
     Test Qt logging capture output.
 
@@ -26,10 +26,10 @@ def test_basic_logging(testdir, test_succeds, qt_log):
             qWarning('this is a WARNING message')
             qCritical('this is a CRITICAL message')
             assert {0}
-        """.format(test_succeds)
+        """.format(test_succeeds)
     )
     res = testdir.runpytest(*(['--no-qt-log'] if not qt_log else []))
-    if test_succeds:
+    if test_succeeds:
         assert 'Captured Qt messages' not in res.stdout.str()
         assert 'Captured stderr call' not in res.stdout.str()
     else:
@@ -406,7 +406,8 @@ def test_context_none(testdir):
         def test_foo(request):
             log_capture = request.node.qt_log_capture
             context = log_capture._Context(None, None, None)
-            log_capture._handle(QtWarningMsg, "WARNING message", context)
+            log_capture._handle_with_context(QtWarningMsg,
+                                             context, "WARNING message")
             assert 0
         """
     )
