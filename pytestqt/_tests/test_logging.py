@@ -320,7 +320,8 @@ def test_lineno_failure(testdir):
     if QT_API == 'pyqt5':
         res.stdout.fnmatch_lines([
             '*test_lineno_failure.py:2: Failure*',
-            '*test_lineno_failure.py:foo:5: QtWarning*'],
-        )
+            '*test_lineno_failure.py:foo:5:*',
+            '    QtWarningMsg: this is a WARNING message',
+        ])
     else:
         res.stdout.fnmatch_lines('*test_lineno_failure.py:2: Failure*')

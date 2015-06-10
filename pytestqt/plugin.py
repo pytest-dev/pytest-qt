@@ -571,7 +571,7 @@ def pytest_addoption(parser):
                      default=True)
     if QT_API == 'pyqt5':
         default = '{rec.context.file}:{rec.context.function}:' \
-                  '{rec.context.line}: {rec.type_name}: {rec.message}'
+                  '{rec.context.line}:\n    {rec.type_name}: {rec.message}'
     else:
         default = '{rec.type_name}: {rec.message}'
     parser.addoption('--qt-log-format', dest='qt_log_format', default=default)
