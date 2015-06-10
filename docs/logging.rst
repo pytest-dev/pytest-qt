@@ -43,7 +43,7 @@ For example:
     1 failed in 0.01 seconds
 
 
-**Disabling Loggin Capture**
+**Disabling Logging Capture**
 
 Qt logging capture can be disabled altogether by passing the ``--no-qt-log``
 to the command line, which will fallback to the default Qt bahavior of printing
@@ -88,12 +88,12 @@ context manager, or with the ``pytest.mark.no_qt_log`` mark:
 
     def test_foo(qtlog):
         with qtlog.disabled():
-            # logging is disable within the context manager
+            # logging is disabled within the context manager
             do_something()
 
     @pytest.mark.no_qt_log
     def test_bar():
-        # logging disabled for the entire test
+        # logging is disabled for the entire test
         do_something()
 
 
