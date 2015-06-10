@@ -3,7 +3,7 @@ import datetime
 import pytest
 
 from pytestqt.qt_compat import qDebug, qWarning, qCritical, QtDebugMsg, \
-    QtWarningMsg, QtCriticalMsg
+    QtWarningMsg, QtCriticalMsg, QT_API
 
 pytest_plugins = 'pytester'
 
@@ -36,9 +36,9 @@ def test_basic_logging(testdir, test_succeds, qt_log):
         if qt_log:
             res.stdout.fnmatch_lines([
                 '*-- Captured Qt messages --*',
-                'QtDebugMsg: this is a DEBUG message*',
-                'QtWarningMsg: this is a WARNING message*',
-                'QtCriticalMsg: this is a CRITICAL message*',
+                '*QtDebugMsg: this is a DEBUG message*',
+                '*QtWarningMsg: this is a WARNING message*',
+                '*QtCriticalMsg: this is a CRITICAL message*',
             ])
         else:
             res.stdout.fnmatch_lines([
@@ -291,3 +291,66 @@ def test_logging_fails_ignore_mark_multiple(testdir, apply_mark):
     res = testdir.inline_run()
     passed = 1 if apply_mark else 0
     res.assertoutcome(passed=passed, failed=int(not passed))
+
+
+def test_lineno_failure(testdir):
+    """
+    Test that tests when failing because log messages were emitted report
+    the correct line number.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = WARNING
+        """
+    )
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qWarning
+        def test_foo():
+            assert foo() == 10
+        def foo():
+            qWarning('this is a WARNING message')
+            return 10
+        """
+    )
+    res = testdir.runpytest()
+    if QT_API == 'pyqt5':
+        res.stdout.fnmatch_lines([
+            '*test_lineno_failure.py:2: Failure*',
+            '*test_lineno_failure.py:foo:5:*',
+            '    QtWarningMsg: this is a WARNING message',
+        ])
+    else:
+        res.stdout.fnmatch_lines('*test_lineno_failure.py:2: Failure*')
+
+
+@pytest.mark.skipif(QT_API != 'pyqt5',
+                    reason='Context information only available in PyQt5')
+def test_context_none(testdir):
+    """
+    Sometimes PyQt5 will emit a context with some/all attributes set as None
+    instead of appropriate file, function and line number.
+
+    Test that when this happens the plugin doesn't break.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import QtWarningMsg
+
+        def test_foo(request):
+            log_capture = request.node.qt_log_capture
+            context = log_capture._Context(None, None, None)
+            log_capture._handle(QtWarningMsg, "WARNING message", context)
+            assert 0
+        """
+    )
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines([
+        '*Failure*',
+        '*None:None:None:*',
+    ])

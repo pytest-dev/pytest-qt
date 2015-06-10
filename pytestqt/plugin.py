@@ -1,3 +1,4 @@
+from collections import namedtuple
 from contextlib import contextmanager
 import functools
 import sys
@@ -568,8 +569,12 @@ def pytest_addoption(parser):
 
     parser.addoption('--no-qt-log', dest='qt_log', action='store_false',
                      default=True)
-    parser.addoption('--qt-log-format', dest='qt_log_format',
-                     default='{rec.type_name}: {rec.message}')
+    if QT_API == 'pyqt5':
+        default = '{rec.context.file}:{rec.context.function}:' \
+                  '{rec.context.line}:\n    {rec.type_name}: {rec.message}'
+    else:
+        default = '{rec.type_name}: {rec.message}'
+    parser.addoption('--qt-log-format', dest='qt_log_format', default=default)
 
 
 @pytest.mark.hookwrapper
@@ -671,7 +676,8 @@ class QtLoggingPlugin(object):
                     lines = []
                     for rec in item.qt_log_capture.records:
                         suffix = ' (IGNORED)' if rec.ignored else ''
-                        lines.append(log_format.format(rec=rec) + suffix)
+                        line = log_format.format(rec=rec) + suffix
+                        lines.append(line)
                     if lines:
                         long_repr.addsection('Captured Qt messages',
                                              '\n'.join(lines))
@@ -695,13 +701,19 @@ class _QtMessageCapture(object):
         self._records = []
         self._ignore_regexes = ignore_regexes or []
 
-    def _handle(self, msg_type, message):
+    _Context = namedtuple('_Context', 'file function line')
+
+    def _handle(self, msg_type, message, context=None):
         """
         Method to be installed using qInstallMsgHandler, stores each message
         into the `messages` attribute.
         """
-        if isinstance(message, bytes):
-            message = message.decode('utf-8', 'replace')
+        def to_unicode(s):
+            if isinstance(s, bytes):
+                s = s.decode('utf-8', 'replace')
+            return s
+
+        message = to_unicode(message)
 
         ignored = False
         for regex in self._ignore_regexes:
@@ -709,7 +721,14 @@ class _QtMessageCapture(object):
                 ignored = True
                 break
 
-        self._records.append(Record(msg_type, message, ignored))
+        if context is not None:
+            context = self._Context(
+                to_unicode(context.file),
+                to_unicode(context.function),
+                context.line,
+            )
+
+        self._records.append(Record(msg_type, message, ignored, context))
 
     @property
     def records(self):
@@ -733,15 +752,18 @@ class Record(object):
     :ivar datetime.datetime when: when the message was captured
     :ivar bool ignored: If this record matches a regex from the "qt_log_ignore"
         option.
+    :ivar context: a namedtuple containing the attributes ``file``,
+        ``function``, ``line``. Only available in Qt5, otherwise is None.
     """
 
-    def __init__(self, msg_type, message, ignored):
+    def __init__(self, msg_type, message, ignored, context):
         self._type = msg_type
         self._message = message
         self._type_name = self._get_msg_type_name(msg_type)
         self._log_type_name = self._get_log_type_name(msg_type)
         self._when = datetime.datetime.now()
         self._ignored = ignored
+        self._context = context
 
     message = property(lambda self: self._message)
     type = property(lambda self: self._type)
@@ -749,6 +771,7 @@ class Record(object):
     log_type_name = property(lambda self: self._log_type_name)
     when = property(lambda self: self._when)
     ignored = property(lambda self: self._ignored)
+    context = property(lambda self: self._context)
 
     @classmethod
     def _get_msg_type_name(cls, msg_type):
@@ -799,8 +822,9 @@ class _QtLogLevelErrorRepr(TerminalRepr):
 
     def __init__(self, item, level):
         msg = 'Failure: Qt messages with level {0} or above emitted'
-        path, line, _ = item.location
-        self.fileloc = ReprFileLocation(path, line, msg.format(level.upper()))
+        path, line_index, _ = item.location
+        self.fileloc = ReprFileLocation(path, lineno=line_index + 1,
+                                        message=msg.format(level.upper()))
         self.sections = []
 
     def addsection(self, name, content, sep="-"):
