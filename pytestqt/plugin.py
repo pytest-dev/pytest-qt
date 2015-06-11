@@ -377,7 +377,9 @@ class _AbstractSignalBlocker(object):
         return self
 
     def __exit__(self, type, value, traceback):
-        self.wait()
+        if value is None:
+            # only wait if no exception happened inside the "with" block
+            self.wait()
 
 
 class SignalBlocker(_AbstractSignalBlocker):
