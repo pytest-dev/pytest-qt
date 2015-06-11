@@ -217,3 +217,25 @@ def stop_watch():
     return StopWatch()
 
 
+@pytest.mark.parametrize('multiple, raising',
+                         [(True, True), (True, False), (False, True),
+                          (False, False)])
+def test_wait_signals_handles_exceptions(qtbot, multiple, raising):
+    """
+    Make sure waitSignal handles exceptions correctly.
+    """
+    class TestException(Exception):
+        pass
+
+    signaller = Signaller()
+
+    if multiple:
+        func = qtbot.waitSignals
+        arg = [signaller.signal, signaller.signal_2]
+    else:
+        func = qtbot.waitSignal
+        arg = signaller.signal
+
+    with pytest.raises(TestException):
+        with func(arg, timeout=10, raising=raising):
+            raise TestException
