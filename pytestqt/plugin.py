@@ -525,7 +525,7 @@ def qapp():
     if app is None:
         global _qapp_instance
         _qapp_instance = QApplication([])
-        yield app
+        yield _qapp_instance
     else:
         yield app  # pragma: no cover
 
