@@ -76,6 +76,11 @@ if not on_rtd:  # pragma: no cover
     QtCriticalMsg = QtCore.QtCriticalMsg
     QtFatalMsg = QtCore.QtFatalMsg
 
+    # Qt4 and Qt5 have different functions to install a message handler;
+    # the plugin will try to use the one that is not None
+    qInstallMsgHandler = None
+    qInstallMessageHandler = None
+
     if QT_API == 'pyside':
         Signal = QtCore.Signal
         Slot = QtCore.Slot
@@ -93,19 +98,7 @@ if not on_rtd:  # pragma: no cover
             _QtWidgets = _import_module('QtWidgets')
             QApplication = _QtWidgets.QApplication
             QWidget = _QtWidgets.QWidget
-
-            def qInstallMsgHandler(handler):
-                """
-                Installs the given function as a message handler. This
-                will adapt Qt5 message handler signature into Qt4
-                message handler's signature.
-                """
-                def _Qt5MessageHandler(msg_type, context, msg):
-                    handler(msg_type, msg, context)
-                if handler is not None:
-                    return QtCore.qInstallMessageHandler(_Qt5MessageHandler)
-                else:
-                    return QtCore.qInstallMessageHandler(None)
+            qInstallMessageHandler = QtCore.qInstallMessageHandler
         else:
             QApplication = QtGui.QApplication
             QWidget = QtGui.QWidget
@@ -141,6 +134,7 @@ else:  # pragma: no cover
     QApplication = Mock()
     QWidget = Mock()
     qInstallMsgHandler = Mock()
+    qInstallMessageHandler = Mock()
     qDebug = Mock()
     qWarning = Mock()
     qCritical = Mock()

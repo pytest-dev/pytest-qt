@@ -43,6 +43,8 @@ For example:
     1 failed in 0.01 seconds
 
 
+**Disabling Logging Capture**
+
 Qt logging capture can be disabled altogether by passing the ``--no-qt-log``
 to the command line, which will fallback to the default Qt bahavior of printing
 emitted messages directly to ``stderr``:
@@ -64,7 +66,7 @@ emitted messages directly to ``stderr``:
     this is a WARNING message
 
 
-``pytest-qt`` also provides a ``qtlog`` fixture, which tests can use
+``pytest-qt`` also provides a ``qtlog`` fixture that can used
 to check if certain messages were emitted during a test::
 
     def do_something():
@@ -75,10 +77,30 @@ to check if certain messages were emitted during a test::
         emitted = [(m.type, m.message.strip()) for m in qtlog.records]
         assert emitted == [(QtWarningMsg, 'this is a WARNING message')]
 
-Keep in mind that when ``--no-qt-log`` is passed in the command line,
-``qtlog.records`` will always be an empty list. See
-:class:`Record <pytestqt.plugin.Record>` for reference documentation on
-``Record`` objects.
+
+``qtlog.records`` is a list of :class:`Record <pytestqt.plugin.Record>`
+instances.
+
+Logging can also be disabled on a block of code using the ``qtlog.disabled()``
+context manager, or with the ``pytest.mark.no_qt_log`` mark:
+
+.. code-block:: python
+
+    def test_foo(qtlog):
+        with qtlog.disabled():
+            # logging is disabled within the context manager
+            do_something()
+
+    @pytest.mark.no_qt_log
+    def test_bar():
+        # logging is disabled for the entire test
+        do_something()
+
+
+Keep in mind that when logging is disabled,
+``qtlog.records`` will always be an empty list.
+
+**Log Formatting**
 
 The output format of the messages can also be controlled by using the
 ``--qt-log-format`` command line option, which accepts a string with standard
