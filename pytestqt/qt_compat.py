@@ -89,7 +89,11 @@ if not on_rtd:  # pragma: no cover
         QWidget = QtGui.QWidget
         qInstallMsgHandler = QtCore.qInstallMsgHandler
 
+        def cast(obj, typ):
+            raise Exception('TODO')
+
     elif QT_API in ('pyqt4', 'pyqt5'):
+        import sip
         Signal = QtCore.pyqtSignal
         Slot = QtCore.pyqtSlot
         Property = QtCore.pyqtProperty
@@ -103,6 +107,9 @@ if not on_rtd:  # pragma: no cover
             QApplication = QtGui.QApplication
             QWidget = QtGui.QWidget
             qInstallMsgHandler = QtCore.qInstallMsgHandler
+
+        def cast(obj, typ):
+            return sip.cast(obj, typ)
 
 else:  # pragma: no cover
     USING_PYSIDE = True
@@ -144,3 +151,6 @@ else:  # pragma: no cover
     QtCriticalMsg = Mock()
     QtFatalMsg = Mock()
     QT_API = '<none>'
+
+    def cast(obj, typ):
+        return obj

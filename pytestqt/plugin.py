@@ -15,6 +15,7 @@ import re
 from pytestqt.qt_compat import QtCore, QtTest, QApplication, QT_API, \
     qInstallMsgHandler, qInstallMessageHandler, QtDebugMsg, QtWarningMsg, \
     QtCriticalMsg, QtFatalMsg
+from pytestqt.modeltest import ModelTester
 
 
 def _inject_qtest_methods(cls):
@@ -555,6 +556,16 @@ def qtbot(qapp, request):
             pytest.fail(format_captured_exceptions(exceptions))
 
     result._close()
+
+
+@pytest.yield_fixture
+def qtmodeltester():
+    """
+    Fixture used to create a ModelTester instance to test models.
+    """
+    tester = ModelTester()
+    yield tester
+    tester.cleanup()
 
 
 def pytest_addoption(parser):
