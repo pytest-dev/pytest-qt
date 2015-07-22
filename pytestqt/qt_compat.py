@@ -161,6 +161,5 @@ else:  # pragma: no cover
     QtCriticalMsg = Mock()
     QtFatalMsg = Mock()
     QT_API = '<none>'
-
-    def cast(obj, typ):
-        return obj
+    cast = Mock()
+    extract_from_variant = Mock()
