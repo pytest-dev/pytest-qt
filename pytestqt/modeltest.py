@@ -33,7 +33,7 @@
 
 import collections
 
-from pytestqt.qt_compat import QtCore, QtGui, cast
+from pytestqt.qt_compat import QtCore, QtGui, cast, extract_from_variant
 
 
 _Changing = collections.namedtuple('_Changing', 'parent, oldSize, last, next')
@@ -149,7 +149,11 @@ class ModelTester:
         assert self._model.columnCount(QtCore.QModelIndex()) >= 0
         display_data = self._model.data(QtCore.QModelIndex(),
                                         QtCore.Qt.DisplayRole)
-        assert display_data == QtCore.QVariant()
+
+        # note: compare against None using "==" on purpose, as depending
+        # on the Qt API this will be a QVariant object which compares using
+        # "==" correctly against other Python types, including None
+        assert display_data == None
         self._fetching_more = True
         self._model.fetchMore(QtCore.QModelIndex())
         self._fetching_more = False
@@ -160,16 +164,14 @@ class ModelTester:
         self._model.headerData(0, QtCore.Qt.Horizontal)
         self._model.index(0, 0)
         self._model.itemData(QtCore.QModelIndex())
-        cache = QtCore.QVariant()
+        cache = None
         self._model.match(QtCore.QModelIndex(), -1, cache)
         self._model.mimeTypes()
         assert self._model.parent(QtCore.QModelIndex()) == QtCore.QModelIndex()
         assert self._model.rowCount() >= 0
-        variant = QtCore.QVariant()
-        self._model.setData(QtCore.QModelIndex(), variant, -1)
-        self._model.setHeaderData(-1, QtCore.Qt.Horizontal, QtCore.QVariant())
-        self._model.setHeaderData(999999, QtCore.Qt.Horizontal,
-                                  QtCore.QVariant())
+        self._model.setData(QtCore.QModelIndex(), None, -1)
+        self._model.setHeaderData(-1, QtCore.Qt.Horizontal, None)
+        self._model.setHeaderData(999999, QtCore.Qt.Horizontal, None)
         self._model.sibling(0, 0, QtCore.QModelIndex())
         self._model.span(QtCore.QModelIndex())
         self._model.supportedDropActions()
@@ -414,7 +416,7 @@ class ModelTester:
     def _test_data(self):
         """Test model's implementation of data()"""
         # Invalid index should return an invalid qvariant
-        assert self._model.data(QtCore.QModelIndex()) is None
+        assert self._model.data(QtCore.QModelIndex()) == None
 
         if self._model.rowCount() == 0:
             return
@@ -440,11 +442,12 @@ class ModelTester:
         # General Purpose roles that should return a QString
         for role, typ in types:
             data = self._model.data(self._model.index(0, 0), role)
-            assert data is None or isinstance(data, typ), role
+            assert data == None or isinstance(data, typ), role
 
         # Check that the alignment is one we know about
         alignment = self._model.data(self._model.index(0, 0),
                                      QtCore.Qt.TextAlignmentRole)
+        alignment = extract_from_variant(alignment)
         if alignment is not None:
             alignment = int(alignment)
             mask = int(QtCore.Qt.AlignHorizontal_Mask |

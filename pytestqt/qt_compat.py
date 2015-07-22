@@ -90,7 +90,12 @@ if not on_rtd:  # pragma: no cover
         qInstallMsgHandler = QtCore.qInstallMsgHandler
 
         def cast(obj, typ):
-            raise Exception('TODO')
+            """no cast operation is available in PySide"""
+            return obj
+
+        def extract_from_variant(variant):
+            """returns python object from the given QVariant"""
+            return variant
 
     elif QT_API in ('pyqt4', 'pyqt5'):
         import sip
@@ -109,7 +114,12 @@ if not on_rtd:  # pragma: no cover
             qInstallMsgHandler = QtCore.qInstallMsgHandler
 
         def cast(obj, typ):
+            """casts from a subclass to a parent class"""
             return sip.cast(obj, typ)
+
+        def extract_from_variant(variant):
+            """returns python object from the given QVariant"""
+            return variant.toPyObject() if variant is not None else None
 
 else:  # pragma: no cover
     USING_PYSIDE = True
