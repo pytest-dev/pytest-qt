@@ -16,9 +16,11 @@ naturally in your python code::
             print('mouse released at: %s' % ev.pos())
 
 This works fine, but if python code in Qt virtual methods raise an exception
-``PyQt`` and ``PySide`` will just print the exception traceback to standard
+``PyQt4`` and ``PySide`` will just print the exception traceback to standard
 error, since this method is called deep within Qt's even loop handling and
-exceptions are not allowed at that point.
+exceptions are not allowed at that point. In ``PyQt5.5+``, exceptions in
+virtual methods will by default call ``abort()``, which will crash the
+interpreter.
 
 This might be surprising for python users which are used to exceptions
 being raised at the calling point: for example, the following code will just
@@ -62,3 +64,11 @@ Or even disable it for your entire project in your ``pytest.ini`` file:
     qt_no_exception_capture = 1
 
 This might be desirable if you plan to install a custom exception hook.
+
+
+.. note::
+
+    Starting with ``PyQt5.5``, exceptions raised during virtual methods will
+    actually trigger an ``abort()``, crashing the Python interpreter. For this
+    reason, disabling exception capture in ``PyQt5.5+`` is not recommended
+    unless you install your own exception hook.

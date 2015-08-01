@@ -544,8 +544,7 @@ def qtbot(qapp, request):
     that they are properly closed after the test ends.
     """
     result = QtBot()
-    no_capture = request.node.get_marker('qt_no_exception_capture') or \
-                 request.config.getini('qt_no_exception_capture')
+    no_capture = _exception_capture_disabled(request.node)
     if no_capture:
         yield result  # pragma: no cover
     else:
@@ -555,6 +554,13 @@ def qtbot(qapp, request):
             pytest.fail(format_captured_exceptions(exceptions))
 
     result._close()
+
+
+def _exception_capture_disabled(item):
+    """returns if exception capture is disabled for the given test item.
+    """
+    return item.get_marker('qt_no_exception_capture') or \
+           item.config.getini('qt_no_exception_capture')
 
 
 def pytest_addoption(parser):
@@ -581,7 +587,7 @@ def pytest_addoption(parser):
 
 
 @pytest.mark.hookwrapper
-def pytest_runtest_teardown():
+def pytest_runtest_teardown(item):
     """
     Hook called after each test tear down, to process any pending events and
     avoiding leaking events to the next test.
@@ -589,7 +595,13 @@ def pytest_runtest_teardown():
     yield
     app = QApplication.instance()
     if app is not None:
-        app.processEvents()
+        if _exception_capture_disabled(item):
+            app.processEvents()
+        else:
+            with capture_exceptions() as exceptions:
+                app.processEvents()
+            if exceptions:
+                pytest.fail('TEARDOWN ERROR: ' + format_captured_exceptions(exceptions))
 
 
 def pytest_configure(config):
