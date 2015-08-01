@@ -58,8 +58,6 @@ def test_format_captured_exceptions():
 
 
 @pytest.mark.parametrize('no_capture_by_marker', [True, False])
-@pytest.mark.skipif(QT_API == 'pyqt5', reason='non captured exceptions on PyQt'
-                                              ' 5.5+ crash the interpreter.')
 def test_no_capture(testdir, no_capture_by_marker):
     """
     Make sure options that disable exception capture are working (either marker
@@ -77,7 +75,11 @@ def test_no_capture(testdir, no_capture_by_marker):
         ''')
     testdir.makepyfile('''
         import pytest
+        import sys
         from pytestqt.qt_compat import QWidget, QtCore
+
+        # PyQt 5.5+ will crash if there's no custom exception handler installed
+        sys.excepthook = lambda *args: None
 
         class MyWidget(QWidget):
 
@@ -90,8 +92,8 @@ def test_no_capture(testdir, no_capture_by_marker):
             qtbot.addWidget(w)
             qtbot.mouseClick(w, QtCore.Qt.LeftButton)
     '''.format(marker_code=marker_code))
-    res = testdir.inline_run()
-    res.assertoutcome(passed=1)
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines(['*1 passed*'])
 
 
 def test_exception_capture_on_teardown(testdir):
