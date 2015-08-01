@@ -1,6 +1,6 @@
 import pytest
 import sys
-from pytestqt.plugin import format_captured_exceptions
+from pytestqt.plugin import format_captured_exceptions, QT_API
 
 
 pytest_plugins = 'pytester'
@@ -58,6 +58,8 @@ def test_format_captured_exceptions():
 
 
 @pytest.mark.parametrize('no_capture_by_marker', [True, False])
+@pytest.mark.skipif(QT_API == 'pyqt5', reason='non captured exceptions on PyQt'
+                                              ' 5.5+ crash the interpreter.')
 def test_no_capture(testdir, no_capture_by_marker):
     """
     Make sure options that disable exception capture are working (either marker
@@ -90,3 +92,34 @@ def test_no_capture(testdir, no_capture_by_marker):
     '''.format(marker_code=marker_code))
     res = testdir.inline_run()
     res.assertoutcome(passed=1)
+
+
+def test_exception_capture_on_teardown(testdir):
+    """
+    Exceptions should also be captured during test teardown.
+
+    :type testdir: TmpTestdir
+    """
+    testdir.makepyfile('''
+        import pytest
+        from pytestqt.qt_compat import QWidget, QtCore, QEvent
+
+        class MyWidget(QWidget):
+
+            def event(self, ev):
+                raise RuntimeError('event processed')
+
+        def test_widget(qtbot, qapp):
+            w = MyWidget()
+            # keep a reference to the widget so it will lives after the test
+            # ends. This will in turn trigger its event() during test tear down,
+            # raising the exception during its event processing
+            test_widget.w = w
+            qapp.postEvent(w, QEvent(QEvent.User))
+    ''')
+    res = testdir.runpytest('-s')
+    res.stdout.fnmatch_lines([
+        "*RuntimeError('event processed')*",
+        '*1 error*',
+    ])
+
