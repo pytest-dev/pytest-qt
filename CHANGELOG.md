@@ -1,3 +1,7 @@
+# 1.6.0.dev #
+
+# 1.5.2.dev #
+
 # 1.5.1 #
 
 * Exceptions are now captured also during test tear down, as delayed events will 
