@@ -78,9 +78,9 @@ Full documentation and tutorial available at `Read the Docs`_.
 Change Log
 ==========
 
-Please consult the `releases page`_.
+Please consult the `changelog page`_.
 
-.. _releases page: https://github.com/pytest-dev/pytest-qt/releases
+.. _changelog page: https://github.com/pytest-dev/pytest-qt/blob/master/CHANGELOG.md
 
 Bugs/Requests
 =============
