@@ -1,7 +1,7 @@
 import weakref
 import pytest
 from pytestqt.qt_compat import QtGui, Qt, QEvent, QtCore, QApplication, \
-    QWidget
+    QWidget, get_versions
 
 
 def test_basics(qtbot):
@@ -78,6 +78,18 @@ def test_widget_kept_as_weakref(qtbot):
     qtbot.add_widget(widget)
     widget = weakref.ref(widget)
     assert widget() is None
+
+
+def test_header(testdir):
+    res = testdir.runpytest()
+    v = get_versions()
+    res.stdout.fnmatch_lines([
+        '*test session starts*',
+        '{qt_api} {qt_api_version} -- Qt runtime {runtime} -- '
+        'Qt compiled {compiled}'.format(qt_api=v.qt_api,
+                                        qt_api_version=v.qt_api_version,
+                                        runtime=v.runtime, compiled=v.compiled)
+    ])
 
 
 class EventRecorder(QWidget):

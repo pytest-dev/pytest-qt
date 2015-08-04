@@ -10,6 +10,7 @@ Based on from https://github.com/epage/PythonUtils.
 
 from __future__ import with_statement
 from __future__ import division
+from collections import namedtuple
 import os
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -81,13 +82,21 @@ if not on_rtd:  # pragma: no cover
     qInstallMsgHandler = None
     qInstallMessageHandler = None
 
+    VersionTuple = namedtuple('VersionTuple',
+                              'qt_api, qt_api_version, runtime, compiled')
+
     if QT_API == 'pyside':
+        import PySide
         Signal = QtCore.Signal
         Slot = QtCore.Slot
         Property = QtCore.Property
         QApplication = QtGui.QApplication
         QWidget = QtGui.QWidget
         qInstallMsgHandler = QtCore.qInstallMsgHandler
+
+        def get_versions():
+            return VersionTuple('PySide', PySide.__version__, QtCore.qVersion(),
+                                QtCore.__version__)
 
     elif QT_API in ('pyqt4', 'pyqt5'):
         Signal = QtCore.pyqtSignal
@@ -99,10 +108,16 @@ if not on_rtd:  # pragma: no cover
             QApplication = _QtWidgets.QApplication
             QWidget = _QtWidgets.QWidget
             qInstallMessageHandler = QtCore.qInstallMessageHandler
+            qt_api_name = 'PyQt5'
         else:
             QApplication = QtGui.QApplication
             QWidget = QtGui.QWidget
             qInstallMsgHandler = QtCore.qInstallMsgHandler
+            qt_api_name = 'PyQt4'
+
+        def get_versions():
+            return VersionTuple(qt_api_name, QtCore.PYQT_VERSION_STR,
+                                QtCore.qVersion(), QtCore.QT_VERSION_STR)
 
 else:  # pragma: no cover
     USING_PYSIDE = True
