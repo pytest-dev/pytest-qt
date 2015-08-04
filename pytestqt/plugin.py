@@ -355,6 +355,10 @@ class _AbstractSignalBlocker(object):
         self.timeout = timeout
         self.signal_triggered = False
         self.raising = raising
+        self._timer = QtCore.QTimer()
+        self._timer.setSingleShot(True)
+        if timeout is not None:
+            self._timer.setInterval(timeout)
 
     def wait(self):
         """
@@ -368,11 +372,24 @@ class _AbstractSignalBlocker(object):
         if self.timeout is None and not self._signals:
             raise ValueError("No signals or timeout specified.")
         if self.timeout is not None:
-            QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
+            self._timer.timeout.connect(self._quit_loop_by_timeout)
+            self._timer.start()
         self._loop.exec_()
         if not self.signal_triggered and self.raising:
             raise SignalTimeoutError("Didn't get signal after %sms." %
                                       self.timeout)
+
+    def _quit_loop_by_timeout(self):
+        self._loop.quit()
+        self._cleanup()
+
+    def _cleanup(self):
+        if self.timeout is not None:
+            try:
+                self._timer.timeout.disconnect(self._quit_loop_by_timeout)
+            except (TypeError, RuntimeError):
+                # already disconnected by Qt?
+                pass
 
     def __enter__(self):
         return self
@@ -426,6 +443,16 @@ class SignalBlocker(_AbstractSignalBlocker):
         """
         self.signal_triggered = True
         self._loop.quit()
+        self._cleanup()
+
+    def _cleanup(self):
+        super(SignalBlocker, self)._cleanup()
+        for signal in self._signals:
+            try:
+                signal.disconnect(self._quit_loop_by_signal)
+            except (TypeError, RuntimeError):
+                # already disconnected by Qt?
+                pass
 
 
 class MultiSignalBlocker(_AbstractSignalBlocker):
