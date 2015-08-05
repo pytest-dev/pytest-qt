@@ -217,9 +217,8 @@ def stop_watch():
     return StopWatch()
 
 
-@pytest.mark.parametrize('multiple, raising',
-                         [(True, True), (True, False), (False, True),
-                          (False, False)])
+@pytest.mark.parametrize('multiple', [True, False])
+@pytest.mark.parametrize('raising', [True, False])
 def test_wait_signals_handles_exceptions(qtbot, multiple, raising):
     """
     Make sure waitSignal handles exceptions correctly.
@@ -241,8 +240,8 @@ def test_wait_signals_handles_exceptions(qtbot, multiple, raising):
             raise TestException
 
 
-@pytest.mark.parametrize('multiple, do_timeout',
-                         [(True, False), (True, True), (False, False), (False, True)])
+@pytest.mark.parametrize('multiple', [True, False])
+@pytest.mark.parametrize('do_timeout', [True, False])
 def test_wait_twice(qtbot, single_shot, multiple, do_timeout):
     """
     https://github.com/pytest-dev/pytest-qt/issues/69
