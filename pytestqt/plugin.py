@@ -355,9 +355,11 @@ class _AbstractSignalBlocker(object):
         self.timeout = timeout
         self.signal_triggered = False
         self.raising = raising
-        self._timer = QtCore.QTimer()
-        self._timer.setSingleShot(True)
-        if timeout is not None:
+        if timeout is None:
+            self._timer = None
+        else:
+            self._timer = QtCore.QTimer()
+            self._timer.setSingleShot(True)
             self._timer.setInterval(timeout)
 
     def wait(self):
@@ -371,7 +373,7 @@ class _AbstractSignalBlocker(object):
             return
         if self.timeout is None and not self._signals:
             raise ValueError("No signals or timeout specified.")
-        if self.timeout is not None:
+        if self._timer is not None:
             self._timer.timeout.connect(self._quit_loop_by_timeout)
             self._timer.start()
         self._loop.exec_()
@@ -384,7 +386,7 @@ class _AbstractSignalBlocker(object):
         self._cleanup()
 
     def _cleanup(self):
-        if self.timeout is not None:
+        if self._timer is not None:
             try:
                 self._timer.timeout.disconnect(self._quit_loop_by_timeout)
             except (TypeError, RuntimeError):
