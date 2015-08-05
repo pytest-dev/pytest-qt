@@ -592,7 +592,15 @@ def pytest_runtest_teardown(item):
     Hook called after each test tear down, to process any pending events and
     avoiding leaking events to the next test.
     """
+    _process_events(item)
     yield
+    _process_events(item)
+
+
+def _process_events(item):
+    """Calls app.processEvents() while taking care of capturing exceptions
+    or not based on the given item's configuration.
+    """
     app = QApplication.instance()
     if app is not None:
         if _exception_capture_disabled(item):
@@ -601,7 +609,8 @@ def pytest_runtest_teardown(item):
             with capture_exceptions() as exceptions:
                 app.processEvents()
             if exceptions:
-                pytest.fail('TEARDOWN ERROR: ' + format_captured_exceptions(exceptions))
+                pytest.fail('TEARDOWN ERROR: ' +
+                            format_captured_exceptions(exceptions))
 
 
 def pytest_configure(config):
