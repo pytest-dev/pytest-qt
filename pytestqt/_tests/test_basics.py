@@ -1,3 +1,4 @@
+import os
 import weakref
 import pytest
 from pytestqt.qt_compat import QtGui, Qt, QEvent, QtCore, QApplication, \
@@ -78,6 +79,23 @@ def test_widget_kept_as_weakref(qtbot):
     qtbot.add_widget(widget)
     widget = weakref.ref(widget)
     assert widget() is None
+
+
+def _teardown_test_helper():
+    """
+    Invoked during teardown from test_event_processing_happens_before_teardown.
+    """
+    assert os.environ['PYTEST_QT_TEARDOWN_TEST'] == '42'
+
+
+def test_event_processing_happens_before_teardown(monkeypatch):
+    """
+    Make sure events are processed before other fixtures are torn down.
+
+    https://github.com/pytest-dev/pytest-qt/issues/67
+    """
+    monkeypatch.setenv('PYTEST_QT_TEARDOWN_TEST', '42')
+    QtCore.QTimer.singleShot(0, _teardown_test_helper)
 
 
 class EventRecorder(QWidget):
