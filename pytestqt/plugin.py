@@ -377,13 +377,13 @@ class _AbstractSignalBlocker(object):
             self._timer.timeout.connect(self._quit_loop_by_timeout)
             self._timer.start()
         self._loop.exec_()
-        self._cleanup()
         if not self.signal_triggered and self.raising:
             raise SignalTimeoutError("Didn't get signal after %sms." %
                                       self.timeout)
 
     def _quit_loop_by_timeout(self):
         self._loop.quit()
+        self._cleanup()
 
     def _cleanup(self):
         if self._timer is not None:
@@ -445,6 +445,7 @@ class SignalBlocker(_AbstractSignalBlocker):
         """
         self.signal_triggered = True
         self._loop.quit()
+        self._cleanup()
 
     def _cleanup(self):
         super(SignalBlocker, self)._cleanup()
