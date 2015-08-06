@@ -6,6 +6,9 @@
   and teardown hooks, to better try to avoid non-processed events from leaking 
   from one test to the next. (#67, thanks @The-Compiler). 
 
+- Show Qt/PyQt/PySide versions in pytest header (#68, thanks @The-Compiler!).
+
+
 # 1.5.1 #
 
 - Exceptions are now captured also during test tear down, as delayed events will 

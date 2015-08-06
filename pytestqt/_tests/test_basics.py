@@ -2,7 +2,7 @@ import os
 import weakref
 import pytest
 from pytestqt.qt_compat import QtGui, Qt, QEvent, QtCore, QApplication, \
-    QWidget
+    QWidget, get_versions
 
 
 def test_basics(qtbot):
@@ -96,6 +96,25 @@ def test_event_processing_happens_before_teardown(monkeypatch):
     """
     monkeypatch.setenv('PYTEST_QT_TEARDOWN_TEST', '42')
     QtCore.QTimer.singleShot(0, _teardown_test_helper)
+
+
+def test_header(testdir):
+    testdir.makeconftest(
+        '''
+        from pytestqt import qt_compat
+
+        def mock_get_versions():
+            return qt_compat.VersionTuple('PyQtAPI', '1.0', '2.5', '3.5')
+
+        assert hasattr(qt_compat, 'get_versions')
+        qt_compat.get_versions = mock_get_versions
+        '''
+    )
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines([
+        '*test session starts*',
+        'PyQtAPI 1.0 -- Qt runtime 2.5 -- Qt compiled 3.5',
+    ])
 
 
 class EventRecorder(QWidget):
