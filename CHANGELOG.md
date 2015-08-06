@@ -2,6 +2,8 @@
 
 # 1.5.2.dev #
 
+- Show Qt/PyQt/PySide versions in pytest header (#68, thanks @The-Compiler!).
+
 # 1.5.1 #
 
 * Exceptions are now captured also during test tear down, as delayed events will 

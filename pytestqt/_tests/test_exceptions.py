@@ -3,9 +3,6 @@ import sys
 from pytestqt.plugin import format_captured_exceptions, QT_API
 
 
-pytest_plugins = 'pytester'
-
-
 @pytest.mark.parametrize('raise_error', [False, True])
 def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
     """

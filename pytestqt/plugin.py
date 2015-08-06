@@ -622,7 +622,15 @@ def pytest_configure(config):
 
 
 def pytest_report_header():
-    return ['qt-api: %s' % QT_API]
+    from pytestqt.qt_compat import get_versions
+    v = get_versions()
+    fields = [
+        '%s %s' % (v.qt_api, v.qt_api_version),
+        'Qt runtime %s' % v.runtime,
+        'Qt compiled %s' % v.compiled,
+    ]
+    version_line = ' -- '.join(fields)
+    return [version_line]
 
 
 @pytest.fixture
