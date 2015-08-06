@@ -14,7 +14,7 @@ import re
 
 from pytestqt.qt_compat import QtCore, QtTest, QApplication, QT_API, \
     qInstallMsgHandler, qInstallMessageHandler, QtDebugMsg, QtWarningMsg, \
-    QtCriticalMsg, QtFatalMsg, get_versions
+    QtCriticalMsg, QtFatalMsg
 
 
 def _inject_qtest_methods(cls):
@@ -622,6 +622,7 @@ def pytest_configure(config):
 
 
 def pytest_report_header():
+    from pytestqt.qt_compat import get_versions
     v = get_versions()
     fields = [
         '%s %s' % (v.qt_api, v.qt_api_version),
