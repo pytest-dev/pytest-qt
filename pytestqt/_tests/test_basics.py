@@ -81,21 +81,59 @@ def test_widget_kept_as_weakref(qtbot):
     assert widget() is None
 
 
-def _teardown_test_helper():
+def test_event_processing_before_and_after_teardown(testdir):
     """
-    Invoked during teardown from test_event_processing_happens_before_teardown.
-    """
-    assert os.environ['PYTEST_QT_TEARDOWN_TEST'] == '42'
+    Make sure events are processed before and after fixtures are torn down.
 
-
-def test_event_processing_happens_before_teardown(monkeypatch):
-    """
-    Make sure events are processed before other fixtures are torn down.
+    The test works by creating a session object which pops() one of its events
+    whenever a processEvents() occurs. Fixture and tests append values
+    to the event list but expect the list to have been processed (by the pop())
+    at each point of interest.
 
     https://github.com/pytest-dev/pytest-qt/issues/67
     """
-    monkeypatch.setenv('PYTEST_QT_TEARDOWN_TEST', '42')
-    QtCore.QTimer.singleShot(0, _teardown_test_helper)
+    testdir.makepyfile(
+        '''
+        from pytestqt.qt_compat import QtCore, QEvent
+        import pytest
+
+        @pytest.fixture(scope='session')
+        def events_queue(qapp):
+            class EventsQueue(QtCore.QObject):
+
+                def __init__(self):
+                    QtCore.QObject.__init__(self)
+                    self.events = []
+
+                def pop_later(self):
+                    qapp.postEvent(self, QEvent(QEvent.User))
+
+                def event(self, ev):
+                    if ev.type() == QEvent.User:
+                        self.events.pop(-1)
+                    return QtCore.QObject.event(self, ev)
+
+            return EventsQueue()
+
+        @pytest.yield_fixture
+        def fix(events_queue, qapp):
+            assert events_queue.events == []
+            yield
+            assert events_queue.events == []
+            events_queue.events.append('fixture teardown')
+            events_queue.pop_later()
+
+        @pytest.mark.parametrize('i', range(3))
+        def test_events(events_queue, fix, i):
+            assert events_queue.events == []
+            events_queue.events.append('test event')
+            events_queue.pop_later()
+        '''
+    )
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines([
+        '*3 passed in*',
+    ])
 
 
 def test_header(testdir):
