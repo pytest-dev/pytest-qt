@@ -2,6 +2,10 @@
 
 # 1.5.2.dev #
 
+- `QApplication.processEvents()` is now called before and after other fixtures
+  and teardown hooks, to better try to avoid non-processed events from leaking 
+  from one test to the next. (#67, thanks @The-Compiler). 
+
 - Show Qt/PyQt/PySide versions in pytest header (#68, thanks @The-Compiler!).
 
 - Disconnect SignalBlocker functions after its loop exits to ensure second
@@ -10,7 +14,7 @@
 
 # 1.5.1 #
 
-* Exceptions are now captured also during test tear down, as delayed events will 
+- Exceptions are now captured also during test tear down, as delayed events will 
   get processed then and might raise exceptions in virtual methods; 
   this is specially problematic in `PyQt5.5`, which 
   [changed the behavior](http://pyqt.sourceforge.net/Docs/PyQt5/incompatibilities.html#pyqt-v5-5) 
