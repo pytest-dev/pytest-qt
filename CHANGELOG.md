@@ -4,6 +4,10 @@
 
 - Show Qt/PyQt/PySide versions in pytest header (#68, thanks @The-Compiler!).
 
+- Disconnect SignalBlocker functions after its loop exits to ensure second
+  emissions to call the internal functions on the now-garbage-collected 
+  SignalBlocker instance (#69, thanks @The-Compiler for the PR).
+
 # 1.5.1 #
 
 * Exceptions are now captured also during test tear down, as delayed events will 
