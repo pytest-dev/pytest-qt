@@ -217,9 +217,8 @@ def stop_watch():
     return StopWatch()
 
 
-@pytest.mark.parametrize('multiple, raising',
-                         [(True, True), (True, False), (False, True),
-                          (False, False)])
+@pytest.mark.parametrize('multiple', [True, False])
+@pytest.mark.parametrize('raising', [True, False])
 def test_wait_signals_handles_exceptions(qtbot, multiple, raising):
     """
     Make sure waitSignal handles exceptions correctly.
@@ -239,3 +238,30 @@ def test_wait_signals_handles_exceptions(qtbot, multiple, raising):
     with pytest.raises(TestException):
         with func(arg, timeout=10, raising=raising):
             raise TestException
+
+
+@pytest.mark.parametrize('multiple', [True, False])
+@pytest.mark.parametrize('do_timeout', [True, False])
+def test_wait_twice(qtbot, single_shot, multiple, do_timeout):
+    """
+    https://github.com/pytest-dev/pytest-qt/issues/69
+    """
+    signaller = Signaller()
+
+    if multiple:
+        func = qtbot.waitSignals
+        arg = [signaller.signal]
+    else:
+        func = qtbot.waitSignal
+        arg = signaller.signal
+
+    if do_timeout:
+        with func(arg, timeout=100):
+            single_shot(signaller.signal, 200)
+        with func(arg, timeout=100):
+            single_shot(signaller.signal, 200)
+    else:
+        with func(arg):
+            signaller.signal.emit()
+        with func(arg):
+            signaller.signal.emit()
