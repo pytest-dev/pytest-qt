@@ -522,13 +522,13 @@ def capture_exceptions():
 
     def hook(type_, value, tback):
         result.append((type_, value, tback))
-        sys.__excepthook__(type_, value, tback)
 
+    old_hook = sys.excepthook
     sys.excepthook = hook
     try:
         yield result
     finally:
-        sys.excepthook = sys.__excepthook__
+        sys.excepthook = old_hook
 
 
 def format_captured_exceptions(exceptions):
@@ -580,7 +580,7 @@ def qtbot(qapp, request):
         with capture_exceptions() as exceptions:
             yield result
         if exceptions:
-            pytest.fail(format_captured_exceptions(exceptions))
+            pytest.fail(format_captured_exceptions(exceptions), pytrace=False)
 
     result._close()
 
@@ -639,7 +639,8 @@ def _process_events(item):
                 app.processEvents()
             if exceptions:
                 pytest.fail('TEARDOWN ERROR: ' +
-                            format_captured_exceptions(exceptions))
+                            format_captured_exceptions(exceptions),
+                            pytrace=False)
 
 
 def pytest_configure(config):

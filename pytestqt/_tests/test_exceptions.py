@@ -37,6 +37,7 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
             '*ValueError: mistakes were made*',
             '*1 error*',
         ])
+        assert 'pytest.fail' not in '\n'.join(result.outlines)
     else:
         result.stdout.fnmatch_lines('*1 passed*')
 
