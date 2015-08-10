@@ -1,13 +1,9 @@
+import functools
 import time
 
 import pytest
 
 from pytestqt.qt_compat import QtCore, Signal
-
-
-class Signaller(QtCore.QObject):
-    signal = Signal()
-    signal_2 = Signal()
 
 
 def test_signal_blocker_exception(qtbot):
@@ -78,14 +74,14 @@ def build_signal_tests_variants(params):
         (200, 100, False),
     ])
 )
-def test_signal_triggered(qtbot, single_shot, stop_watch, wait_function, delay,
-                          timeout, expected_signal_triggered, raising):
+def test_signal_triggered(qtbot, timer, stop_watch, wait_function, delay,
+                          timeout, expected_signal_triggered, raising,
+                          signaller):
     """
     Testing for a signal in different conditions, ensuring we are obtaining
     the expected results.
     """
-    signaller = Signaller()
-    single_shot(signaller.signal, delay)
+    timer.single_shot(signaller.signal, delay)
 
     should_raise = raising and not expected_signal_triggered
 
@@ -93,6 +89,7 @@ def test_signal_triggered(qtbot, single_shot, stop_watch, wait_function, delay,
     blocker = wait_function(qtbot, signaller.signal, timeout, raising=raising,
                             should_raise=should_raise, multiple=False)
 
+    timer.shutdown()
     # ensure that either signal was triggered or timeout occurred
     assert blocker.signal_triggered == expected_signal_triggered
 
@@ -113,21 +110,15 @@ def test_signal_triggered(qtbot, single_shot, stop_watch, wait_function, delay,
         (100, 500, 200, False),
     ])
 )
-def test_signal_triggered_multiple(qtbot, single_shot, stop_watch, wait_function,
-                                   delay_1, delay_2, timeout,
+def test_signal_triggered_multiple(qtbot, timer, stop_watch, wait_function,
+                                   delay_1, delay_2, timeout, signaller,
                                    expected_signal_triggered, raising):
     """
     Testing for a signal in different conditions, ensuring we are obtaining
     the expected results.
     """
-    import sys
-    # if delay_1 == 200 and delay_2 == 100 and timeout == 100 \
-    #         and not expected_signal_triggered \
-    #         and sys.platform.startswith('win32'):
-    #     pytest.skip('crashing on windows (#80)')
-    signaller = Signaller()
-    single_shot(signaller.signal, delay_1)
-    single_shot(signaller.signal_2, delay_2)
+    timer.single_shot(signaller.signal, delay_1)
+    timer.single_shot(signaller.signal_2, delay_2)
 
     should_raise = raising and not expected_signal_triggered
 
@@ -142,22 +133,20 @@ def test_signal_triggered_multiple(qtbot, single_shot, stop_watch, wait_function
     stop_watch.check(timeout, delay_1, delay_2)
 
 
-def test_explicit_emit(qtbot):
+def test_explicit_emit(qtbot, signaller):
     """
     Make sure an explicit emit() inside a waitSignal block works.
     """
-    signaller = Signaller()
     with qtbot.waitSignal(signaller.signal, timeout=5000) as waiting:
         signaller.signal.emit()
 
     assert waiting.signal_triggered
 
 
-def test_explicit_emit_multiple(qtbot):
+def test_explicit_emit_multiple(qtbot, signaller):
     """
     Make sure an explicit emit() inside a waitSignal block works.
     """
-    signaller = Signaller()
     with qtbot.waitSignals([signaller.signal, signaller.signal_2],
                            timeout=5000) as waiting:
         signaller.signal.emit()
@@ -166,8 +155,27 @@ def test_explicit_emit_multiple(qtbot):
     assert waiting.signal_triggered
 
 
+@pytest.fixture
+def signaller(timer):
+    """
+    Fixture that provides an object with to signals that can be emitted by
+    tests.
+
+    .. note:: we depend on "timer" fixture to ensure that signals emitted
+    with "timer" are disconnected before the Signaller() object is destroyed.
+    This was the reason for some random crashes experienced on Windows (#80).
+    """
+    class Signaller(QtCore.QObject):
+        signal = Signal()
+        signal_2 = Signal()
+
+    assert timer
+
+    return Signaller()
+
+
 @pytest.yield_fixture
-def single_shot():
+def timer():
     """
     Fixture that provides a callback with signature: (signal, delay) that
     triggers that signal once after the given delay in ms.
@@ -175,17 +183,32 @@ def single_shot():
     The fixture is responsible for cleaning up after the timers.
     """
 
-    def shoot(signal, delay):
-        timer = QtCore.QTimer()
-        timer.setSingleShot(True)
-        timer.timeout.connect(signal.emit)
-        timer.start(delay)
-        timers.append(timer)
+    class Timer(QtCore.QObject):
 
-    timers = []
-    yield shoot
-    for t in timers:
-        t.stop()
+        def __init__(self):
+            QtCore.QObject.__init__(self)
+            self.timers_and_slots = []
+
+        def shutdown(self):
+            for t, slot in self.timers_and_slots:
+                t.stop()
+                t.timeout.disconnect(slot)
+            self.timers_and_slots[:] = []
+
+        def single_shot(self, signal, delay):
+            t = QtCore.QTimer(self)
+            t.setSingleShot(True)
+            slot = functools.partial(self._emit, signal)
+            t.timeout.connect(slot)
+            t.start(delay)
+            self.timers_and_slots.append((t, slot))
+
+        def _emit(self, signal):
+            signal.emit()
+
+    timer = Timer()
+    yield timer
+    timer.shutdown()
 
 
 @pytest.fixture
@@ -218,14 +241,12 @@ def stop_watch():
 
 @pytest.mark.parametrize('multiple', [True, False])
 @pytest.mark.parametrize('raising', [True, False])
-def test_wait_signals_handles_exceptions(qtbot, multiple, raising):
+def test_wait_signals_handles_exceptions(qtbot, multiple, raising, signaller):
     """
     Make sure waitSignal handles exceptions correctly.
     """
     class TestException(Exception):
         pass
-
-    signaller = Signaller()
 
     if multiple:
         func = qtbot.waitSignals
@@ -241,12 +262,10 @@ def test_wait_signals_handles_exceptions(qtbot, multiple, raising):
 
 @pytest.mark.parametrize('multiple', [True, False])
 @pytest.mark.parametrize('do_timeout', [True, False])
-def test_wait_twice(qtbot, single_shot, multiple, do_timeout):
+def test_wait_twice(qtbot, timer, multiple, do_timeout, signaller):
     """
     https://github.com/pytest-dev/pytest-qt/issues/69
     """
-    signaller = Signaller()
-
     if multiple:
         func = qtbot.waitSignals
         arg = [signaller.signal]
@@ -256,9 +275,9 @@ def test_wait_twice(qtbot, single_shot, multiple, do_timeout):
 
     if do_timeout:
         with func(arg, timeout=100):
-            single_shot(signaller.signal, 200)
+            timer.single_shot(signaller.signal, 200)
         with func(arg, timeout=100):
-            single_shot(signaller.signal, 200)
+            timer.single_shot(signaller.signal, 200)
     else:
         with func(arg):
             signaller.signal.emit()
