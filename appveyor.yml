@@ -20,6 +20,16 @@ environment:
       PYTHON_ARCH: "32"
       TESTENV: "py34"
 
+    - PYTHON: "C:\\Python33"
+      PYTHON_VERSION: "3.3.x" # currently 3.3.5
+      PYTHON_ARCH: "32"
+      TESTENV: "py33"
+
+    - PYTHON: "C:\\Python266"
+      PYTHON_VERSION: "2.6.6"
+      PYTHON_ARCH: "32"
+      TESTENV: "py26"
+
 
 install:
   - ECHO "Filesystem root:"
