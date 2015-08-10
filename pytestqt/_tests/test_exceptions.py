@@ -37,6 +37,7 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
             '*ValueError: mistakes were made*',
             '*1 error*',
         ])
+        assert 'pytest.fail' not in '\n'.join(result.outlines)
     else:
         result.stdout.fnmatch_lines('*1 passed*')
 
@@ -91,6 +92,33 @@ def test_no_capture(testdir, no_capture_by_marker):
     '''.format(marker_code=marker_code))
     res = testdir.runpytest()
     res.stdout.fnmatch_lines(['*1 passed*'])
+
+
+def test_no_capture_preserves_custom_excepthook(testdir):
+    """
+    Capturing must leave custom excepthooks alone when disabled.
+
+    :type testdir: TmpTestdir
+    """
+    testdir.makepyfile('''
+        import pytest
+        import sys
+        from pytestqt.qt_compat import QWidget, QtCore
+
+        def custom_excepthook(*args):
+            sys.__excepthook__(*args)
+
+        sys.excepthook = custom_excepthook
+
+        @pytest.mark.qt_no_exception_capture
+        def test_no_capture(qtbot):
+            assert sys.excepthook is custom_excepthook
+
+        def test_capture(qtbot):
+            assert sys.excepthook is not custom_excepthook
+    ''')
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines(['*2 passed*'])
 
 
 def test_exception_capture_on_teardown(testdir):

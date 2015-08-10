@@ -2,6 +2,9 @@
 
 # 1.5.2.dev #
 
+- Reduced verbosity when exceptions are captured in virtual methods
+  (#77, thanks @The-Compiler).
+
 - `QApplication.processEvents()` is now called before and after other fixtures
   and teardown hooks, to better try to avoid non-processed events from leaking 
   from one test to the next. (#67, thanks @The-Compiler). 
