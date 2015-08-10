@@ -93,9 +93,6 @@ def test_signal_triggered(qtbot, single_shot, stop_watch, wait_function, delay,
     blocker = wait_function(qtbot, signaller.signal, timeout, raising=raising,
                             should_raise=should_raise, multiple=False)
 
-    # Check that event loop exited.
-    assert not blocker._loop.isRunning()
-
     # ensure that either signal was triggered or timeout occurred
     assert blocker.signal_triggered == expected_signal_triggered
 
@@ -124,11 +121,10 @@ def test_signal_triggered_multiple(qtbot, single_shot, stop_watch, wait_function
     the expected results.
     """
     import sys
-    if delay_1 == 200 and delay_2 == 100 and timeout == 100 \
-            and not expected_signal_triggered \
-            and sys.platform.startswith('win32'):
-        pytest.skip('crashing on windows (#80)')
-
+    # if delay_1 == 200 and delay_2 == 100 and timeout == 100 \
+    #         and not expected_signal_triggered \
+    #         and sys.platform.startswith('win32'):
+    #     pytest.skip('crashing on windows (#80)')
     signaller = Signaller()
     single_shot(signaller.signal, delay_1)
     single_shot(signaller.signal_2, delay_2)
@@ -139,9 +135,6 @@ def test_signal_triggered_multiple(qtbot, single_shot, stop_watch, wait_function
     blocker = wait_function(qtbot, [signaller.signal, signaller.signal_2],
                             timeout, multiple=True, raising=raising,
                             should_raise=should_raise)
-
-    # Check that event loop exited.
-    assert not blocker._loop.isRunning()
 
     # ensure that either signal was triggered or timeout occurred
     assert blocker.signal_triggered == expected_signal_triggered
