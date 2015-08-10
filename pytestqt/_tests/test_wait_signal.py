@@ -123,6 +123,12 @@ def test_signal_triggered_multiple(qtbot, single_shot, stop_watch, wait_function
     Testing for a signal in different conditions, ensuring we are obtaining
     the expected results.
     """
+    import sys
+    if delay_1 == 200 and delay_2 == 100 and timeout == 100 \
+            and not expected_signal_triggered \
+            and sys.platform.startswith('win32'):
+        pytest.skip('crashing on windows (#80)')
+
     signaller = Signaller()
     single_shot(signaller.signal, delay_1)
     single_shot(signaller.signal_2, delay_2)
