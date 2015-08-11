@@ -69,9 +69,9 @@ def build_signal_tests_variants(params):
      'wait_function', 'raising'),
     build_signal_tests_variants([
         # delay, timeout, expected_signal_triggered
-        (100, None, True),
-        (100, 200, True),
-        (200, 100, False),
+        (200, None, True),
+        (200, 400, True),
+        (400, 200, False),
     ])
 )
 def test_signal_triggered(qtbot, timer, stop_watch, wait_function, delay,
@@ -89,7 +89,6 @@ def test_signal_triggered(qtbot, timer, stop_watch, wait_function, delay,
     blocker = wait_function(qtbot, signaller.signal, timeout, raising=raising,
                             should_raise=should_raise, multiple=False)
 
-    timer.shutdown()
     # ensure that either signal was triggered or timeout occurred
     assert blocker.signal_triggered == expected_signal_triggered
 
@@ -101,13 +100,13 @@ def test_signal_triggered(qtbot, timer, stop_watch, wait_function, delay,
      'wait_function', 'raising'),
     build_signal_tests_variants([
         # delay1, delay2, timeout, expected_signal_triggered
-        (100, 150, 200, True),
-        (150, 100, 200, True),
-        (100, 150, None, True),
-        (200, 200, 100, False),
-        (100, 200, 150, False),
-        (200, 100, 100, False),
-        (100, 500, 200, False),
+        (200, 300, 400, True),
+        (300, 200, 400, True),
+        (200, 300, None, True),
+        (400, 400, 200, False),
+        (200, 400, 300, False),
+        (400, 200, 200, False),
+        (200, 1000, 400, False),
     ])
 )
 def test_signal_triggered_multiple(qtbot, timer, stop_watch, wait_function,
@@ -232,9 +231,10 @@ def stop_watch():
             delays used to trigger a signal has passed.
             """
             if timeout is None:
-                timeout = max(delays) * 1.25  # 25% tolerance
+                timeout = max(delays) * 1.30  # 30% tolerance
             max_wait_ms = max(delays + (timeout,))
-            assert time.time() - self._start_time < (max_wait_ms / 1000.0)
+            elapsed_ms = (time.time() - self._start_time) * 1000.0
+            assert elapsed_ms < max_wait_ms
 
     return StopWatch()
 
