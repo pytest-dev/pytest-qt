@@ -5,6 +5,14 @@
 - Reduced verbosity when exceptions are captured in virtual methods
   (#77, thanks @The-Compiler).
 
+- Internal refactoring in `waitSignal` and `waitSignals` to use a manual
+  busy loop instead of relying on `QEventLoop` and `QTimer`; depending
+  on the order objects are destroyed in tests the previous implementation
+  could leave dangling signal connections which could cause a crash (noticed
+  this on Windows with PySide and PyQt5). Should not affect tests,
+  but if users notice any behavior change between this version and `1.5.1`
+  please make sure to report it (#80, #79, thanks @The-Compiler for support).
+
 - `QApplication.processEvents()` is now called before and after other fixtures
   and teardown hooks, to better try to avoid non-processed events from leaking 
   from one test to the next. (#67, thanks @The-Compiler). 

@@ -351,16 +351,9 @@ class _AbstractSignalBlocker(object):
     """
 
     def __init__(self, timeout=1000, raising=False):
-        self._loop = QtCore.QEventLoop()
         self.timeout = timeout
         self.signal_triggered = False
         self.raising = raising
-        if timeout is None:
-            self._timer = None
-        else:
-            self._timer = QtCore.QTimer()
-            self._timer.setSingleShot(True)
-            self._timer.setInterval(timeout)
 
     def wait(self):
         """
@@ -369,29 +362,28 @@ class _AbstractSignalBlocker(object):
         :raise ValueError: if no signals are connected and timeout is None; in
             this case it would wait forever.
         """
-        if self.signal_triggered:
-            return
-        if self.timeout is None and not self._signals:
-            raise ValueError("No signals or timeout specified.")
-        if self._timer is not None:
-            self._timer.timeout.connect(self._quit_loop_by_timeout)
-            self._timer.start()
-        self._loop.exec_()
-        if not self.signal_triggered and self.raising:
-            raise SignalTimeoutError("Didn't get signal after %sms." %
-                                      self.timeout)
-
-    def _quit_loop_by_timeout(self):
-        self._loop.quit()
-        self._cleanup()
+        try:
+            if self.signal_triggered:
+                return
+            if self.timeout is None and not self._signals:
+                raise ValueError("No signals or timeout specified.")
+            import time
+            start = time.time()
+            while not self.signal_triggered:
+                QApplication.instance().processEvents()
+                if self.timeout:
+                    elapsed = time.time() - start
+                    elapsed_ms = elapsed * 1000
+                    if elapsed_ms >= self.timeout:
+                        break
+            if not self.signal_triggered and self.raising:
+                raise SignalTimeoutError("Didn't get signal after %sms." %
+                                         self.timeout)
+        finally:
+            self._cleanup()
 
     def _cleanup(self):
-        if self._timer is not None:
-            try:
-                self._timer.timeout.disconnect(self._quit_loop_by_timeout)
-            except (TypeError, RuntimeError):
-                # already disconnected by Qt?
-                pass
+        """clean instance variables and disconnect all signals."""
 
     def __enter__(self):
         return self
@@ -444,8 +436,6 @@ class SignalBlocker(_AbstractSignalBlocker):
         quits the event loop and marks that we finished because of a signal.
         """
         self.signal_triggered = True
-        self._loop.quit()
-        self._cleanup()
 
     def _cleanup(self):
         super(SignalBlocker, self)._cleanup()
@@ -455,6 +445,7 @@ class SignalBlocker(_AbstractSignalBlocker):
             except (TypeError, RuntimeError):
                 # already disconnected by Qt?
                 pass
+        self._signals[:] = []
 
 
 class MultiSignalBlocker(_AbstractSignalBlocker):
@@ -474,6 +465,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     def __init__(self, timeout=1000, raising=False):
         super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = {}
+        self._slots = {}
 
     def _add_signal(self, signal):
         """
@@ -483,7 +475,9 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         :param signal: QtCore.Signal
         """
         self._signals[signal] = False
-        signal.connect(functools.partial(self._signal_emitted, signal))
+        slot = functools.partial(self._signal_emitted, signal)
+        self._slots[signal] = slot
+        signal.connect(slot)
 
     def _signal_emitted(self, signal):
         """
@@ -495,7 +489,17 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         self._signals[signal] = True
         if all(self._signals.values()):
             self.signal_triggered = True
-            self._loop.quit()
+
+    def _cleanup(self):
+        super(MultiSignalBlocker, self)._cleanup()
+        for signal, slot in self._slots.items():
+            try:
+                signal.disconnect(slot)
+            except (TypeError, RuntimeError):
+                # already disconnected by Qt?
+                pass
+        self._slots.clear()
+        self._signals.clear()
 
 
 class SignalTimeoutError(Exception):
