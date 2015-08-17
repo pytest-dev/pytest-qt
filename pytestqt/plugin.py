@@ -367,15 +367,13 @@ class _AbstractSignalBlocker(object):
                 return
             if self.timeout is None and not self._signals:
                 raise ValueError("No signals or timeout specified.")
-            import time
-            start = time.time()
+            timer = QtCore.QElapsedTimer()
+            if self.timeout:
+                timer.start()
             while not self.signal_triggered:
                 QApplication.instance().processEvents()
-                if self.timeout:
-                    elapsed = time.time() - start
-                    elapsed_ms = elapsed * 1000
-                    if elapsed_ms >= self.timeout:
-                        break
+                if self.timeout and timer.hasExpired(self.timeout):
+                    break
             if not self.signal_triggered and self.raising:
                 raise SignalTimeoutError("Didn't get signal after %sms." %
                                          self.timeout)
