@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-from pytestqt.qt_compat import QtCore, Signal
+from pytestqt.qt_compat import QtCore, Signal, QT_API
 
 
 def test_signal_blocker_exception(qtbot):
@@ -283,3 +283,21 @@ def test_wait_twice(qtbot, timer, multiple, do_timeout, signaller):
             signaller.signal.emit()
         with func(arg):
             signaller.signal.emit()
+
+
+@pytest.mark.skipif(QT_API == 'pyside', reason='test crashes PySide')
+def test_destroyed(qtbot):
+    """Test that waitSignal works with the destroyed signal (#82).
+
+    For some reason, this crashes PySide although it seems perfectly fine code.
+    """
+    import sip
+
+    class Obj(QtCore.QObject):
+        pass
+
+    obj = Obj()
+    with qtbot.waitSignal(obj.destroyed):
+        obj.deleteLater()
+
+    assert sip.isdeleted(obj)
