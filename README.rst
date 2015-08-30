@@ -102,6 +102,20 @@ Pull requests are highly appreciated! If you
 can, include some tests that exercise the new code or test that a bug has been
 fixed, and make sure to include yourself in the contributors list. :)
 
+Running tests
+-------------
+
+Tests are run using `tox`_. The simplest way to test is with `PySide`_, as it
+is available on pip and can be installed by ``tox`` automatically::
+
+    $ tox -e py34-pyside,py27-pyside,docs
+
+If you want to test against `PyQt`_, install it into your global python
+installation and use the ``py27-pyqt4``, ``py34-pyqt4`` or ``py34-pyqt5``
+testing environments. For ``PyQt5``, make sure to set the
+``QT_QPA_PLATFORM_PLUGIN_PATH`` environment variable to
+``site-packages/site-packages/PyQt5/plugins/platforms`` before running ``tox``.
+
 Contributors
 ------------
 
