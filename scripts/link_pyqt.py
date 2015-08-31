@@ -130,7 +130,7 @@ def get_lib_path(executable, name, required=True):
         raise ValueError("Unexpected output: {!r}".format(output))
 
 
-def link_pyqt(executable, venv_path):
+def link_pyqt(executable, venv_path, qt_version):
     """Symlink the systemwide PyQt/sip into the venv.
 
     Args:
@@ -139,7 +139,7 @@ def link_pyqt(executable, venv_path):
     """
     sip_file = get_lib_path(executable, 'sip')
     sipconfig_file = get_lib_path(executable, 'sipconfig', required=False)
-    pyqt_dir = os.path.dirname(get_lib_path(executable, 'PyQt5'))
+    pyqt_dir = os.path.dirname(get_lib_path(executable, 'PyQt%d' % qt_version))
 
     for path in [sip_file, sipconfig_file, pyqt_dir]:
         if path is None:
@@ -202,6 +202,8 @@ def main():
     """Main entry point."""
     parser = argparse.ArgumentParser()
     parser.add_argument('path', help="Base path to the venv.")
+    parser.add_argument('qt_version', type=int,
+                        help="Major Qt version (5 for PyQt5, etc).")
     parser.add_argument('--tox', help="Add when called via tox.",
                         action='store_true')
     args = parser.parse_args()
@@ -212,7 +214,7 @@ def main():
         executable = sys.executable
 
     venv_path = get_venv_lib_path(args.path)
-    link_pyqt(executable, venv_path)
+    link_pyqt(executable, venv_path, args.qt_version)
 
 
 if __name__ == '__main__':
