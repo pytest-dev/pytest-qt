@@ -112,9 +112,8 @@ is available on pip and can be installed by ``tox`` automatically::
 
 If you want to test against `PyQt`_, install it into your global python
 installation and use the ``py27-pyqt4``, ``py34-pyqt4`` or ``py34-pyqt5``
-testing environments. For ``PyQt5``, make sure to set the
-``QT_QPA_PLATFORM_PLUGIN_PATH`` environment variable to
-``site-packages/site-packages/PyQt5/plugins/platforms`` before running ``tox``.
+testing environments, and the ``tox`` will copy the appropriate files into
+its virtual environments to ensure isolation.
 
 Contributors
 ------------
