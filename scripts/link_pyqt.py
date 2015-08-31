@@ -3,20 +3,23 @@
 
 # Copyright 2014-2015 Florian Bruhin (The Compiler) <mail@qutebrowser.org>
 
-# This file is part of qutebrowser.
+# This file was originally part of qutebrowser, copied to pytest-qt with
+# permission from the author, by Bruno Oliveira (nicoddemus@gmail.com). The
+# file also went through some small modifications so it could run in Python 2.7
+# and link PyQt4 files.
 #
-# qutebrowser is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
 #
-# qutebrowser is distributed in the hope that it will be useful,
+# pytest-qt is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Lesser General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with qutebrowser.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with pytest-qt.  If not, see <http://www.gnu.org/licenses/>.
 
 """Symlink PyQt into a given virtualenv."""
 from __future__ import print_function
