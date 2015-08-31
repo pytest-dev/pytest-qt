@@ -13,22 +13,22 @@ environment:
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.x" # currently 2.7.9
       PYTHON_ARCH: "32"
-      TESTENV: "py27"
+      TESTENV: "py27-pyside"
 
     - PYTHON: "C:\\Python34"
       PYTHON_VERSION: "3.4.x" # currently 3.4.3
       PYTHON_ARCH: "32"
-      TESTENV: "py34"
+      TESTENV: "py34-pyside"
 
     - PYTHON: "C:\\Python33"
       PYTHON_VERSION: "3.3.x" # currently 3.3.5
       PYTHON_ARCH: "32"
-      TESTENV: "py33"
+      TESTENV: "py33-pyside"
 
     - PYTHON: "C:\\Python266"
       PYTHON_VERSION: "2.6.6"
       PYTHON_ARCH: "32"
-      TESTENV: "py26"
+      TESTENV: "py26-pyside"
 
 
 install:
