@@ -19,7 +19,7 @@
 # along with qutebrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 """Symlink PyQt into a given virtualenv."""
-
+from __future__ import print_function
 import os
 import argparse
 import shutil
@@ -28,6 +28,7 @@ import sys
 import subprocess
 import tempfile
 import filecmp
+import io
 
 
 class Error(Exception):
@@ -47,21 +48,14 @@ def run_py(executable, *code):
         cmd = [executable, filename]
         try:
             ret = subprocess.check_output(cmd, universal_newlines=True,
-                                          stderr=subprocess.DEVNULL).rstrip()
+                                          stderr=None).rstrip()
         finally:
             os.remove(filename)
     else:
         cmd = [executable, '-c', '\n'.join(code)]
         ret = subprocess.check_output(cmd, universal_newlines=True,
-                                      stderr=subprocess.DEVNULL).rstrip()
+                                      stderr=None).rstrip()
     return ret
-
-
-def verbose_copy(src, dst, *, follow_symlinks=True):
-    """Copy function for shutil.copytree which prints copied files."""
-    if '-v' in sys.argv:
-        print('{} -> {}'.format(src, dst))
-    shutil.copy(src, dst, follow_symlinks=follow_symlinks)
 
 
 def get_ignored_files(directory, files):
@@ -162,8 +156,7 @@ def copy_or_link(source, dest):
     if os.name == 'nt':
         if os.path.isdir(source):
             print('{} -> {}'.format(source, dest))
-            shutil.copytree(source, dest, ignore=get_ignored_files,
-                            copy_function=verbose_copy)
+            shutil.copytree(source, dest, ignore=get_ignored_files)
         else:
             print('{} -> {}'.format(source, dest))
             shutil.copy(source, dest)
@@ -192,7 +185,7 @@ def get_venv_lib_path(path):
 def get_tox_syspython(tox_path):
     """Get the system python based on a virtualenv created by tox."""
     path = os.path.join(tox_path, '.tox-config1')
-    with open(path, encoding='ascii') as f:
+    with io.open(path, encoding='ascii') as f:
         line = f.readline()
     _md5, sys_python = line.rstrip().split(' ')
     return sys_python
