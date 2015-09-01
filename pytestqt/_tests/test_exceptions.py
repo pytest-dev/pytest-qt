@@ -1,9 +1,6 @@
 import pytest
 import sys
-from pytestqt.plugin import format_captured_exceptions
-
-
-pytest_plugins = 'pytester'
+from pytestqt.plugin import format_captured_exceptions, QT_API
 
 
 @pytest.mark.parametrize('raise_error', [False, True])
@@ -40,6 +37,7 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
             '*ValueError: mistakes were made*',
             '*1 error*',
         ])
+        assert 'pytest.fail' not in '\n'.join(result.outlines)
     else:
         result.stdout.fnmatch_lines('*1 passed*')
 
@@ -75,7 +73,11 @@ def test_no_capture(testdir, no_capture_by_marker):
         ''')
     testdir.makepyfile('''
         import pytest
+        import sys
         from pytestqt.qt_compat import QWidget, QtCore
+
+        # PyQt 5.5+ will crash if there's no custom exception handler installed
+        sys.excepthook = lambda *args: None
 
         class MyWidget(QWidget):
 
@@ -88,5 +90,63 @@ def test_no_capture(testdir, no_capture_by_marker):
             qtbot.addWidget(w)
             qtbot.mouseClick(w, QtCore.Qt.LeftButton)
     '''.format(marker_code=marker_code))
-    res = testdir.inline_run()
-    res.assertoutcome(passed=1)
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines(['*1 passed*'])
+
+
+def test_no_capture_preserves_custom_excepthook(testdir):
+    """
+    Capturing must leave custom excepthooks alone when disabled.
+
+    :type testdir: TmpTestdir
+    """
+    testdir.makepyfile('''
+        import pytest
+        import sys
+        from pytestqt.qt_compat import QWidget, QtCore
+
+        def custom_excepthook(*args):
+            sys.__excepthook__(*args)
+
+        sys.excepthook = custom_excepthook
+
+        @pytest.mark.qt_no_exception_capture
+        def test_no_capture(qtbot):
+            assert sys.excepthook is custom_excepthook
+
+        def test_capture(qtbot):
+            assert sys.excepthook is not custom_excepthook
+    ''')
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines(['*2 passed*'])
+
+
+def test_exception_capture_on_teardown(testdir):
+    """
+    Exceptions should also be captured during test teardown.
+
+    :type testdir: TmpTestdir
+    """
+    testdir.makepyfile('''
+        import pytest
+        from pytestqt.qt_compat import QWidget, QtCore, QEvent
+
+        class MyWidget(QWidget):
+
+            def event(self, ev):
+                raise RuntimeError('event processed')
+
+        def test_widget(qtbot, qapp):
+            w = MyWidget()
+            # keep a reference to the widget so it will lives after the test
+            # ends. This will in turn trigger its event() during test tear down,
+            # raising the exception during its event processing
+            test_widget.w = w
+            qapp.postEvent(w, QEvent(QEvent.User))
+    ''')
+    res = testdir.runpytest('-s')
+    res.stdout.fnmatch_lines([
+        "*RuntimeError('event processed')*",
+        '*1 error*',
+    ])
+

@@ -5,8 +5,6 @@ import pytest
 from pytestqt.qt_compat import qDebug, qWarning, qCritical, QtDebugMsg, \
     QtWarningMsg, QtCriticalMsg, QT_API
 
-pytest_plugins = 'pytester'
-
 
 @pytest.mark.parametrize('test_succeeds, qt_log',
                          [(True, True), (True, False), (False, False),

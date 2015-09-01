@@ -45,12 +45,15 @@ This allows you to test and make sure your view layer is behaving the way you ex
 .. |docs| image:: https://readthedocs.org/projects/pytest-qt/badge/?version=latest
   :target: https://pytest-qt.readthedocs.org
 
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/9s5jr17hxcxeo6yx/branch/master?svg=true
+  :target: https://ci.appveyor.com/project/nicoddemus/pytest-qt
+
 .. pypip.in seems to be offline
   .. |python| image:: https://pypip.in/py_versions/pytest-qt/badge.png
   :target: https://pypi.python.org/pypi/pytest-qt/
   :alt: Supported Python versions
 
-|version| |downloads| |ci| |coverage| |docs|
+|version| |downloads| |ci| |appveyor| |coverage| |docs|
 
 Requirements
 ============
@@ -78,9 +81,9 @@ Full documentation and tutorial available at `Read the Docs`_.
 Change Log
 ==========
 
-Please consult the `releases page`_.
+Please consult the `changelog page`_.
 
-.. _releases page: https://github.com/pytest-dev/pytest-qt/releases
+.. _changelog page: https://github.com/pytest-dev/pytest-qt/blob/master/CHANGELOG.md
 
 Bugs/Requests
 =============

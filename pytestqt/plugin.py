@@ -356,6 +356,12 @@ class _AbstractSignalBlocker(object):
         self.timeout = timeout
         self.signal_triggered = False
         self.raising = raising
+        if timeout is None:
+            self._timer = None
+        else:
+            self._timer = QtCore.QTimer(self._loop)
+            self._timer.setSingleShot(True)
+            self._timer.setInterval(timeout)
 
     def wait(self):
         """
@@ -368,12 +374,27 @@ class _AbstractSignalBlocker(object):
             return
         if self.timeout is None and not self._signals:
             raise ValueError("No signals or timeout specified.")
-        if self.timeout is not None:
-            QtCore.QTimer.singleShot(self.timeout, self._loop.quit)
+        if self._timer is not None:
+            self._timer.timeout.connect(self._quit_loop_by_timeout)
+            self._timer.start()
         self._loop.exec_()
         if not self.signal_triggered and self.raising:
             raise SignalTimeoutError("Didn't get signal after %sms." %
-                                      self.timeout)
+                                     self.timeout)
+
+    def _quit_loop_by_timeout(self):
+        self._loop.quit()
+        self._cleanup()
+
+    def _cleanup(self):
+        if self._timer is not None:
+            try:
+                self._timer.timeout.disconnect(self._quit_loop_by_timeout)
+            except (TypeError, RuntimeError):
+                # already disconnected by Qt?
+                pass
+            self._timer.stop()
+            self._timer = None
 
     def __enter__(self):
         return self
@@ -427,6 +448,16 @@ class SignalBlocker(_AbstractSignalBlocker):
         """
         self.signal_triggered = True
         self._loop.quit()
+        self._cleanup()
+
+    def _cleanup(self):
+        super(SignalBlocker, self)._cleanup()
+        for signal in self._signals:
+            try:
+                signal.disconnect(self._quit_loop_by_signal)
+            except (TypeError, RuntimeError):
+                # already disconnected by Qt?
+                pass
 
 
 class MultiSignalBlocker(_AbstractSignalBlocker):
@@ -494,13 +525,13 @@ def capture_exceptions():
 
     def hook(type_, value, tback):
         result.append((type_, value, tback))
-        sys.__excepthook__(type_, value, tback)
 
+    old_hook = sys.excepthook
     sys.excepthook = hook
     try:
         yield result
     finally:
-        sys.excepthook = sys.__excepthook__
+        sys.excepthook = old_hook
 
 
 def format_captured_exceptions(exceptions):
@@ -545,15 +576,14 @@ def qtbot(qapp, request):
     that they are properly closed after the test ends.
     """
     result = QtBot()
-    no_capture = request.node.get_marker('qt_no_exception_capture') or \
-                 request.config.getini('qt_no_exception_capture')
+    no_capture = _exception_capture_disabled(request.node)
     if no_capture:
         yield result  # pragma: no cover
     else:
         with capture_exceptions() as exceptions:
             yield result
         if exceptions:
-            pytest.fail(format_captured_exceptions(exceptions))
+            pytest.fail(format_captured_exceptions(exceptions), pytrace=False)
 
     result._close()
 
@@ -566,6 +596,13 @@ def qtmodeltester():
     tester = ModelTester()
     yield tester
     tester._cleanup()
+
+
+def _exception_capture_disabled(item):
+    """returns if exception capture is disabled for the given test item.
+    """
+    return item.get_marker('qt_no_exception_capture') or \
+           item.config.getini('qt_no_exception_capture')
 
 
 def pytest_addoption(parser):
@@ -592,15 +629,31 @@ def pytest_addoption(parser):
 
 
 @pytest.mark.hookwrapper
-def pytest_runtest_teardown():
+def pytest_runtest_teardown(item):
     """
     Hook called after each test tear down, to process any pending events and
     avoiding leaking events to the next test.
     """
+    _process_events(item)
     yield
+    _process_events(item)
+
+
+def _process_events(item):
+    """Calls app.processEvents() while taking care of capturing exceptions
+    or not based on the given item's configuration.
+    """
     app = QApplication.instance()
     if app is not None:
-        app.processEvents()
+        if _exception_capture_disabled(item):
+            app.processEvents()
+        else:
+            with capture_exceptions() as exceptions:
+                app.processEvents()
+            if exceptions:
+                pytest.fail('TEARDOWN ERROR: ' +
+                            format_captured_exceptions(exceptions),
+                            pytrace=False)
 
 
 def pytest_configure(config):
@@ -621,7 +674,15 @@ def pytest_configure(config):
 
 
 def pytest_report_header():
-    return ['qt-api: %s' % QT_API]
+    from pytestqt.qt_compat import get_versions
+    v = get_versions()
+    fields = [
+        '%s %s' % (v.qt_api, v.qt_api_version),
+        'Qt runtime %s' % v.runtime,
+        'Qt compiled %s' % v.compiled,
+    ]
+    version_line = ' -- '.join(fields)
+    return [version_line]
 
 
 @pytest.fixture
