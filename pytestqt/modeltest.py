@@ -30,7 +30,6 @@
 #
 # $QT_END_LICENSE$
 
-
 import collections
 
 from pytestqt.qt_compat import QtCore, QtGui, cast, extract_from_variant
@@ -51,8 +50,10 @@ class ModelTester:
         self._remove = None
         self._verbose = None
 
-    def setup_and_run(self, model, verbose=False):
-        """Connect to all of the models signals.
+    def check(self, model, verbose=False):
+        """Runs a series of checks in the given model.
+
+        Connect to all of the models signals.
 
         Whenever anything happens recheck everything.
         """
@@ -64,19 +65,19 @@ class ModelTester:
         self._remove = []
         self._changing = []
 
-        self._model.columnsAboutToBeInserted.connect(self.run)
-        self._model.columnsAboutToBeRemoved.connect(self.run)
-        self._model.columnsInserted.connect(self.run)
-        self._model.columnsRemoved.connect(self.run)
-        self._model.dataChanged.connect(self.run)
-        self._model.headerDataChanged.connect(self.run)
-        self._model.layoutAboutToBeChanged.connect(self.run)
-        self._model.layoutChanged.connect(self.run)
-        self._model.modelReset.connect(self.run)
-        self._model.rowsAboutToBeInserted.connect(self.run)
-        self._model.rowsAboutToBeRemoved.connect(self.run)
-        self._model.rowsInserted.connect(self.run)
-        self._model.rowsRemoved.connect(self.run)
+        self._model.columnsAboutToBeInserted.connect(self._run)
+        self._model.columnsAboutToBeRemoved.connect(self._run)
+        self._model.columnsInserted.connect(self._run)
+        self._model.columnsRemoved.connect(self._run)
+        self._model.dataChanged.connect(self._run)
+        self._model.headerDataChanged.connect(self._run)
+        self._model.layoutAboutToBeChanged.connect(self._run)
+        self._model.layoutChanged.connect(self._run)
+        self._model.modelReset.connect(self._run)
+        self._model.rowsAboutToBeInserted.connect(self._run)
+        self._model.rowsAboutToBeRemoved.connect(self._run)
+        self._model.rowsInserted.connect(self._run)
+        self._model.rowsRemoved.connect(self._run)
 
         # Special checks for changes
         self._model.layoutAboutToBeChanged.connect(
@@ -91,25 +92,25 @@ class ModelTester:
         self._model.dataChanged.connect(self._on_data_changed)
         self._model.headerDataChanged.connect(self._on_header_data_changed)
 
-        self.run(verbose=verbose)
+        self._run(verbose=verbose)
 
-    def cleanup(self):
+    def _cleanup(self):
         if self._model is None:
             return
 
-        self._model.columnsAboutToBeInserted.disconnect(self.run)
-        self._model.columnsAboutToBeRemoved.disconnect(self.run)
-        self._model.columnsInserted.disconnect(self.run)
-        self._model.columnsRemoved.disconnect(self.run)
-        self._model.dataChanged.disconnect(self.run)
-        self._model.headerDataChanged.disconnect(self.run)
-        self._model.layoutAboutToBeChanged.disconnect(self.run)
-        self._model.layoutChanged.disconnect(self.run)
-        self._model.modelReset.disconnect(self.run)
-        self._model.rowsAboutToBeInserted.disconnect(self.run)
-        self._model.rowsAboutToBeRemoved.disconnect(self.run)
-        self._model.rowsInserted.disconnect(self.run)
-        self._model.rowsRemoved.disconnect(self.run)
+        self._model.columnsAboutToBeInserted.disconnect(self._run)
+        self._model.columnsAboutToBeRemoved.disconnect(self._run)
+        self._model.columnsInserted.disconnect(self._run)
+        self._model.columnsRemoved.disconnect(self._run)
+        self._model.dataChanged.disconnect(self._run)
+        self._model.headerDataChanged.disconnect(self._run)
+        self._model.layoutAboutToBeChanged.disconnect(self._run)
+        self._model.layoutChanged.disconnect(self._run)
+        self._model.modelReset.disconnect(self._run)
+        self._model.rowsAboutToBeInserted.disconnect(self._run)
+        self._model.rowsAboutToBeRemoved.disconnect(self._run)
+        self._model.rowsInserted.disconnect(self._run)
+        self._model.rowsRemoved.disconnect(self._run)
 
         self._model.layoutAboutToBeChanged.disconnect(
             self._on_layout_about_to_be_changed)
@@ -123,8 +124,10 @@ class ModelTester:
         self._model.dataChanged.disconnect(self._on_data_changed)
         self._model.headerDataChanged.disconnect(self._on_header_data_changed)
 
+        self._model = None
+        self._orig_model = None
 
-    def run(self, verbose=False):
+    def _run(self, verbose=False):
         self._verbose = verbose
         assert self._model is not None
         if self._fetching_more:
@@ -175,7 +178,6 @@ class ModelTester:
         self._model.sibling(0, 0, QtCore.QModelIndex())
         self._model.span(QtCore.QModelIndex())
         self._model.supportedDropActions()
-
 
     def _test_row_count(self):
         """Test model's implementation of rowCount() and hasChildren().

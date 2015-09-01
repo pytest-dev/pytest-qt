@@ -13,7 +13,7 @@ def test_valid_model(qtmodeltester):
     items[0].setChild(0, items[4])
     model.setItem(0, 0, items[0])
     model.setItem(0, 1, items[1])
-    model.setItem(0, 0, items[2])
+    model.setItem(1, 0, items[2])
     model.setItem(0, 1, items[3])
 
-    qtmodeltester.setup_and_run(model)
+    qtmodeltester.check(model)

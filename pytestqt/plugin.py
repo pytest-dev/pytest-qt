@@ -565,7 +565,7 @@ def qtmodeltester():
     """
     tester = ModelTester()
     yield tester
-    tester.cleanup()
+    tester._cleanup()
 
 
 def pytest_addoption(parser):
