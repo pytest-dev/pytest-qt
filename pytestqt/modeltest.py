@@ -30,6 +30,7 @@
 #
 # $QT_END_LICENSE$
 
+from __future__ import print_function
 import collections
 
 from pytestqt.qt_compat import QtCore, QtGui, cast, extract_from_variant
@@ -42,13 +43,17 @@ class ModelTester:
 
     """A tester for Qt's QAbstractItemModel's."""
 
-    def __init__(self):
+    def __init__(self, config):
         self._model = None
         self._orig_model = None
         self._fetching_more = None
         self._insert = None
         self._remove = None
-        self._verbose = None
+        self._verbose = config.getoption('verbose') > 0
+
+    def _debug(self, *args):
+        if self._verbose:
+            print(*args)
 
     def check(self, model, verbose=False):
         """Runs a series of checks in the given model.
@@ -340,8 +345,8 @@ class ModelTester:
         if rows > 0:
             assert self._model.hasChildren(parent)
 
-        #qDebug() << "parent:" << self._model.data(parent).toString() << "rows:" << rows
-        #         << "columns:" << columns << "parent column:" << parent.column()
+        self._debug("parent:", self._model.data(parent), "rows:", rows,
+                    "columns:", columns, "parent column:", parent.column())
 
         topLeftChild = self._model.index(0, 0, parent)
 
@@ -389,9 +394,9 @@ class ModelTester:
 
                 if self._model.parent(index) != parent:
                     # FIXME
-                    # qDebug() << r << c << currentDepth << self._model.data(index).toString()
-                    #         << self._model.data(parent).toString()
-                    # qDebug() << index << parent << self._model.parent(index)
+                    self._debug(r, c, currentDepth, self._model.data(index),
+                                self._model.data(parent))
+                    self._debug(index, parent, self._model.parent(index))
                     # And a view that you can even use to show the model.
                     # QTreeView view
                     # view.setModel(self._model)
@@ -403,7 +408,8 @@ class ModelTester:
 
                 # recursively go down the children
                 if self._model.hasChildren(index) and currentDepth < 10:
-                    #qDebug() << r << c << "has children" << self._model.rowCount(index)
+                    self._debug(r, c, "has children",
+                                self._model.rowCount(index))
                     self._check_children(index, currentDepth + 1)
                 # elif currentDepth >= 10:
                 #     print("checked 10 deep")
@@ -469,9 +475,11 @@ class ModelTester:
         """
 
         # Q_UNUSED(end)
-        # qDebug() << "rowsAboutToBeInserted" << "start=" << start << "end=" << end << "parent=" << self._model.data(parent).toString()
-        # << "current count of parent=" << self._model.rowCount(parent); # << "display of last=" << self._model.data(self._model.index(start-1, 0, parent))
-        # qDebug() << self._model.index(start-1, 0, parent) << self._model.data(self._model.index(start-1, 0, parent))
+        self._debug("rowsAboutToBeInserted", "start=", start, "end=", end, "parent=",
+                    self._model.data(parent), "current count of parent=",
+                    self._model.rowCount(parent), "display of last=",
+                    self._model.data(self._model.index(start-1, 0, parent)))
+        self._debug(self._model.index(start-1, 0, parent), self._model.data(self._model.index(start-1, 0, parent)))
 
         last_data = self._model.data(self._model.index(start - 1, 0, parent))
         next_data = self._model.data(self._model.index(start, 0, parent))
@@ -499,10 +507,11 @@ class ModelTester:
 
         if c.next != expected:
             # FIXME
-            # qDebug() << start << end
-            # for i in range(self._model.rowCount(); ++i):
-            #     qDebug() << self._model.index(i, 0).data().toString()
-            # qDebug() << c.next << self._model.data(self._model.index(end + 1, 0, c.parent))
+            self._debug(start, end)
+            for i in xrange(self._model.rowCount()):
+                self._debug(self._model.index(i, 0).data())
+            data = self._model.data(self._model.index(end + 1, 0, c.parent))
+            self._debug(c.next, data)
             pass
 
         assert c.next == expected

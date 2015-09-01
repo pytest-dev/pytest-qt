@@ -589,11 +589,11 @@ def qtbot(qapp, request):
 
 
 @pytest.yield_fixture
-def qtmodeltester():
+def qtmodeltester(request):
     """
     Fixture used to create a ModelTester instance to test models.
     """
-    tester = ModelTester()
+    tester = ModelTester(request.config)
     yield tester
     tester._cleanup()
 
