@@ -154,6 +154,23 @@ def test_header(testdir):
     ])
 
 
+def test_public_api_backward_compatibility():
+    """
+    Test backward compatibility for version 1.6.0: since then symbols that were available from
+    pytestqt.plugin have been moved to other modules to enhance navigation and maintainability,
+    this test ensures the same symbols are still available from the same imports. (#90)
+    """
+    import pytestqt.plugin
+    assert pytestqt.plugin.QtBot
+    assert pytestqt.plugin.SignalBlocker
+    assert pytestqt.plugin.MultiSignalBlocker
+    assert pytestqt.plugin.SignalTimeoutError
+    assert pytestqt.plugin.format_captured_exceptions
+    assert pytestqt.plugin.capture_exceptions
+    assert pytestqt.plugin.QtLoggingPlugin
+    assert pytestqt.plugin.Record
+
+
 class EventRecorder(QWidget):
 
     """
