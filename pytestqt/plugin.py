@@ -69,14 +69,17 @@ def pytest_addoption(parser):
                   'list of regexes for messages that should not cause a tests '
                   'to fails', type='linelist')
 
-    parser.addoption('--no-qt-log', dest='qt_log', action='store_false',
-                     default=True)
+    group = parser.getgroup('qt', 'qt testing')
+    group.addoption('--no-qt-log', dest='qt_log', action='store_false',
+                    default=True, help='disable pytest-qt logging capture')
     if QT_API == 'pyqt5':
         default = '{rec.context.file}:{rec.context.function}:' \
                   '{rec.context.line}:\n    {rec.type_name}: {rec.message}'
     else:
         default = '{rec.type_name}: {rec.message}'
-    parser.addoption('--qt-log-format', dest='qt_log_format', default=default)
+    group.addoption('--qt-log-format', dest='qt_log_format', default=default,
+                    help='defines how qt log messages are displayed, '
+                         'default: "{}"'.format(default))
 
 
 @pytest.mark.hookwrapper
