@@ -79,7 +79,7 @@ def pytest_addoption(parser):
         default = '{rec.type_name}: {rec.message}'
     group.addoption('--qt-log-format', dest='qt_log_format', default=default,
                     help='defines how qt log messages are displayed, '
-                         'default: "{}"'.format(default))
+                         'default: "{0}"'.format(default))
 
 
 @pytest.mark.hookwrapper
