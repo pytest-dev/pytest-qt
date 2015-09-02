@@ -2,9 +2,17 @@ import pytest
 
 from pytestqt.exceptions import capture_exceptions, format_captured_exceptions, \
     _is_exception_capture_disabled
-from pytestqt.logging import QtLoggingPlugin, _QtMessageCapture
+from pytestqt.logging import QtLoggingPlugin, _QtMessageCapture, Record
 from pytestqt.qt_compat import QApplication, QT_API
 from pytestqt.qtbot import QtBot
+from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError
+
+# modules imported here just for backward compatibility before we have split the implementation
+# of this file in several modules
+assert SignalBlocker
+assert MultiSignalBlocker
+assert SignalTimeoutError
+assert Record
 
 
 @pytest.yield_fixture(scope='session')

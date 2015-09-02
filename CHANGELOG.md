@@ -1,7 +1,5 @@
 # 1.6.0.dev #
 
-# 1.5.2.dev #
-
 - Reduced verbosity when exceptions are captured in virtual methods
   (#77, thanks @The-Compiler).
   
