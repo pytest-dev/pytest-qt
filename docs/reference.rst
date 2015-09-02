@@ -1,16 +1,15 @@
 Reference
 =========
 
-.. module:: pytestqt.plugin
-
 QtBot
 -----
-
+.. module:: pytestqt.qtbot
 .. autoclass:: QtBot
 
 SignalBlocker
 -------------
 
+.. module:: pytestqt.wait_signal
 .. autoclass:: SignalBlocker
 
 MultiSignalBlocker
@@ -26,4 +25,5 @@ SignalTimeoutError
 Record
 ------
 
+.. module:: pytestqt.logging
 .. autoclass:: Record

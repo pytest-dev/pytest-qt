@@ -1,8 +1,7 @@
-import os
 import weakref
 import pytest
 from pytestqt.qt_compat import QtGui, Qt, QEvent, QtCore, QApplication, \
-    QWidget, get_versions
+    QWidget
 
 
 def test_basics(qtbot):

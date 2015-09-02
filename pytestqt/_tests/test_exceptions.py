@@ -1,6 +1,6 @@
 import pytest
 import sys
-from pytestqt.plugin import format_captured_exceptions, QT_API
+from pytestqt.exceptions import format_captured_exceptions
 
 
 @pytest.mark.parametrize('raise_error', [False, True])
