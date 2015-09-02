@@ -22,7 +22,7 @@ install:
  - sudo apt-get update
  
  # Qt
- - python install-qt.py
+ - python scripts/install-qt.py
 
  # PyTest
  - pip uninstall -y pytest
