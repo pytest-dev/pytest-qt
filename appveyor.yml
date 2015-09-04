@@ -1,37 +1,21 @@
 environment:
-#  global:
-#    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
-#    # /E:ON and /V:ON options are not enabled in the batch script intepreter
-#    # See: http://stackoverflow.com/a/13751649/163740
-#    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\scripts\\run_with_env.cmd"
-#
   matrix:
     - INSTALL_QT: "py34-pyqt5"
-      #PYTHONUNBUFFERED: 1
       TESTENVS: "py34-pyqt5"
 
     - INSTALL_QT: "py34-pyqt4"
-      #PYTHONUNBUFFERED: 1
       TESTENVS: "py34-pyqt4"
 
     - INSTALL_QT: "py27-pyqt4"
-      #PYTHONUNBUFFERED: 1
       TESTENVS: "py27-pyqt4"
 
     - TESTENVS: "py27-pyside,py33-pyside,py34-pyside,docs"
-      #PYTHONUNBUFFERED: 1
-
 
 install:
-  - ECHO "Filesystem root:"
-  - ps: "ls \"C:/\""
   - C:\Python27\python -u scripts\install-qt.py
   - C:\Python27\python -m pip install tox
-  #- "%CMD_IN_ENV% pip install tox"
 
-build: false  # Not a C# project, build stuff at the test step instead.
+build: false  # Not a C# project
 
 test_script:
-  # Build the compiled extension and run the project tests
-  #- "%CMD_IN_ENV% tox"
   - C:\Python27\scripts\tox -e %TESTENVS%
