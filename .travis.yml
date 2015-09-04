@@ -1,14 +1,12 @@
-language: python
-
 language: c
 
 dist: trusty
 
 env:
- - PYTHON=27 PYTEST_QT_API=pyqt4
- - PYTHON=27 PYTEST_QT_API=pyside
- - PYTHON=34 PYTEST_QT_API=pyqt4
- - PYTHON=34 PYTEST_QT_API=pyside
+# - PYTHON=27 PYTEST_QT_API=pyqt4
+# - PYTHON=27 PYTEST_QT_API=pyside
+# - PYTHON=34 PYTEST_QT_API=pyqt4
+# - PYTHON=34 PYTEST_QT_API=pyside
  - PYTHON=34 PYTEST_QT_API=pyqt5
 
 install:

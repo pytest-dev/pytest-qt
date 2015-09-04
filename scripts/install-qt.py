@@ -56,6 +56,10 @@ elif 'TRAVIS' in os.environ:
         print('Installing %s...' % ', '.join(packages))
         subprocess.check_call(['sudo', 'apt-get', 'install', '-qq'] + packages)
 
+    pkgs = ['python3-pyqt5', 'python3-pyqt5.qtwebkit', 'python-tox',
+            'python3-dev', 'libpython3.4-dev', 'xvfb']
+    apt_get_install(pkgs)
+    sys.exit(0)
     py3k = os.environ['PYTHON'].startswith('3')
     packages = ['python-tox', 'xvfb']
     if py3k:
