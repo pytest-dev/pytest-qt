@@ -68,13 +68,13 @@ elif 'TRAVIS' in os.environ:
             pkg = 'python3-pyqt%s' % pyqt_ver
         else:
             pkg = 'python-qt%s' % pyqt_ver
-        apt_get_install([pkg, pkg + '-dbg'])
+        apt_get_install([pkg, pkg + '-dbg'] + packages)
     else:
         if py3k:
             pkg = 'python3-pyside'
         else:
             pkg = 'python-pyside'
-        apt_get_install([pkg])
+        apt_get_install([pkg] + packages)
 
 else:
     print('Nothing to do (not in Travis or AppVeyor)')
