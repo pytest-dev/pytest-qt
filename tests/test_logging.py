@@ -6,9 +6,8 @@ from pytestqt.qt_compat import qDebug, qWarning, qCritical, QtDebugMsg, \
     QtWarningMsg, QtCriticalMsg, QT_API
 
 
-@pytest.mark.parametrize('test_succeeds, qt_log',
-                         [(True, True), (True, False), (False, False),
-                          (False, True)])
+@pytest.mark.parametrize('test_succeeds', [True, False])
+@pytest.mark.parametrize('qt_log', [True, False])
 def test_basic_logging(testdir, test_succeeds, qt_log):
     """
     Test Qt logging capture output.
@@ -17,7 +16,21 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
     """
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qDebug, qWarning, qCritical
+        import sys
+        from pytestqt.qt_compat import qDebug, qWarning, qCritical, \
+            qInstallMessageHandler, qInstallMsgHandler
+
+        def to_unicode(s):
+            return s.decode('utf-8', 'replace') if isinstance(s, bytes) else s
+
+        if qInstallMessageHandler:
+            def print_msg(msg_type, context, message):
+                sys.stderr.write(to_unicode(message) + '\\n')
+            qInstallMessageHandler(print_msg)
+        else:
+            def print_msg(msg_type, message):
+                sys.stderr.write(to_unicode(message) + '\\n')
+            qInstallMsgHandler(print_msg)
 
         def test_types():
             qDebug('this is a DEBUG message')
