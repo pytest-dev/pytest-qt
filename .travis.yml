@@ -10,8 +10,8 @@ env:
  - PYTHON=34 PYTEST_QT_API=pyqt5
 
 install:
- - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
- - sudo apt-get update
+ #- sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
+ - sudo apt-get update -y
  # Qt
  - python scripts/install-qt.py
 
