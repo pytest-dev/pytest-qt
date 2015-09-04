@@ -42,15 +42,6 @@ if 'APPVEYOR' in os.environ:
         subprocess.check_call([installer, '/S'])
         python = caption.split('-')[0]
         assert python[:2] == 'py'
-        # debug
-        for ver in ('27', '34'):
-            path = r'C:\Python%s\Lib\site-packages' % ver
-            print('DEBUG', '-' * 80)
-            print('PATH', path)
-            for x in os.listdir(path):
-                print('  ', x)
-            print('DEBUG', '-' * 80)
-        # debug
         executable = r'C:\Python%s\python.exe' % python[2:]
         module = url.split('/')[0]
         cmdline = [executable, '-c', 'import %s;print(%s)' % (module, module)]
