@@ -2,6 +2,9 @@ language: c
 
 dist: trusty
 
+os:
+  - linux
+
 env:
 # - PYTHON=27 PYTEST_QT_API=pyqt4
 # - PYTHON=27 PYTEST_QT_API=pyside
