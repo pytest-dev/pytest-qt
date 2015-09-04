@@ -52,24 +52,25 @@ if 'APPVEYOR' in os.environ:
         print('Skip install for this build')
 
 elif 'TRAVIS' in os.environ:
-    def apt_get_install(packages):
-        print('Installing %s...' % ', '.join(packages))
-        subprocess.check_call(['sudo', 'apt-get', 'install', '-qq'] + packages)
-
-    py3k = sys.version_info[0] == 3
-    if os.environ['PYTEST_QT_API'] in ('pyqt4', 'pyqt5'):
-        pyqt_ver = os.environ['PYTEST_QT_API'][-1]
-        if py3k:
-            pkg = 'python3-pyqt%s' % pyqt_ver
-        else:
-            pkg = 'python-qt%s' % pyqt_ver
-        apt_get_install([pkg, pkg + '-dbg'])
-    else:
-        if py3k:
-            pkg = 'python3-pyside'
-        else:
-            pkg = 'python-pyside'
-        apt_get_install([pkg])
+    pass
+    # def apt_get_install(packages):
+    #     print('Installing %s...' % ', '.join(packages))
+    #     subprocess.check_call(['sudo', 'apt-get', 'install', '-qq'] + packages)
+    #
+    # py3k = sys.version_info[0] == 3
+    # if os.environ['PYTEST_QT_API'] in ('pyqt4', 'pyqt5'):
+    #     pyqt_ver = os.environ['PYTEST_QT_API'][-1]
+    #     if py3k:
+    #         pkg = 'python3-pyqt%s' % pyqt_ver
+    #     else:
+    #         pkg = 'python-qt%s' % pyqt_ver
+    #     apt_get_install([pkg, pkg + '-dbg'])
+    # else:
+    #     if py3k:
+    #         pkg = 'python3-pyside'
+    #     else:
+    #         pkg = 'python-pyside'
+    #     apt_get_install([pkg])
 
 else:
     print('Nothing to do (not in Travis or AppVeyor)')

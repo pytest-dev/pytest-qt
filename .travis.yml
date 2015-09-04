@@ -18,10 +18,19 @@ env:
  - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyside
  - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt5
 
+sudo: false
+
+addons:
+  apt:
+    sources:
+      - deadsnakes
+      - qt5-proper
+    packages:
+      - python3-pyqt5
+      - python3-pyqt4
+      - python-qt4
+
 install:
- - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
- - sudo apt-get update
- 
  # Qt
  - python scripts/install-qt.py
 
