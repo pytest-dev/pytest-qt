@@ -1,45 +1,22 @@
 language: python
 
-python:
-  - "2.7"
-  - "3.2"
-  - "3.4"
-  
-virtualenv:
-  system_site_packages: true
-
-matrix:
-  allow_failures:
-    # unfortunately couldn't find a reliable way to test pyqt5 on travis yet
-    - env: PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt5
+language: c
 
 env:
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt4
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyside
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt5
-
-sudo: false
-
-addons:
-  apt:
-    sources:
-      - deadsnakes
-      - qt5-proper
-    packages:
-      - python3-pyqt5
-      - python3-pyqt4
-      - python-qt4
+ - PYTHON=27 PYTEST_QT_API=pyqt4
+ - PYTHON=27 PYTEST_QT_API=pyside
+ - PYTHON=34 PYTEST_QT_API=pyqt4
+ - PYTHON=34 PYTEST_QT_API=pyside
+ - PYTHON=34 PYTEST_QT_API=pyqt5
 
 install:
+ - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
+ - sudo apt-get update
  # Qt
  - python scripts/install-qt.py
 
- # PyTest
- - pip uninstall -y pytest
- - pip install pytest==$PYTEST_VERSION
-
  # others
- - pip install coveralls --use-wheel
+ #- sudo python -m pip install coveralls --use-wheel
 
 before_script:
  - export DISPLAY=:99.0
@@ -48,8 +25,9 @@ before_script:
 
 
 script:
- - python setup.py develop
- - catchsegv coverage run --source=pytestqt setup.py test
+ #- python setup.py develop
+ #- catchsegv coverage run --source=pytestqt setup.py test
+ - tox -e py$PYTHON-$PYTEST_QT_API
 
-after_success:
- - coveralls
+#after_success:
+# - coveralls
