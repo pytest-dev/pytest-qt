@@ -1,9 +1,11 @@
 # 1.6.0.dev #
 
-# 1.5.2.dev #
-
 - Reduced verbosity when exceptions are captured in virtual methods
   (#77, thanks @The-Compiler).
+  
+- `pytestqt.plugin` has been split in several files (#74) and tests have been
+  moved out of the `pytestqt` package. This should not affect users, but it
+  is worth mentioning nonetheless.
 
 - `QApplication.processEvents()` is now called before and after other fixtures
   and teardown hooks, to better try to avoid non-processed events from leaking 
@@ -12,7 +14,7 @@
 - Show Qt/PyQt/PySide versions in pytest header (#68, thanks @The-Compiler!).
 
 - Disconnect SignalBlocker functions after its loop exits to ensure second
-  emissions to call the internal functions on the now-garbage-collected 
+  emissions that call the internal functions on the now-garbage-collected 
   SignalBlocker instance (#69, thanks @The-Compiler for the PR).
 
 # 1.5.1 #

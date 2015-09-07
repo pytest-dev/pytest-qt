@@ -1,5 +1,6 @@
 import functools
 import time
+import sys
 
 import pytest
 
@@ -216,6 +217,8 @@ def stop_watch():
     Fixture that makes it easier for tests to ensure signals emitted and
     timeouts are being respected in waitSignal and waitSignals tests.
     """
+    # time.clock() is more accurate on Windows
+    get_time = time.clock if sys.platform.startswith('win') else time.time
 
     class StopWatch:
 
@@ -223,7 +226,7 @@ def stop_watch():
             self._start_time = None
 
         def start(self):
-            self._start_time = time.time()
+            self._start_time = get_time()
 
         def check(self, timeout, *delays):
             """
@@ -233,7 +236,7 @@ def stop_watch():
             if timeout is None:
                 timeout = max(delays) * 1.30  # 30% tolerance
             max_wait_ms = max(delays + (timeout,))
-            elapsed_ms = (time.time() - self._start_time) * 1000.0
+            elapsed_ms = (get_time() - self._start_time) * 1000.0
             assert elapsed_ms < max_wait_ms
 
     return StopWatch()
