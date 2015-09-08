@@ -99,6 +99,7 @@ if not on_rtd:  # pragma: no cover
         QFileSystemModel = QtGui.QFileSystemModel
         QStringListModel = QtGui.QStringListModel
         QSortFilterProxyModel = QtGui.QSortFilterProxyModel
+        QAbstractListModel = QtCore.QAbstractListModel
 
         def cast(obj, typ):
             """no cast operation is available in PySide"""
@@ -130,6 +131,7 @@ if not on_rtd:  # pragma: no cover
             QFileSystemModel = _QtWidgets.QFileSystemModel
             QStringListModel = QtCore.QStringListModel
             QSortFilterProxyModel = QtCore.QSortFilterProxyModel
+            QAbstractListModel = QtCore.QAbstractListModel
 
         else:
             QApplication = QtGui.QApplication
@@ -142,6 +144,7 @@ if not on_rtd:  # pragma: no cover
             QFileSystemModel = QtGui.QFileSystemModel
             QStringListModel = QtGui.QStringListModel
             QSortFilterProxyModel = QtGui.QSortFilterProxyModel
+            QAbstractListModel = QtCore.QAbstractListModel
 
 
         def get_versions():

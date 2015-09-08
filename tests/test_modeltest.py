@@ -1,6 +1,6 @@
 import pytest
 from pytestqt.qt_compat import QStandardItemModel, QStandardItem, \
-    QFileSystemModel, QStringListModel, QSortFilterProxyModel, QT_API
+    QFileSystemModel, QStringListModel, QSortFilterProxyModel, QT_API, QtCore
 
 pytestmark = pytest.mark.usefixtures('qtbot')
 
@@ -47,3 +47,45 @@ def test_sort_filter_proxy_model(qtmodeltester):
     proxy.setSourceModel(model)
     qtmodeltester.check(proxy)
 
+
+@pytest.mark.parametrize('broken_role', [
+    QtCore.Qt.ToolTipRole, QtCore.Qt.StatusTipRole, QtCore.Qt.WhatsThisRole,
+    QtCore.Qt.SizeHintRole, QtCore.Qt.FontRole, QtCore.Qt.BackgroundColorRole,
+    QtCore.Qt.TextColorRole, QtCore.Qt.TextAlignmentRole,
+    QtCore.Qt.CheckStateRole
+])
+def test_broken_types(testdir, broken_role):
+    """
+    Check that qtmodeltester correctly captures data() returning invalid
+    values for various display roles.
+    """
+    testdir.makepyfile('''
+        from pytestqt.qt_compat import QAbstractListModel, QtCore
+
+        invalid_obj = object()  # This will fail the type check for any role
+
+        class BrokenTypeModel(QAbstractListModel):
+
+            def rowCount(self, parent=QtCore.QModelIndex()):
+                if parent == QtCore.QModelIndex():
+                    return 1
+                else:
+                    return 0
+
+            def data(self, index=QtCore.QModelIndex(),
+                     role=QtCore.Qt.DisplayRole):
+                if role == {broken_role}:
+                    return invalid_obj
+                else:
+                    return None
+
+        def test_broken_type(qtmodeltester):
+            model = BrokenTypeModel()
+            qtmodeltester.check(model)
+
+        def test_passing():
+            # Sanity test to make sure the imports etc. are right
+            pass
+    '''.format(broken_role=broken_role))
+    res = testdir.inline_run()
+    res.assertoutcome(passed=1, failed=1)
