@@ -120,32 +120,30 @@ if not on_rtd:  # pragma: no cover
         Property = QtCore.pyqtProperty
 
         if QT_API == 'pyqt5':
+            qt_api_name = 'PyQt5'
+
             _QtWidgets = _import_module('QtWidgets')
             QApplication = _QtWidgets.QApplication
             QWidget = _QtWidgets.QWidget
             qInstallMessageHandler = QtCore.qInstallMessageHandler
-            qt_api_name = 'PyQt5'
 
-            QStandardItem = QtGui.QStandardItem
-            QStandardItemModel = QtGui.QStandardItemModel
             QFileSystemModel = _QtWidgets.QFileSystemModel
             QStringListModel = QtCore.QStringListModel
             QSortFilterProxyModel = QtCore.QSortFilterProxyModel
-            QAbstractListModel = QtCore.QAbstractListModel
-
         else:
+            qt_api_name = 'PyQt4'
+
             QApplication = QtGui.QApplication
             QWidget = QtGui.QWidget
             qInstallMsgHandler = QtCore.qInstallMsgHandler
-            qt_api_name = 'PyQt4'
 
-            QStandardItem = QtGui.QStandardItem
-            QStandardItemModel = QtGui.QStandardItemModel
             QFileSystemModel = QtGui.QFileSystemModel
             QStringListModel = QtGui.QStringListModel
             QSortFilterProxyModel = QtGui.QSortFilterProxyModel
-            QAbstractListModel = QtCore.QAbstractListModel
 
+        QStandardItem = QtGui.QStandardItem
+        QStandardItemModel = QtGui.QStandardItemModel
+        QAbstractListModel = QtCore.QAbstractListModel
 
         def get_versions():
             return VersionTuple(qt_api_name, QtCore.PYQT_VERSION_STR,
