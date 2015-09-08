@@ -1,5 +1,9 @@
 # 1.6.0.dev #
 
+- New `qtmodeltester` fixture to test `QAbstractItemModel` subclasses.
+  Thanks @The-Compiler for the initiative and port of the original C++ code
+  for ModelTester (#63).
+
 - Reduced verbosity when exceptions are captured in virtual methods
   (#77, thanks @The-Compiler).
   
