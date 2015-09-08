@@ -22,10 +22,12 @@ def test_standard_item_model(qtmodeltester):
 
 def test_file_system_model(qtmodeltester, tmpdir):
     tmpdir.ensure('directory', dir=1)
-    tmpdir.ensure('file1.txt', dir=1)
-    tmpdir.ensure('file2.py', dir=1)
+    tmpdir.ensure('file1.txt')
+    tmpdir.ensure('file2.py')
     model = QFileSystemModel()
     model.setRootPath(str(tmpdir))
+    qtmodeltester.check(model)
+    tmpdir.ensure('file3.py')
     qtmodeltester.check(model)
 
 
