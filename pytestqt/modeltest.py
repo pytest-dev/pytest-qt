@@ -1,5 +1,6 @@
-# This file is based on the original C++ modeltest.cpp, licensed under
-# the following terms:
+# This file is based on the original C++ modeltest.cpp from:
+# http://code.qt.io/cgit/qt/qtbase.git/tree/tests/auto/other/modeltest/modeltest.cpp
+# Licensed under the following terms:
 #
 # Copyright (C) 2015 The Qt Company Ltd.
 # Contact: http://www.qt.io/licensing/
@@ -491,12 +492,13 @@ class ModelTester:
         """Confirm that what was said was going to happen actually did."""
         c = self._insert.pop()
         assert c.parent == parent
-        # qDebug() << "rowsInserted"  << "start=" << start << "end=" << end << "oldsize=" << c.oldSize
-        # << "parent=" << self._model.data(parent).toString() << "current rowcount of parent=" << self._model.rowCount(parent)
-        #
-        # for ii in range(start, end):
-        #   qDebug() << "itemWasInserted:" << ii << self._model.data(self._model.index(ii, 0, parent))
-        # qDebug()
+        self._debug("rowsInserted", "start=", start, "end=", end, "oldsize=",
+                    c.oldSize, "parent=", self._model.data(parent),
+                    "current rowcount of parent=", self._model.rowCount(parent))
+        for ii in range(start, end):
+            self._debug("itemWasInserted:", ii,
+                        self._model.data(self._model.index(ii, 0, parent)))
+        self._debug()
 
         last_data = self._model.data(self._model.index(start - 1, 0, parent))
 

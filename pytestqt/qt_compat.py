@@ -94,6 +94,12 @@ if not on_rtd:  # pragma: no cover
         QWidget = QtGui.QWidget
         qInstallMsgHandler = QtCore.qInstallMsgHandler
 
+        QStandardItem = QtGui.QStandardItem
+        QStandardItemModel = QtGui.QStandardItemModel
+        QFileSystemModel = QtGui.QFileSystemModel
+        QStringListModel = QtGui.QStringListModel
+        QSortFilterProxyModel = QtGui.QSortFilterProxyModel
+
         def cast(obj, typ):
             """no cast operation is available in PySide"""
             return obj
@@ -118,11 +124,25 @@ if not on_rtd:  # pragma: no cover
             QWidget = _QtWidgets.QWidget
             qInstallMessageHandler = QtCore.qInstallMessageHandler
             qt_api_name = 'PyQt5'
+
+            QStandardItem = QtGui.QStandardItem
+            QStandardItemModel = QtGui.QStandardItemModel
+            QFileSystemModel = _QtWidgets.QFileSystemModel
+            QStringListModel = QtCore.QStringListModel
+            QSortFilterProxyModel = QtCore.QSortFilterProxyModel
+
         else:
             QApplication = QtGui.QApplication
             QWidget = QtGui.QWidget
             qInstallMsgHandler = QtCore.qInstallMsgHandler
             qt_api_name = 'PyQt4'
+
+            QStandardItem = QtGui.QStandardItem
+            QStandardItemModel = QtGui.QStandardItemModel
+            QFileSystemModel = QtGui.QFileSystemModel
+            QStringListModel = QtGui.QStringListModel
+            QSortFilterProxyModel = QtGui.QSortFilterProxyModel
+
 
         def get_versions():
             return VersionTuple(qt_api_name, QtCore.PYQT_VERSION_STR,
