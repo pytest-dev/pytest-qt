@@ -234,7 +234,7 @@ def stop_watch():
             delays used to trigger a signal has passed.
             """
             if timeout is None:
-                timeout = max(delays) * 1.30  # 30% tolerance
+                timeout = max(delays) * 1.35  # 35% tolerance
             max_wait_ms = max(delays + (timeout,))
             elapsed_ms = (get_time() - self._start_time) * 1000.0
             assert elapsed_ms < max_wait_ms
