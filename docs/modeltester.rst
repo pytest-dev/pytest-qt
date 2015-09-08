@@ -11,12 +11,12 @@ and catching many common errors the moment they show up.
 
 Some of the conditions caught include:
 
-* Verifying X number of rows have been inserted in the correct place after the signal rowsAboutToBeInserted() says X rows will be inserted.
-* The parent of the first index of the first row is a QModelIndex()
-* Calling index() twice in a row with the same values will return the same QModelIndex
-* If rowCount() says there are X number of rows, model test will verify that is true.
+* Verifying X number of rows have been inserted in the correct place after the signal ``rowsAboutToBeInserted()`` says X rows will be inserted.
+* The parent of the first index of the first row is a ``QModelIndex()``
+* Calling ``index()`` twice in a row with the same values will return the same ``QModelIndex``
+* If ``rowCount()`` says there are X number of rows, model test will verify that is true.
 * Many possible off by one bugs
-* hasChildren() returns true if rowCount() is greater then zero.
+* ``hasChildren()`` returns true if ``rowCount()`` is greater then zero.
 * and many more...
 
 To use it, create a instance of your model implementation, fill it with some
