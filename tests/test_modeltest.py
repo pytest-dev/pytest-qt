@@ -4,6 +4,12 @@ from pytestqt.qt_compat import QStandardItemModel, QStandardItem, \
 
 pytestmark = pytest.mark.usefixtures('qtbot')
 
+skip_due_to_pyside_private_methods = pytest.mark.skipif(
+    QT_API == 'pyside', reason='Skip tests that work with QAbstractItemModel '
+                               'subclasses on PySide because methods that '
+                               'should be public are private. See'
+                               'PySide/PySide#127.')
+
 
 @pytest.fixture(autouse=True)
 def default_model_implementations_return_qvariant(qtmodeltester):
@@ -39,9 +45,7 @@ def test_file_system_model(qtmodeltester, tmpdir):
     qtmodeltester.check(model)
 
 
-@pytest.mark.skipif(QT_API == 'pyside', reason='For some reason this fails in '
-                                               'PySide with a message about'
-                                               'columnCount being private')
+@skip_due_to_pyside_private_methods
 def test_string_list_model(qtmodeltester):
     model = QStringListModel()
     model.setStringList(['hello', 'world'])
@@ -62,6 +66,7 @@ def test_sort_filter_proxy_model(qtmodeltester):
     QtCore.Qt.TextColorRole, QtCore.Qt.TextAlignmentRole,
     QtCore.Qt.CheckStateRole
 ])
+@skip_due_to_pyside_private_methods
 def test_broken_types(testdir, broken_role):
     """
     Check that qtmodeltester correctly captures data() returning invalid
@@ -97,3 +102,45 @@ def test_broken_types(testdir, broken_role):
     '''.format(broken_role=broken_role))
     res = testdir.inline_run()
     res.assertoutcome(passed=1, failed=1)
+
+
+@pytest.mark.parametrize('role, should_pass', [
+    (QtCore.Qt.AlignLeft, True),
+    (QtCore.Qt.AlignRight, True),
+    (0xFFFFFF, False),
+])
+@skip_due_to_pyside_private_methods
+def test_data_alignment(testdir, role, should_pass):
+    """Test a custom model which returns a good and alignments from data().
+    qtmodeltest should capture this problem and fail when that happens.
+    """
+    testdir.makepyfile('''
+        from pytestqt.qt_compat import QAbstractListModel, QtCore
+
+        invalid_obj = object()  # This will fail the type check for any role
+
+        class MyModel(QAbstractListModel):
+
+            def rowCount(self, parent=QtCore.QModelIndex()):
+                return 1 if parent == QtCore.QModelIndex() else 0
+
+            def columnCount(self, parent=QtCore.QModelIndex()):
+                return 1 if parent == QtCore.QModelIndex() else 0
+
+            def data(self, index=QtCore.QModelIndex(),
+                     role=QtCore.Qt.DisplayRole):
+                if role == QtCore.Qt.TextAlignmentRole:
+                    return {role}
+                else:
+                    if role == QtCore.Qt.DisplayRole and index == \
+                        self.index(0, 0):
+                        return 'Hello'
+                return None
+
+        def test_broken_alignment(qtmodeltester):
+            model = MyModel()
+            qtmodeltester.data_may_return_qvariant = True
+            qtmodeltester.check(model)
+    '''.format(role=role))
+    res = testdir.inline_run()
+    res.assertoutcome(passed=int(should_pass), failed=int(not should_pass))
