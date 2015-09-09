@@ -51,6 +51,7 @@ class ModelTester:
         self._insert = None
         self._remove = None
         self._verbose = config.getoption('verbose') > 0
+        self.data_may_return_qvariant = False
 
     def _debug(self, *args):
         if self._verbose:
@@ -388,7 +389,12 @@ class ModelTester:
                 # While you can technically return a QVariant usually this is a
                 # sign of a bug in data().  Disable if this really is ok in
                 # your model.
-                # assert self._model.data(index, QtCore.Qt.DisplayRole).isValid()
+                data = self._model.data(index, QtCore.Qt.DisplayRole)
+                is_qvariant = type(data).__name__ == 'QVariant'
+                if self.data_may_return_qvariant and is_qvariant:
+                    assert data.isValid()
+                elif not self.data_may_return_qvariant:
+                    assert not is_qvariant
 
                 # If the next test fails here is some somewhat useful debug you
                 # play with.

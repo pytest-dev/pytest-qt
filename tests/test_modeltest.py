@@ -5,6 +5,14 @@ from pytestqt.qt_compat import QStandardItemModel, QStandardItem, \
 pytestmark = pytest.mark.usefixtures('qtbot')
 
 
+@pytest.fixture(autouse=True)
+def default_model_implementations_return_qvariant(qtmodeltester):
+    """PyQt4 is the only implementation where the builtin model implementations
+    may return QVariant objects.
+    """
+    qtmodeltester.data_may_return_qvariant = QT_API == 'pyqt4'
+
+
 def test_standard_item_model(qtmodeltester):
     """
     Basic test which uses qtmodeltester with a QStandardItemModel.
