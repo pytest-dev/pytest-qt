@@ -106,8 +106,12 @@ if not on_rtd:  # pragma: no cover
             return obj
 
         def extract_from_variant(variant):
-            """returns python object from the given QVariant"""
+            """PySide does not expose QVariant API"""
             return variant
+
+        def make_variant(value=None):
+            """PySide does not expose QVariant API"""
+            return value
 
         def get_versions():
             return VersionTuple('PySide', PySide.__version__, QtCore.qVersion(),
@@ -130,6 +134,12 @@ if not on_rtd:  # pragma: no cover
             QFileSystemModel = _QtWidgets.QFileSystemModel
             QStringListModel = QtCore.QStringListModel
             QSortFilterProxyModel = QtCore.QSortFilterProxyModel
+
+            def extract_from_variant(variant):
+                """returns python object from the given QVariant"""
+                if isinstance(variant, QtCore.QVariant):
+                    return variant.value()
+                return variant
         else:
             qt_api_name = 'PyQt4'
 
@@ -140,6 +150,12 @@ if not on_rtd:  # pragma: no cover
             QFileSystemModel = QtGui.QFileSystemModel
             QStringListModel = QtGui.QStringListModel
             QSortFilterProxyModel = QtGui.QSortFilterProxyModel
+
+            def extract_from_variant(variant):
+                """returns python object from the given QVariant"""
+                if isinstance(variant, QtCore.QVariant):
+                    return variant.toPyObject()
+                return variant
 
         QStandardItem = QtGui.QStandardItem
         QStandardItemModel = QtGui.QStandardItemModel
@@ -153,9 +169,16 @@ if not on_rtd:  # pragma: no cover
             """casts from a subclass to a parent class"""
             return sip.cast(obj, typ)
 
-        def extract_from_variant(variant):
-            """returns python object from the given QVariant"""
-            return variant.toPyObject() if variant is not None else None
+        def make_variant(value=None):
+            """Return a QVariant object from the given Python builtin"""
+            import sys
+            # PyQt4 on py3 doesn't allow one to instantiate any QVariant at
+            # all:
+            # QVariant represents a mapped type and cannot be instantiated
+            # --'
+            if QT_API == 'pyqt4' and sys.version_info[0] == 3:
+                return value
+            return QtCore.QVariant(value)
 
 else:  # pragma: no cover
     USING_PYSIDE = True

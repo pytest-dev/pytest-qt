@@ -1,7 +1,7 @@
 import weakref
 import pytest
 from pytestqt.qt_compat import QtGui, Qt, QEvent, QtCore, QApplication, \
-    QWidget
+    QWidget, make_variant, extract_from_variant
 
 
 def test_basics(qtbot):
@@ -169,6 +169,21 @@ def test_public_api_backward_compatibility():
     assert pytestqt.plugin.capture_exceptions
     assert pytestqt.plugin.QtLoggingPlugin
     assert pytestqt.plugin.Record
+
+
+def test_qvariant(tmpdir):
+    """Test that make_variant and extract_from_variant work in the same way
+    across all supported Qt bindings.
+    """
+    settings = QtCore.QSettings(str(tmpdir / 'foo.ini'),
+                                QtCore.QSettings.IniFormat)
+    settings.setValue('int', make_variant(42))
+    settings.setValue('str', make_variant('Hello'))
+    settings.setValue('empty', make_variant())
+
+    assert extract_from_variant(settings.value('int')) == 42
+    assert extract_from_variant(settings.value('str')) == 'Hello'
+    assert extract_from_variant(settings.value('empty')) is None
 
 
 class EventRecorder(QWidget):
