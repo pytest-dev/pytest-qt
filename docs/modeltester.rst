@@ -33,7 +33,17 @@ items and call ``qtmodeltester.check``:
         model.setItem(1, 1, items[3])
         qtmodeltester.check(model)
 
-If the tester finds a problem the test will fail with an assert.
+If the tester finds a problem the test will fail with an assert pinpointing
+the issue.
+
+The following attribute that may influence the outcome of the check depending
+on your model implementation:
+
+* ``data_display_may_return_none`` (default: ``False``): While you can
+  technically return ``None`` (or an invalid ``QVariant``) from ``data()``
+  for ``QtCore.Qt.DisplayRole``, this usually is a sign of
+  a bug in your implementation. Set this variable to ``True`` if this really
+  is OK in your model.
 
 The source code was ported from `modeltest.cpp`_ by `Florian Bruhin`_, many
 thanks!

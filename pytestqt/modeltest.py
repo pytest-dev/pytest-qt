@@ -43,7 +43,11 @@ _Changing = collections.namedtuple('_Changing', 'parent, oldSize, last, next')
 
 class ModelTester:
 
-    """A tester for Qt's QAbstractItemModel's."""
+    """A tester for Qt's QAbstractItemModel's.
+
+    :ivar bool data_display_may_return_none: if the model implementation is
+        allowed to return None from data() for DisplayRole.
+    """
 
     def __init__(self, config):
         self._model = None
@@ -53,7 +57,7 @@ class ModelTester:
         self._remove = None
         self._changing = None
         self._verbose = config.getoption('verbose') > 0
-        self.data_may_return_qvariant = False
+        self.data_display_may_return_none = False
 
     def _debug(self, *args):
         if self._verbose:
@@ -383,15 +387,10 @@ class ModelTester:
                 assert index.model() == self._orig_model
                 assert index.row() == r
                 assert index.column() == c
-                # While you can technically return a QVariant usually this is a
-                # sign of a bug in data().  Disable if this really is ok in
-                # your model.
+
                 data = self._model.data(index, QtCore.Qt.DisplayRole)
-                is_qvariant = type(data).__name__ == 'QVariant'
-                if self.data_may_return_qvariant and is_qvariant:
-                    assert data.isValid()
-                elif not self.data_may_return_qvariant:
-                    assert not is_qvariant
+                if not self.data_display_may_return_none:
+                    assert extract_from_variant(data) is not None
 
                 # If the next test fails here is some somewhat useful debug you
                 # play with.
