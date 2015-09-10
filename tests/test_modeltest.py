@@ -91,8 +91,7 @@ def test_data_alignment(role_value, should_pass, check_model):
         def rowCount(self, parent=QtCore.QModelIndex()):
             return 1 if parent == QtCore.QModelIndex() else 0
 
-        def data(self, index=QtCore.QModelIndex(),
-                 role=QtCore.Qt.DisplayRole):
+        def data(self, index=QtCore.QModelIndex(), role=QtCore.Qt.DisplayRole):
             if role == QtCore.Qt.TextAlignmentRole:
                 return role_value
             elif role == QtCore.Qt.DisplayRole:
@@ -101,6 +100,32 @@ def test_data_alignment(role_value, should_pass, check_model):
             return None
 
     check_model(MyModel(), should_pass=should_pass)
+
+
+def test_header_handling(check_model):
+
+    class MyModel(QAbstractListModel):
+
+        def rowCount(self, parent=QtCore.QModelIndex()):
+            return 1 if parent == QtCore.QModelIndex() else 0
+
+        def set_header_text(self, header):
+            self._header_text = header
+            self.headerDataChanged.emit(QtCore.Qt.Vertical, 0, 0)
+            self.headerDataChanged.emit(QtCore.Qt.Horizontal, 0, 0)
+
+        def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
+            return self._header_text
+
+        def data(self, index=QtCore.QModelIndex(), role=QtCore.Qt.DisplayRole):
+            if role == QtCore.Qt.DisplayRole and index == self.index(0, 0):
+                return 'Contents'
+            return None
+
+    model = MyModel()
+    model.set_header_text('Start Header')
+    check_model(model, should_pass=1)
+    model.set_header_text('New Header')
 
 
 @pytest.fixture
