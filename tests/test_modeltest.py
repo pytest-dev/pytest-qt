@@ -1,14 +1,9 @@
 import pytest
+
 from pytestqt.qt_compat import QStandardItemModel, QStandardItem, \
-    QFileSystemModel, QStringListModel, QSortFilterProxyModel, QT_API, QtCore
+    QFileSystemModel, QStringListModel, QSortFilterProxyModel, QT_API
 
 pytestmark = pytest.mark.usefixtures('qtbot')
-
-skip_due_to_pyside_private_methods = pytest.mark.skipif(
-    QT_API == 'pyside', reason='Skip tests that work with QAbstractItemModel '
-                               'subclasses on PySide because methods that '
-                               'should be public are private. See'
-                               'PySide/PySide#127.')
 
 
 @pytest.fixture(autouse=True)
@@ -45,7 +40,6 @@ def test_file_system_model(qtmodeltester, tmpdir):
     qtmodeltester.check(model)
 
 
-@skip_due_to_pyside_private_methods
 def test_string_list_model(qtmodeltester):
     model = QStringListModel()
     model.setStringList(['hello', 'world'])
@@ -61,12 +55,13 @@ def test_sort_filter_proxy_model(qtmodeltester):
 
 
 @pytest.mark.parametrize('broken_role', [
-    QtCore.Qt.ToolTipRole, QtCore.Qt.StatusTipRole, QtCore.Qt.WhatsThisRole,
-    QtCore.Qt.SizeHintRole, QtCore.Qt.FontRole, QtCore.Qt.BackgroundColorRole,
-    QtCore.Qt.TextColorRole, QtCore.Qt.TextAlignmentRole,
-    QtCore.Qt.CheckStateRole
+    'QtCore.Qt.ToolTipRole', 'QtCore.Qt.StatusTipRole',
+    'QtCore.Qt.WhatsThisRole',
+    'QtCore.Qt.SizeHintRole', 'QtCore.Qt.FontRole',
+    'QtCore.Qt.BackgroundColorRole',
+    'QtCore.Qt.TextColorRole', 'QtCore.Qt.TextAlignmentRole',
+    'QtCore.Qt.CheckStateRole',
 ])
-@skip_due_to_pyside_private_methods
 def test_broken_types(testdir, broken_role):
     """
     Check that qtmodeltester correctly captures data() returning invalid
@@ -105,11 +100,10 @@ def test_broken_types(testdir, broken_role):
 
 
 @pytest.mark.parametrize('role, should_pass', [
-    (QtCore.Qt.AlignLeft, True),
-    (QtCore.Qt.AlignRight, True),
+    ('QtCore.Qt.AlignLeft', True),
+    ('QtCore.Qt.AlignRight', True),
     (0xFFFFFF, False),
 ])
-@skip_due_to_pyside_private_methods
 def test_data_alignment(testdir, role, should_pass):
     """Test a custom model which returns a good and alignments from data().
     qtmodeltest should capture this problem and fail when that happens.

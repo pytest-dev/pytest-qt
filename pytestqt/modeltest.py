@@ -34,7 +34,8 @@
 from __future__ import print_function
 import collections
 
-from pytestqt.qt_compat import QtCore, QtGui, cast, extract_from_variant
+from pytestqt.qt_compat import QtCore, QtGui, cast, extract_from_variant, \
+    QAbstractListModel, QAbstractTableModel, USING_PYSIDE
 
 
 _Changing = collections.namedtuple('_Changing', 'parent, oldSize, last, next')
@@ -156,7 +157,7 @@ class ModelTester:
         """
         assert self._model.buddy(QtCore.QModelIndex()) == QtCore.QModelIndex()
         self._model.canFetchMore(QtCore.QModelIndex())
-        assert self._model.columnCount(QtCore.QModelIndex()) >= 0
+        assert self._column_count(QtCore.QModelIndex()) >= 0
         display_data = self._model.data(QtCore.QModelIndex(),
                                         QtCore.Qt.DisplayRole)
 
@@ -169,7 +170,7 @@ class ModelTester:
         self._fetching_more = False
         flags = self._model.flags(QtCore.QModelIndex())
         assert flags == QtCore.Qt.ItemIsDropEnabled or not flags
-        self._model.hasChildren(QtCore.QModelIndex())
+        self._has_children(QtCore.QModelIndex())
         self._model.hasIndex(0, 0)
         self._model.headerData(0, QtCore.Qt.Horizontal)
         self._model.index(0, 0)
@@ -177,7 +178,7 @@ class ModelTester:
         cache = None
         self._model.match(QtCore.QModelIndex(), -1, cache)
         self._model.mimeTypes()
-        assert self._model.parent(QtCore.QModelIndex()) == QtCore.QModelIndex()
+        assert self._parent(QtCore.QModelIndex()) == QtCore.QModelIndex()
         assert self._model.rowCount() >= 0
         self._model.setData(QtCore.QModelIndex(), None, -1)
         self._model.setHeaderData(-1, QtCore.Qt.Horizontal, None)
@@ -196,7 +197,7 @@ class ModelTester:
         rows = self._model.rowCount(topIndex)
         assert rows >= 0
         if rows > 0:
-            assert self._model.hasChildren(topIndex)
+            assert self._has_children(topIndex)
 
         secondLevelIndex = self._model.index(0, 0, topIndex)
         if secondLevelIndex.isValid():  # not the top level
@@ -204,7 +205,7 @@ class ModelTester:
             rows = self._model.rowCount(secondLevelIndex)
             assert rows >= 0
             if rows > 0:
-                assert self._model.hasChildren(secondLevelIndex)
+                assert self._has_children(secondLevelIndex)
 
         # The models rowCount() is tested more extensively in
         # _check_children(), but this catches the big mistakes
@@ -214,12 +215,12 @@ class ModelTester:
 
         # check top row
         topIndex = self._model.index(0, 0, QtCore.QModelIndex())
-        assert self._model.columnCount(topIndex) >= 0
+        assert self._column_count(topIndex) >= 0
 
         # check a column count where parent is valid
         childIndex = self._model.index(0, 0, topIndex)
         if childIndex.isValid():
-            assert self._model.columnCount(childIndex) >= 0
+            assert self._column_count(childIndex) >= 0
 
         # columnCount() is tested more extensively in _check_children(),
         # but this catches the big mistakes
@@ -232,7 +233,7 @@ class ModelTester:
         assert not self._model.hasIndex(0, -2)
 
         rows = self._model.rowCount()
-        columns = self._model.columnCount()
+        columns = self._column_count()
 
         # check out of bounds
         assert not self._model.hasIndex(rows, columns)
@@ -252,7 +253,7 @@ class ModelTester:
         assert self._model.index(0, -2) == QtCore.QModelIndex()
 
         rows = self._model.rowCount()
-        columns = self._model.columnCount()
+        columns = self._column_count()
 
         if rows == 0:
             return
@@ -273,7 +274,7 @@ class ModelTester:
         """Tests model's implementation of QAbstractItemModel::parent()"""
         # Make sure the model won't crash and will return an invalid
         # QModelIndex when asked for the parent of an invalid index.
-        assert self._model.parent(QtCore.QModelIndex()) == QtCore.QModelIndex()
+        assert self._parent(QtCore.QModelIndex()) == QtCore.QModelIndex()
 
         if self._model.rowCount() == 0:
             return
@@ -286,13 +287,13 @@ class ModelTester:
         # Common error test #1, make sure that a top level index has a parent
         # that is a invalid QModelIndex.
         topIndex = self._model.index(0, 0, QtCore.QModelIndex())
-        assert self._model.parent(topIndex) == QtCore.QModelIndex()
+        assert self._parent(topIndex) == QtCore.QModelIndex()
 
         # Common error test #2, make sure that a second level index has a
         # parent that is the first level index.
         if self._model.rowCount(topIndex) > 0:
             childIndex = self._model.index(0, 0, topIndex)
-            assert self._model.parent(childIndex) == topIndex
+            assert self._parent(childIndex) == topIndex
 
         # Common error test #3, the second column should NOT have the same
         # children as the first column in a row.
@@ -336,19 +337,20 @@ class ModelTester:
             self._fetching_more = False
 
         rows = self._model.rowCount(parent)
-        columns = self._model.columnCount(parent)
+        columns = self._column_count(parent)
 
         if rows > 0:
-            assert self._model.hasChildren(parent)
+            assert self._has_children(parent)
 
         # Some further testing against rows(), columns(), and hasChildren()
         assert rows >= 0
         assert columns >= 0
         if rows > 0:
-            assert self._model.hasChildren(parent)
+            assert self._has_children(parent)
 
-        self._debug("parent:", self._model.data(parent), "rows:", rows,
-                    "columns:", columns, "parent column:", parent.column())
+        self._debug("parent:", self._model.data(parent, QtCore.Qt.DisplayRole),
+                    "rows:", rows, "columns:", columns, "parent column:",
+                    parent.column())
 
         topLeftChild = self._model.index(0, 0, parent)
 
@@ -399,11 +401,11 @@ class ModelTester:
                 # If the next test fails here is some somewhat useful debug you
                 # play with.
 
-                if self._model.parent(index) != parent:
+                if self._parent(index) != parent:
                     # FIXME
                     self._debug(r, c, currentDepth, self._model.data(index),
                                 self._model.data(parent))
-                    self._debug(index, parent, self._model.parent(index))
+                    self._debug(index, parent, self._parent(index))
                     # And a view that you can even use to show the model.
                     # QTreeView view
                     # view.setModel(self._model)
@@ -411,10 +413,10 @@ class ModelTester:
                     pass
 
                 # Check that we can get back our real parent.
-                assert self._model.parent(index) == parent
+                assert self._parent(index) == parent
 
                 # recursively go down the children
-                if self._model.hasChildren(index) and currentDepth < 10:
+                if self._has_children(index) and currentDepth < 10:
                     self._debug(r, c, "has children",
                                 self._model.rowCount(index))
                     self._check_children(index, currentDepth + 1)
@@ -427,11 +429,11 @@ class ModelTester:
                 newerIndex = self._model.index(r, c, parent)
                 assert index == newerIndex
 
-
     def _test_data(self):
         """Test model's implementation of data()"""
         # Invalid index should return an invalid qvariant
-        assert self._model.data(QtCore.QModelIndex()) == None
+        value = self._model.data(QtCore.QModelIndex(), QtCore.Qt.DisplayRole)
+        assert extract_from_variant(value) is None
 
         if self._model.rowCount() == 0:
             return
@@ -564,7 +566,7 @@ class ModelTester:
         assert topLeft.row() <= bottomRight.row()
         assert topLeft.column() <= bottomRight.column()
         rowCount = self._model.rowCount(commonParent)
-        columnCount = self._model.columnCount(commonParent)
+        columnCount = self._column_count(commonParent)
         assert bottomRight.row() < rowCount
         assert bottomRight.column() < columnCount
 
@@ -576,6 +578,38 @@ class ModelTester:
         if orientation == QtCore.Qt.Vertical:
             itemCount = self._model.rowCount()
         else:
-            itemCount = self._model.columnCount()
+            itemCount = self._column_count()
         assert start < itemCount
         assert end < itemCount
+
+    def _column_count(self, parent=QtCore.QModelIndex()):
+        """
+        Workaround for the fact that ``columnCount`` is a private method in
+        QAbstractListModel/QAbstractTableModel subclasses and PySide does not
+        provide any way to work around that limitation. PyQt lets us "cast"
+        back to the super class to access these private methods.
+        """
+        if isinstance(self._orig_model, QAbstractListModel) and USING_PYSIDE:
+            return 1 if parent == QtCore.QModelIndex() else 0
+        else:
+            return self._model.columnCount(parent)
+
+    def _parent(self, index):
+        """
+        .. see:: ``_column_count``
+        """
+        model_types = (QAbstractListModel, QAbstractTableModel)
+        if isinstance(self._orig_model, model_types) and USING_PYSIDE:
+            return QtCore.QModelIndex()
+        else:
+            return self._model.parent(index)
+
+    def _has_children(self, parent=QtCore.QModelIndex()):
+        """
+        .. see:: ``_column_count``
+        """
+        model_types = (QAbstractListModel, QAbstractTableModel)
+        if isinstance(self._orig_model, model_types) and USING_PYSIDE:
+            return parent == QtCore.QModelIndex() and self._model.rowCount() > 0
+        else:
+            return self._model.hasChildren(parent)

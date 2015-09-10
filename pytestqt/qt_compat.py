@@ -100,6 +100,7 @@ if not on_rtd:  # pragma: no cover
         QStringListModel = QtGui.QStringListModel
         QSortFilterProxyModel = QtGui.QSortFilterProxyModel
         QAbstractListModel = QtCore.QAbstractListModel
+        QAbstractTableModel = QtCore.QAbstractTableModel
 
         def cast(obj, typ):
             """no cast operation is available in PySide"""
@@ -160,6 +161,7 @@ if not on_rtd:  # pragma: no cover
         QStandardItem = QtGui.QStandardItem
         QStandardItemModel = QtGui.QStandardItemModel
         QAbstractListModel = QtCore.QAbstractListModel
+        QAbstractTableModel = QtCore.QAbstractTableModel
 
         def get_versions():
             return VersionTuple(qt_api_name, QtCore.PYQT_VERSION_STR,
