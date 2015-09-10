@@ -1,7 +1,8 @@
 import pytest
 
 from pytestqt.qt_compat import QStandardItemModel, QStandardItem, \
-    QFileSystemModel, QStringListModel, QSortFilterProxyModel, QT_API
+    QFileSystemModel, QStringListModel, QSortFilterProxyModel, QT_API, \
+    QAbstractListModel, QtCore
 
 pytestmark = pytest.mark.usefixtures('qtbot')
 
@@ -9,7 +10,7 @@ pytestmark = pytest.mark.usefixtures('qtbot')
 @pytest.fixture(autouse=True)
 def default_model_implementations_return_qvariant(qtmodeltester):
     """PyQt4 is the only implementation where the builtin model implementations
-    may return QVariant objects.
+    return QVariant objects.
     """
     qtmodeltester.data_may_return_qvariant = QT_API == 'pyqt4'
 
@@ -55,86 +56,75 @@ def test_sort_filter_proxy_model(qtmodeltester):
 
 
 @pytest.mark.parametrize('broken_role', [
-    'QtCore.Qt.ToolTipRole', 'QtCore.Qt.StatusTipRole',
-    'QtCore.Qt.WhatsThisRole',
-    'QtCore.Qt.SizeHintRole', 'QtCore.Qt.FontRole',
-    'QtCore.Qt.BackgroundColorRole',
-    'QtCore.Qt.TextColorRole', 'QtCore.Qt.TextAlignmentRole',
-    'QtCore.Qt.CheckStateRole',
+    QtCore.Qt.ToolTipRole, QtCore.Qt.StatusTipRole,
+    QtCore.Qt.WhatsThisRole,
+    QtCore.Qt.SizeHintRole, QtCore.Qt.FontRole,
+    QtCore.Qt.BackgroundColorRole,
+    QtCore.Qt.TextColorRole, QtCore.Qt.TextAlignmentRole,
+    QtCore.Qt.CheckStateRole,
 ])
-def test_broken_types(testdir, broken_role):
+def test_broken_types(check_model, broken_role):
     """
     Check that qtmodeltester correctly captures data() returning invalid
     values for various display roles.
     """
-    testdir.makepyfile('''
-        from pytestqt.qt_compat import QAbstractListModel, QtCore
+    class BrokenTypeModel(QAbstractListModel):
 
-        invalid_obj = object()  # This will fail the type check for any role
+        def rowCount(self, parent=QtCore.QModelIndex()):
+            if parent == QtCore.QModelIndex():
+                return 1
+            else:
+                return 0
 
-        class BrokenTypeModel(QAbstractListModel):
+        def data(self, index=QtCore.QModelIndex(), role=QtCore.Qt.DisplayRole):
+            if role == broken_role:
+                return object()  # This will fail the type check for any role
+            else:
+                return None
 
-            def rowCount(self, parent=QtCore.QModelIndex()):
-                if parent == QtCore.QModelIndex():
-                    return 1
-                else:
-                    return 0
-
-            def data(self, index=QtCore.QModelIndex(),
-                     role=QtCore.Qt.DisplayRole):
-                if role == {broken_role}:
-                    return invalid_obj
-                else:
-                    return None
-
-        def test_broken_type(qtmodeltester):
-            model = BrokenTypeModel()
-            qtmodeltester.check(model)
-
-        def test_passing():
-            # Sanity test to make sure the imports etc. are right
-            pass
-    '''.format(broken_role=broken_role))
-    res = testdir.inline_run()
-    res.assertoutcome(passed=1, failed=1)
+    check_model(BrokenTypeModel(), should_pass=False)
 
 
-@pytest.mark.parametrize('role, should_pass', [
-    ('QtCore.Qt.AlignLeft', True),
-    ('QtCore.Qt.AlignRight', True),
+@pytest.mark.parametrize('role_value, should_pass', [
+    (QtCore.Qt.AlignLeft, True),
+    (QtCore.Qt.AlignRight, True),
     (0xFFFFFF, False),
 ])
-def test_data_alignment(testdir, role, should_pass):
+def test_data_alignment(role_value, should_pass, check_model):
     """Test a custom model which returns a good and alignments from data().
     qtmodeltest should capture this problem and fail when that happens.
     """
-    testdir.makepyfile('''
-        from pytestqt.qt_compat import QAbstractListModel, QtCore
+    class MyModel(QAbstractListModel):
 
-        invalid_obj = object()  # This will fail the type check for any role
+        def rowCount(self, parent=QtCore.QModelIndex()):
+            return 1 if parent == QtCore.QModelIndex() else 0
 
-        class MyModel(QAbstractListModel):
+        def columnCount(self, parent=QtCore.QModelIndex()):
+            return 1 if parent == QtCore.QModelIndex() else 0
 
-            def rowCount(self, parent=QtCore.QModelIndex()):
-                return 1 if parent == QtCore.QModelIndex() else 0
+        def data(self, index=QtCore.QModelIndex(),
+                 role=QtCore.Qt.DisplayRole):
+            if role == QtCore.Qt.TextAlignmentRole:
+                return role_value
+            elif role == QtCore.Qt.DisplayRole:
+                if index == self.index(0, 0):
+                    return 'Hello'
+            return None
 
-            def columnCount(self, parent=QtCore.QModelIndex()):
-                return 1 if parent == QtCore.QModelIndex() else 0
+    check_model(MyModel(), should_pass=should_pass)
 
-            def data(self, index=QtCore.QModelIndex(),
-                     role=QtCore.Qt.DisplayRole):
-                if role == QtCore.Qt.TextAlignmentRole:
-                    return {role}
-                else:
-                    if role == QtCore.Qt.DisplayRole and index == \
-                        self.index(0, 0):
-                        return 'Hello'
-                return None
 
-        def test_broken_alignment(qtmodeltester):
-            model = MyModel()
-            qtmodeltester.data_may_return_qvariant = True
+@pytest.fixture
+def check_model(qtmodeltester):
+    """
+    Return a check_model(model, should_pass=True) function that uses
+    qtmodeltester to check if the model is OK or not according to the
+    ``should_pass`` parameter.
+    """
+    def check(model, should_pass=True):
+        if should_pass:
             qtmodeltester.check(model)
-    '''.format(role=role))
-    res = testdir.inline_run()
-    res.assertoutcome(passed=int(should_pass), failed=int(not should_pass))
+        else:
+            with pytest.raises(AssertionError):
+                qtmodeltester.check(model)
+    return check

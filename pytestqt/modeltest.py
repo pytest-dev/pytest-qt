@@ -466,7 +466,10 @@ class ModelTester:
                                      QtCore.Qt.TextAlignmentRole)
         alignment = extract_from_variant(alignment)
         if alignment is not None:
-            alignment = int(alignment)
+            try:
+                alignment = int(alignment)
+            except TypeError:
+                assert 0, '%r should be a TextAlignmentRole enum' % alignment
             mask = int(QtCore.Qt.AlignHorizontal_Mask |
                        QtCore.Qt.AlignVertical_Mask)
             assert alignment == alignment & mask
