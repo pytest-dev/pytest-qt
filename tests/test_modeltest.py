@@ -99,9 +99,6 @@ def test_data_alignment(role_value, should_pass, check_model):
         def rowCount(self, parent=QtCore.QModelIndex()):
             return 1 if parent == QtCore.QModelIndex() else 0
 
-        def columnCount(self, parent=QtCore.QModelIndex()):
-            return 1 if parent == QtCore.QModelIndex() else 0
-
         def data(self, index=QtCore.QModelIndex(),
                  role=QtCore.Qt.DisplayRole):
             if role == QtCore.Qt.TextAlignmentRole:

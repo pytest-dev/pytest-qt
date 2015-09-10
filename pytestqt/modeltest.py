@@ -51,6 +51,7 @@ class ModelTester:
         self._fetching_more = None
         self._insert = None
         self._remove = None
+        self._changing = None
         self._verbose = config.getoption('verbose') > 0
         self.data_may_return_qvariant = False
 
@@ -103,9 +104,6 @@ class ModelTester:
         self._run(verbose=verbose)
 
     def _cleanup(self):
-        if self._model is None:
-            return
-
         self._model.columnsAboutToBeInserted.disconnect(self._run)
         self._model.columnsAboutToBeRemoved.disconnect(self._run)
         self._model.columnsInserted.disconnect(self._run)
@@ -161,10 +159,7 @@ class ModelTester:
         display_data = self._model.data(QtCore.QModelIndex(),
                                         QtCore.Qt.DisplayRole)
 
-        # note: compare against None using "==" on purpose, as depending
-        # on the Qt API this will be a QVariant object which compares using
-        # "==" correctly against other Python types, including None
-        assert display_data == None
+        assert extract_from_variant(display_data) is None
         self._fetching_more = True
         self._model.fetchMore(QtCore.QModelIndex())
         self._fetching_more = False
@@ -401,8 +396,7 @@ class ModelTester:
                 # If the next test fails here is some somewhat useful debug you
                 # play with.
 
-                if self._parent(index) != parent:
-                    # FIXME
+                if self._parent(index) != parent:  # pragma: no cover
                     self._debug(r, c, currentDepth, self._model.data(index),
                                 self._model.data(parent))
                     self._debug(index, parent, self._parent(index))
@@ -410,7 +404,6 @@ class ModelTester:
                     # QTreeView view
                     # view.setModel(self._model)
                     # view.show()
-                    pass
 
                 # Check that we can get back our real parent.
                 assert self._parent(index) == parent
@@ -485,8 +478,6 @@ class ModelTester:
 
         This gets stored to make sure it actually happens in rowsInserted.
         """
-
-        # Q_UNUSED(end)
         self._debug("rowsAboutToBeInserted", "start=", start, "end=", end, "parent=",
                     self._model.data(parent), "current count of parent=",
                     self._model.rowCount(parent), "display of last=",
@@ -518,14 +509,13 @@ class ModelTester:
 
         expected = self._model.data(self._model.index(end + 1, 0, c.parent))
 
-        if c.next != expected:
+        if c.next != expected:  # pragma: no cover
             # FIXME
             self._debug(start, end)
             for i in xrange(self._model.rowCount()):
                 self._debug(self._model.index(i, 0).data())
             data = self._model.data(self._model.index(end + 1, 0, c.parent))
             self._debug(c.next, data)
-            pass
 
         assert c.next == expected
 
