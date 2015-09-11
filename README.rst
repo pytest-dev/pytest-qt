@@ -71,6 +71,22 @@ this order:
 To force a particular API, set the environment variable ``PYTEST_QT_API`` to
 ``pyside``, ``pyqt4`` or ``pyqt5``.
 
+Features
+========
+
+- `qtbot`_ fixture to simulate user interaction with ``Qt`` widgets.
+- `Automatic capture`_ of ``qDebug``, ``qWarning`` and ``qCritical`` messages;
+- waitSignal_ and waitSignals_ functions to block test execution until specific
+  signals are emitted.
+- `Exceptions in virtual methods and slots`_ are automatically captured and
+  fail tests accordingly.
+
+.. _qtbot: https://pytest-qt.readthedocs.org/en/latest/reference.html#module-pytestqt.qtbot
+.. _Automatic capture: https://pytest-qt.readthedocs.org/en/latest/logging.html
+.. _waitSignal: https://pytest-qt.readthedocs.org/en/latest/signals.html
+.. _waitSignals: https://pytest-qt.readthedocs.org/en/latest/signals.html
+.. _Exceptions in virtual methods and slots: https://pytest-qt.readthedocs.org/en/latest/virtual_methods.html
+
 Documentation
 =============
 
