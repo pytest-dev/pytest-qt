@@ -57,8 +57,11 @@ elif 'TRAVIS' in os.environ:
         subprocess.check_call(['sudo', 'apt-get', 'install', '-qq'] + packages)
 
     py3k = sys.version_info[0] == 3
-    if os.environ['PYTEST_QT_API'] in ('pyqt4', 'pyqt5'):
-        pyqt_ver = os.environ['PYTEST_QT_API'][-1]
+    if os.environ['PYTEST_QT_API'] in ('pyqt4', 'pyqt4v2', 'pyqt5'):
+        if os.environ['PYTEST_QT_API'] in ('pyqt4', 'pyqt5'):
+            pyqt_ver = os.environ['PYTEST_QT_API'][-1]
+        else:
+            pyqt_ver = os.environ['PYTEST_QT_API'][-3]
         if py3k:
             pkg = 'python3-pyqt%s' % pyqt_ver
         else:
