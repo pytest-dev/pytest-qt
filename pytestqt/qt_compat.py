@@ -42,7 +42,7 @@ if not on_rtd:  # pragma: no cover
         QT_API = os.environ.get('PYTEST_QT_API')
         if QT_API is not None:
             QT_API = QT_API.lower()
-            if QT_API not in ('pyside', 'pyqt4', 'pyqt5'):
+            if QT_API not in ('pyside', 'pyqt4', 'pyqt4v2', 'pyqt5'):
                 msg = 'Invalid value for $PYTEST_QT_API: %s'
                 raise RuntimeError(msg % QT_API)
         else:
@@ -58,9 +58,22 @@ if not on_rtd:  # pragma: no cover
     _root_modules = {
         'pyside': 'PySide',
         'pyqt4': 'PyQt4',
+        'pyqt4v2': 'PyQt4',
         'pyqt5': 'PyQt5',
     }
     _root_module = _root_modules[QT_API]
+
+    if QT_API == 'pyqt4v2':
+        # the v2 api in PyQt4
+        # http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
+        import sip
+        sip.setapi("QDate", 2)
+        sip.setapi("QDateTime", 2)
+        sip.setapi("QString", 2)
+        sip.setapi("QTextStream", 2)
+        sip.setapi("QTime", 2)
+        sip.setapi("QUrl", 2)
+        sip.setapi("QVariant", 2)
 
     QtCore = _import_module('QtCore')
     QtGui = _import_module('QtGui')
@@ -98,7 +111,7 @@ if not on_rtd:  # pragma: no cover
             return VersionTuple('PySide', PySide.__version__, QtCore.qVersion(),
                                 QtCore.__version__)
 
-    elif QT_API in ('pyqt4', 'pyqt5'):
+    elif QT_API in ('pyqt4', 'pyqt4v2', 'pyqt5'):
         Signal = QtCore.pyqtSignal
         Slot = QtCore.pyqtSlot
         Property = QtCore.pyqtProperty
