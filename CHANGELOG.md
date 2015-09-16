@@ -1,3 +1,8 @@
+# 1.7.0 #
+
+- `PYTEST_QT_API` can now be set to `pyqt4v2` in order to use version 2 of the 
+  PyQt4 API. Thanks @montefra for the PR (#93)!
+
 # 1.6.0 #
 
 - Reduced verbosity when exceptions are captured in virtual methods

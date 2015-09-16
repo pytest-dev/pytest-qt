@@ -147,6 +147,7 @@ Many thanks to:
 - Datalyze Solutions (`@datalyze-solutions <https://github.com/datalyze-solutions>`_);
 - Florian Bruhin (`@The-Compiler <https://github.com/The-Compiler>`_);
 - Guilherme Quentel Melo (`@gqmelo <https://github.com/gqmelo>`_);
+- Francesco Montesano (`@montefra <https://github.com/montefra>`_);
 
 **Powered by**
 
