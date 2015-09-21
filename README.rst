@@ -58,7 +58,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
 Requirements
 ============
 
-Python 2.6 or later, including Python 3+.
+Python 2.6+ or 3.3+.
 
 Works with either PySide_, PyQt_ (``PyQt4`` and ``PyQt5``) picking whichever
 is available on the system, giving preference to the first one installed in
