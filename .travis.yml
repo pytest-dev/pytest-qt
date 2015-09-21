@@ -10,13 +10,13 @@ virtualenv:
 matrix:
   allow_failures:
     # unfortunately couldn't find a reliable way to test pyqt5 on travis yet
-    - env: PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt5
+    - env: PYTEST_VERSION=2.8.0 PYTEST_QT_API=pyqt5
 
 env:
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt4
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt4v2
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyside
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt5
+ - PYTEST_VERSION=2.8.0 PYTEST_QT_API=pyqt4
+ - PYTEST_VERSION=2.8.0 PYTEST_QT_API=pyqt4v2
+ - PYTEST_VERSION=2.8.0 PYTEST_QT_API=pyside
+ - PYTEST_VERSION=2.8.0 PYTEST_QT_API=pyqt5
 
 install:
  - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
