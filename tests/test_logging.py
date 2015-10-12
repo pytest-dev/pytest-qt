@@ -368,6 +368,34 @@ def test_logging_mark_with_extend(testdir, message):
     res.assertoutcome(passed=1, failed=0)
 
 
+def test_logging_mark_with_invalid_argument(testdir):
+    """
+    Test qt_log_ignore mark with invalid keyword argument.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makepyfile(
+        """
+        import pytest
+
+        @pytest.mark.qt_log_ignore('match-mark', does_not_exist=True)
+        def test1():
+            pass
+        """
+    )
+    res = testdir.runpytest()
+    lines = [
+        '*= ERRORS =*',
+        '*_ ERROR at setup of test1 _*',
+        "*ValueError: Invalid keyword arguments in {'does_not_exist': True} "
+            "for qt_log_ignore mark.",
+
+        # summary
+        '*= 1 error in*',
+    ]
+    res.stdout.fnmatch_lines(lines)
+
+
 @pytest.mark.parametrize('apply_mark', [True, False])
 def test_logging_fails_ignore_mark_multiple(testdir, apply_mark):
     """
