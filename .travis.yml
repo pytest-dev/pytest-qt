@@ -11,13 +11,13 @@ virtualenv:
 matrix:
   allow_failures:
     # unfortunately couldn't find a reliable way to test pyqt5 on travis yet
-    - env: PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt5
+    - env: PYTEST_QT_API=pyqt5
 
 env:
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt4
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt4v2
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyside
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt5
+ - PYTEST_QT_API=pyqt4
+ - PYTEST_QT_API=pyqt4v2
+ - PYTEST_QT_API=pyside
+ - PYTEST_QT_API=pyqt5
 
 install:
  - sudo apt-get update
@@ -29,7 +29,7 @@ install:
  - python scripts/install-qt.py
 
  # PyTest
- - pip install -U pytest==$PYTEST_VERSION
+ - pip install -U pytest
 
  # others
  - pip install coveralls --use-wheel
