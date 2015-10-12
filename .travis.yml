@@ -1,12 +1,10 @@
 language: python
+services: docker  # so we get Ubuntu Trusty with Python 3.4
 
 python:
-  - "2.6"
   - "2.7"
-  - "3.3"
   - "3.4"
-  - "3.5"
-  
+
 virtualenv:
   system_site_packages: true
 
