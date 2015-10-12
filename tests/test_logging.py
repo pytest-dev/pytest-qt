@@ -237,7 +237,7 @@ def test_logging_fails_tests_mark(testdir):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical, qDebug
+        from pytestqt.qt_compat import qWarning
         import pytest
         @pytest.mark.qt_log_level_fail('WARNING')
         def test_1():
@@ -265,7 +265,7 @@ def test_logging_fails_ignore(testdir):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical
+        from pytestqt.qt_compat import qCritical
         import pytest
 
         def test1():
@@ -328,7 +328,7 @@ def test_logging_fails_ignore_mark(testdir, mark_regex):
         mark = ''
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical
+        from pytestqt.qt_compat import qCritical
         import pytest
         {mark}
         def test1():
@@ -356,7 +356,7 @@ def test_logging_mark_with_extend(testdir, message):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical
+        from pytestqt.qt_compat import qCritical
         import pytest
 
         @pytest.mark.qt_log_ignore('match-mark', extend=True)
@@ -409,7 +409,7 @@ def test_logging_fails_ignore_mark_multiple(testdir, apply_mark):
         mark = ''
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical
+        from pytestqt.qt_compat import qCritical
         import pytest
         @pytest.mark.qt_log_level_fail('CRITICAL')
         {mark}
