@@ -237,7 +237,7 @@ def test_logging_fails_tests_mark(testdir):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical, qDebug
+        from pytestqt.qt_compat import qWarning
         import pytest
         @pytest.mark.qt_log_level_fail('WARNING')
         def test_1():
@@ -265,7 +265,7 @@ def test_logging_fails_ignore(testdir):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical
+        from pytestqt.qt_compat import qCritical
         import pytest
 
         def test1():
@@ -319,6 +319,7 @@ def test_logging_fails_ignore_mark(testdir, mark_regex):
         """
         [pytest]
         qt_log_level_fail = CRITICAL
+        qt_log_ignore = no-match
         """
     )
     if mark_regex:
@@ -327,7 +328,7 @@ def test_logging_fails_ignore_mark(testdir, mark_regex):
         mark = ''
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical
+        from pytestqt.qt_compat import qCritical
         import pytest
         {mark}
         def test1():
@@ -337,6 +338,62 @@ def test_logging_fails_ignore_mark(testdir, mark_regex):
     res = testdir.inline_run()
     passed = 1 if mark_regex == 'WM_DESTROY.*sent' else 0
     res.assertoutcome(passed=passed, failed=int(not passed))
+
+
+@pytest.mark.parametrize('message', ['match-global', 'match-mark'])
+def test_logging_mark_with_extend(testdir, message):
+    """
+    Test qt_log_ignore mark with extend=True.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = CRITICAL
+        qt_log_ignore = match-global
+        """
+    )
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qCritical
+        import pytest
+
+        @pytest.mark.qt_log_ignore('match-mark', extend=True)
+        def test1():
+            qCritical('{message}')
+        """.format(message=message)
+    )
+    res = testdir.inline_run()
+    res.assertoutcome(passed=1, failed=0)
+
+
+def test_logging_mark_with_invalid_argument(testdir):
+    """
+    Test qt_log_ignore mark with invalid keyword argument.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makepyfile(
+        """
+        import pytest
+
+        @pytest.mark.qt_log_ignore('match-mark', does_not_exist=True)
+        def test1():
+            pass
+        """
+    )
+    res = testdir.runpytest()
+    lines = [
+        '*= ERRORS =*',
+        '*_ ERROR at setup of test1 _*',
+        "*ValueError: Invalid keyword arguments in {'does_not_exist': True} "
+            "for qt_log_ignore mark.",
+
+        # summary
+        '*= 1 error in*',
+    ]
+    res.stdout.fnmatch_lines(lines)
 
 
 @pytest.mark.parametrize('apply_mark', [True, False])
@@ -352,7 +409,7 @@ def test_logging_fails_ignore_mark_multiple(testdir, apply_mark):
         mark = ''
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical
+        from pytestqt.qt_compat import qCritical
         import pytest
         @pytest.mark.qt_log_level_fail('CRITICAL')
         {mark}

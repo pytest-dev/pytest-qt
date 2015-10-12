@@ -24,7 +24,14 @@ class QtLoggingPlugin(object):
             return
         m = item.get_marker('qt_log_ignore')
         if m:
-            ignore_regexes = m.args
+            if not set(m.kwargs).issubset(set(['extend'])):
+                raise ValueError("Invalid keyword arguments in {0!r} for "
+                                 "qt_log_ignore mark.".format(m.kwargs))
+            if m.kwargs.get('extend', False):
+                config_regexes = self.config.getini('qt_log_ignore')
+                ignore_regexes = config_regexes + list(m.args)
+            else:
+                ignore_regexes = m.args
         else:
             ignore_regexes = self.config.getini('qt_log_ignore')
         item.qt_log_capture = _QtMessageCapture(ignore_regexes)
