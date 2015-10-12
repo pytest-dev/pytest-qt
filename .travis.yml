@@ -1,9 +1,10 @@
 language: python
+services: docker  # so we get Ubuntu Trusty with Python 3.4
 
 python:
   - "2.7"
-  - "3.2"
-  
+  - "3.4"
+
 virtualenv:
   system_site_packages: true
 
@@ -19,28 +20,23 @@ env:
  - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt5
 
 install:
- - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
  - sudo apt-get update
- 
+
+ # Xvfb
+ - sudo apt-get install xvfb
+
  # Qt
  - python scripts/install-qt.py
 
  # PyTest
- - pip uninstall -y pytest
- - pip install pytest==$PYTEST_VERSION
+ - pip install -U pytest==$PYTEST_VERSION
 
  # others
  - pip install coveralls --use-wheel
 
-before_script:
- - export DISPLAY=:99.0
- - sh -e /etc/init.d/xvfb start
- - sleep 3
-
-
 script:
  - python setup.py develop
- - catchsegv coverage run --source=pytestqt setup.py test
+ - catchsegv xvfb-run coverage run --source=pytestqt setup.py test
 
 after_success:
  - coveralls
