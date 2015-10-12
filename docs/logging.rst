@@ -226,3 +226,12 @@ from ``pytest.ini`` in some tests by using a mark with the same name:
     @pytest.mark.qt_log_ignore('WM_DESTROY.*sent', 'WM_PAINT failed')
     def test_foo(qtlog):
         do_something()
+
+If you would like to extend the list of ignored patterns, pass ``extend=True``
+to the ``qt_log_ignore`` mark:
+
+.. code-block:: python
+
+    @pytest.mark.qt_log_ignore('WM_DESTROY.*sent', extend=True)
+    def test_foo(qtlog):
+        do_something()
