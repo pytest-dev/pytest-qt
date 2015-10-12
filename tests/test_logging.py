@@ -340,6 +340,34 @@ def test_logging_fails_ignore_mark(testdir, mark_regex):
     res.assertoutcome(passed=passed, failed=int(not passed))
 
 
+@pytest.mark.parametrize('message', ['match-global', 'match-mark'])
+def test_logging_mark_with_extend(testdir, message):
+    """
+    Test qt_log_ignore mark with extend=True.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = CRITICAL
+        qt_log_ignore = match-global
+        """
+    )
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qWarning, qCritical
+        import pytest
+
+        @pytest.mark.qt_log_ignore('match-mark', extend=True)
+        def test1():
+            qCritical('{message}')
+        """.format(message=message)
+    )
+    res = testdir.inline_run()
+    res.assertoutcome(passed=1, failed=0)
+
+
 @pytest.mark.parametrize('apply_mark', [True, False])
 def test_logging_fails_ignore_mark_multiple(testdir, apply_mark):
     """
