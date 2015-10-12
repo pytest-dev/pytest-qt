@@ -22,7 +22,10 @@ env:
 install:
  - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
  - sudo apt-get update
- 
+
+ # Xvfb
+ - sudo apt-get install xvfb
+
  # Qt
  - python scripts/install-qt.py
 
