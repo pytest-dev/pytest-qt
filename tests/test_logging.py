@@ -319,6 +319,7 @@ def test_logging_fails_ignore_mark(testdir, mark_regex):
         """
         [pytest]
         qt_log_level_fail = CRITICAL
+        qt_log_ignore = no-match
         """
     )
     if mark_regex:
