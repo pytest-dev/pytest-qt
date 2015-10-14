@@ -484,3 +484,32 @@ def test_context_none(testdir):
         '*None:None:None:*',
         '* QtWarningMsg: WARNING message*',
     ])
+
+
+def test_logging_broken_makereport(testdir):
+    """
+    Make sure logging's makereport hookwrapper doesn't hide exceptions.
+
+    See https://github.com/pytest-dev/pytest-qt/issues/98
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makepyfile(conftest="""
+        import pytest
+
+        @pytest.mark.hookwrapper(tryfirst=True)
+        def pytest_runtest_makereport(call):
+            if call.when == 'call':
+                raise Exception("This should not be hidden")
+            yield
+    """)
+    p = testdir.makepyfile(
+        """
+        def test_foo():
+            pass
+        """
+    )
+    res = testdir.runpytest_subprocess(p)
+    res.stdout.fnmatch_lines([
+        '*This should not be hidden*',
+    ])

@@ -1,3 +1,11 @@
+# 1.7.1.dev #
+
+- Fixed internal error when interacting with other plugins that raise an error,
+  hiding the original exception (#98). Thanks @The-Compiler for the PR!
+  
+- Now `pytest-qt` is properly tested with PyQt5 on Travis-CI. Many thanks
+  to @The-Compiler for the PR!
+
 # 1.7.0 #
 
 - `PYTEST_QT_API` can now be set to `pyqt4v2` in order to use version 2 of the 

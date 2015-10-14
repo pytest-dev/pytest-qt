@@ -40,13 +40,12 @@ class QtLoggingPlugin(object):
     @pytest.mark.hookwrapper
     def pytest_runtest_makereport(self, item, call):
         """Add captured Qt messages to test item report if the call failed."""
-
         outcome = yield
         if not hasattr(item, 'qt_log_capture'):
             return
 
         if call.when == 'call':
-            report = outcome.result
+            report = outcome.get_result()
 
             m = item.get_marker('qt_log_level_fail')
             if m:
