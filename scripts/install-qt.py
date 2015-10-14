@@ -54,11 +54,11 @@ if 'APPVEYOR' in os.environ:
 elif 'TRAVIS' in os.environ:
     def apt_get_install(packages):
         print('Installing %s...' % ', '.join(packages))
-        subprocess.check_call(['sudo', 'apt-get', 'install', '-qq'] + packages)
+        subprocess.check_call(['sudo', 'apt-get', 'install', '-y', '-qq'] + packages)
 
     py3k = sys.version_info[0] == 3
-    pyqt_version = {'pyqt4': '4',
-                    'pyqt4v2': '4',
+    pyqt_version = {'pyqt4': 4,
+                    'pyqt4v2': 4,
                     'pyqt5': 5,
                     }
     if os.environ['PYTEST_QT_API'] in pyqt_version:
@@ -67,7 +67,7 @@ elif 'TRAVIS' in os.environ:
             pkg = 'python3-pyqt%s' % pyqt_ver
         else:
             pkg = 'python-qt%s' % pyqt_ver
-        apt_get_install([pkg, pkg + '-dbg'])
+        apt_get_install([pkg])
     else:
         if py3k:
             pkg = 'python3-pyside'

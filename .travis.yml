@@ -9,9 +9,9 @@ virtualenv:
   system_site_packages: true
 
 matrix:
-  allow_failures:
-    # unfortunately couldn't find a reliable way to test pyqt5 on travis yet
+  exclude:
     - env: PYTEST_QT_API=pyqt5
+      python: "2.7"
 
 env:
  - PYTEST_QT_API=pyqt4
@@ -23,7 +23,7 @@ install:
  - sudo apt-get update
 
  # Xvfb
- - sudo apt-get install xvfb
+ - sudo apt-get install -y xvfb
 
  # Qt
  - python scripts/install-qt.py
