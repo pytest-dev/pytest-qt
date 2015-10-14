@@ -481,6 +481,6 @@ def test_context_none(testdir):
     )
     res = testdir.runpytest()
     res.stdout.fnmatch_lines([
-        '*Failure*',
         '*None:None:None:*',
+        '* QtWarningMsg: WARNING message*',
     ])
