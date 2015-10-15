@@ -26,5 +26,5 @@ interaction, like key presses and mouse clicks::
 
 '''
 
-version = '1.7.0'
+version = '1.8.0'
 __version__ = version
