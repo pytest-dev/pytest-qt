@@ -1,5 +1,6 @@
 language: python
-services: docker  # so we get Ubuntu Trusty with Python 3.4
+sudo: required
+dist: trusty
 
 python:
   - "2.7"
