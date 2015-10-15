@@ -23,6 +23,7 @@ pytest-qt
     virtual_methods
     app_exit
     reference
+    changelog
 
 
 
