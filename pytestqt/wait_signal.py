@@ -120,7 +120,7 @@ class SignalBlocker(_AbstractSignalBlocker):
         for signal in self._signals:
             try:
                 signal.disconnect(self._quit_loop_by_signal)
-            except (TypeError, RuntimeError):
+            except (TypeError, RuntimeError):  # pragma: no cover
                 # already disconnected by Qt?
                 pass
 

@@ -253,13 +253,14 @@ class Record(object):
         return cls._log_type_name_map[msg_type]
 
     def matches_level(self, level):
+        assert level in QtLoggingPlugin.LOG_FAIL_OPTIONS
         if level == 'DEBUG':
             return self.log_type_name in ('DEBUG', 'WARNING', 'CRITICAL')
         elif level == 'WARNING':
             return self.log_type_name in ('WARNING', 'CRITICAL')
         elif level == 'CRITICAL':
             return self.log_type_name in ('CRITICAL',)
-        else:
+        else:  # pragma: no cover
             raise ValueError('log_fail_level unknown: {0}'.format(level))
 
 
