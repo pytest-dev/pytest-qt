@@ -21,7 +21,7 @@ test_script:
   - C:\Python27\scripts\tox -e %TESTENVS%
   
 after_test:
-  - "C:\Python27\python setup.py sdist"
+  - C:\Python27\python setup.py sdist
   - ps: "ls dist"
 
 artifacts:
