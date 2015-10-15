@@ -1,4 +1,8 @@
-# 1.7.1.dev #
+# 1.8.0 #
+
+- `pytest.makr.qt_log_ignore` now supports a `extend` parameter that will extend 
+  the list of regexes used to ignore Qt messages (defaults to False). 
+  Thanks @The-Compiler for the PR (#99).
 
 - Fixed internal error when interacting with other plugins that raise an error,
   hiding the original exception (#98). Thanks @The-Compiler for the PR!
