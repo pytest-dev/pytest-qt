@@ -102,7 +102,7 @@ Change Log
 
 Please consult the `changelog page`_.
 
-.. _changelog page: https://github.com/pytest-dev/pytest-qt/blob/master/CHANGELOG.md
+.. _changelog page: https://github.com/pytest-dev/pytest-qt/blob/master/CHANGELOG.rst
 
 Bugs/Requests
 =============
