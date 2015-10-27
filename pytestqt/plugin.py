@@ -1,7 +1,8 @@
 import pytest
 
 from pytestqt.exceptions import capture_exceptions, format_captured_exceptions, \
-    _is_exception_capture_disabled
+    _is_exception_capture_disabled, _is_exception_capture_enabled, \
+    _QtExceptionCaptureManager
 from pytestqt.logging import QtLoggingPlugin, _QtMessageCapture, Record
 from pytestqt.qt_compat import QApplication, QT_API
 from pytestqt.qtbot import QtBot
@@ -43,15 +44,7 @@ def qtbot(qapp, request):
     that they are properly closed after the test ends.
     """
     result = QtBot()
-    no_capture = _is_exception_capture_disabled(request.node)
-    if no_capture:
-        yield result  # pragma: no cover
-    else:
-        with capture_exceptions() as exceptions:
-            yield result
-        if exceptions:
-            pytest.fail(format_captured_exceptions(exceptions), pytrace=False)
-
+    yield result
     result._close()
 
 
@@ -90,15 +83,45 @@ def pytest_addoption(parser):
                          'default: "{0}"'.format(default))
 
 
-@pytest.mark.hookwrapper
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_setup(item):
+    """
+    Hook called after before test setup starts, to start capturing exceptions
+    as early as possible.
+    """
+    capture_enabled = _is_exception_capture_enabled(item)
+    if capture_enabled:
+        item.qt_exception_capture_manager = _QtExceptionCaptureManager()
+        item.qt_exception_capture_manager.start()
+    yield
+    _process_events(item)
+    if capture_enabled:
+        item.qt_exception_capture_manager.fail_if_exceptions_occurred('SETUP')
+
+
+@pytest.hookimpl(hookwrapper=True, trylast=True)
+def pytest_runtest_call(item):
+    yield
+    _process_events(item)
+    capture_enabled = _is_exception_capture_enabled(item)
+    if capture_enabled:
+        item.qt_exception_capture_manager.fail_if_exceptions_occurred('CALL')
+
+
+@pytest.hookimpl(hookwrapper=True, trylast=True)
 def pytest_runtest_teardown(item):
     """
     Hook called after each test tear down, to process any pending events and
-    avoiding leaking events to the next test.
+    avoiding leaking events to the next test. Also, if exceptions have
+    been captured during fixtures teardown, fail the test.
     """
     _process_events(item)
     yield
     _process_events(item)
+    capture_enabled = _is_exception_capture_enabled(item)
+    if capture_enabled:
+        item.qt_exception_capture_manager.fail_if_exceptions_occurred('TEARDOWN')
+        item.qt_exception_capture_manager.finish()
 
 
 def _process_events(item):
@@ -107,15 +130,7 @@ def _process_events(item):
     """
     app = QApplication.instance()
     if app is not None:
-        if _is_exception_capture_disabled(item):
-            app.processEvents()
-        else:
-            with capture_exceptions() as exceptions:
-                app.processEvents()
-            if exceptions:
-                pytest.fail('TEARDOWN ERROR: ' +
-                            format_captured_exceptions(exceptions),
-                            pytrace=False)
+        app.processEvents()
 
 
 def pytest_configure(config):

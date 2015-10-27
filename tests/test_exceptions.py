@@ -35,7 +35,7 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
         result.stdout.fnmatch_lines([
             '*Qt exceptions in virtual methods:*',
             '*ValueError: mistakes were made*',
-            '*1 error*',
+            '*1 failed*',
         ])
         assert 'pytest.fail' not in '\n'.join(result.outlines)
     else:
@@ -121,9 +121,9 @@ def test_no_capture_preserves_custom_excepthook(testdir):
     res.stdout.fnmatch_lines(['*2 passed*'])
 
 
-def test_exception_capture_on_teardown(testdir):
+def test_exception_capture_on_call(testdir):
     """
-    Exceptions should also be captured during test teardown.
+    Exceptions should also be captured during test execution.
 
     :type testdir: TmpTestdir
     """
@@ -138,14 +138,86 @@ def test_exception_capture_on_teardown(testdir):
 
         def test_widget(qtbot, qapp):
             w = MyWidget()
-            # keep a reference to the widget so it will lives after the test
-            # ends. This will in turn trigger its event() during test tear down,
-            # raising the exception during its event processing
-            test_widget.w = w
             qapp.postEvent(w, QEvent(QEvent.User))
+            qapp.processEvents()
     ''')
     res = testdir.runpytest('-s')
     res.stdout.fnmatch_lines([
+        "*RuntimeError('event processed')*",
+        '*1 failed*',
+    ])
+
+
+def test_exception_capture_on_widget_close(testdir):
+    """
+    Exceptions should also be captured when widget is being closed.
+
+    :type testdir: TmpTestdir
+    """
+    testdir.makepyfile('''
+        import pytest
+        from pytestqt.qt_compat import QWidget, QtCore, QEvent
+
+        class MyWidget(QWidget):
+
+            def closeEvent(self, ev):
+                raise RuntimeError('close error')
+
+        def test_widget(qtbot, qapp):
+            w = MyWidget()
+            test_widget.w = w  # keep it alive
+            qtbot.addWidget(w)
+    ''')
+    res = testdir.runpytest('-s')
+    res.stdout.fnmatch_lines([
+        "*RuntimeError('close error')*",
+        '*1 error*',
+    ])
+
+
+@pytest.mark.parametrize('mode', ['setup', 'teardown'])
+def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
+    """
+    Setup/teardown exception capturing as early/late as possible to catch
+    all exceptions, even from other fixtures (#105).
+
+    :type testdir: TmpTestdir
+    """
+    if mode == 'setup':
+        setup_code = 'send_event(w, qapp)'
+        teardown_code = ''
+    else:
+        setup_code = ''
+        teardown_code = 'send_event(w, qapp)'
+
+    testdir.makepyfile('''
+        import pytest
+        from pytestqt.qt_compat import QWidget, QtCore, QEvent, QApplication
+
+        class MyWidget(QWidget):
+
+            def event(self, ev):
+                if ev.type() == QEvent.User:
+                    raise RuntimeError('event processed')
+                return True
+
+        @pytest.yield_fixture
+        def widget(qapp):
+            w = MyWidget()
+            {setup_code}
+            yield w
+            {teardown_code}
+
+        def send_event(w, qapp):
+            qapp.postEvent(w, QEvent(QEvent.User))
+            qapp.processEvents()
+
+        def test_capture(widget):
+            pass
+    '''.format(setup_code=setup_code, teardown_code=teardown_code))
+    res = testdir.runpytest('-s')
+    res.stdout.fnmatch_lines([
+        '*__ ERROR at %s of test_capture __*' % mode,
         "*RuntimeError('event processed')*",
         '*1 error*',
     ])

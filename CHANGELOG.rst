@@ -1,3 +1,14 @@
+1.9.0
+-----
+
+- Exception capturing now happens as early/late as possible in order to catch
+  all possible exceptions (including fixtures). Thanks
+  `@The-Compiler`_ for the request (`105`_, `106`_).
+
+.. _105: https://github.com/pytest-dev/pytest-qt/issues/105
+.. _106: https://github.com/pytest-dev/pytest-qt/issues/106
+
+
 1.8.0
 -----
 
