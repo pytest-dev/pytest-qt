@@ -99,7 +99,8 @@ def pytest_runtest_setup(item):
         item.qt_exception_capture_manager.fail_if_exceptions_occurred('SETUP')
 
 
-@pytest.hookimpl(hookwrapper=True, trylast=True)
+@pytest.mark.hookwrapper
+@pytest.mark.tryfirst
 def pytest_runtest_call(item):
     yield
     _process_events(item)
@@ -108,7 +109,8 @@ def pytest_runtest_call(item):
         item.qt_exception_capture_manager.fail_if_exceptions_occurred('CALL')
 
 
-@pytest.hookimpl(hookwrapper=True, trylast=True)
+@pytest.mark.hookwrapper
+@pytest.mark.trylast
 def pytest_runtest_teardown(item):
     """
     Hook called after each test tear down, to process any pending events and
