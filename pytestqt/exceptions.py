@@ -54,8 +54,8 @@ class _QtExceptionCaptureManager(object):
         """
         if self.exceptions:
             self.finish()
-            exceptions = self.exceptions[:]
-            self.exceptions[:] = []
+            exceptions = self.exceptions
+            self.exceptions = []
             prefix = '%s ERROR: ' % when
             pytest.fail(prefix + format_captured_exceptions(exceptions),
                         pytrace=False)
