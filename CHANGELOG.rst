@@ -6,7 +6,7 @@
   `@The-Compiler`_ for the request.
 
 - Widgets registered by ``qtbot.addWidget`` are now closed  before all other
- fixtures are tear down (`106`_). Thanks `@The-Compiler`_ for request.
+  fixtures are tear down (`106`_). Thanks `@The-Compiler`_ for request.
 
 .. _105: https://github.com/pytest-dev/pytest-qt/issues/105
 .. _106: https://github.com/pytest-dev/pytest-qt/issues/106
