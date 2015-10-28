@@ -1,19 +1,20 @@
 import pytest
 
 from pytestqt.exceptions import capture_exceptions, format_captured_exceptions, \
-    _is_exception_capture_disabled, _is_exception_capture_enabled, \
-    _QtExceptionCaptureManager
+    _is_exception_capture_enabled, _QtExceptionCaptureManager
 from pytestqt.logging import QtLoggingPlugin, _QtMessageCapture, Record
 from pytestqt.qt_compat import QApplication, QT_API
 from pytestqt.qtbot import QtBot, _close_widgets
 from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError
 
-# modules imported here just for backward compatibility before we have split the implementation
-# of this file in several modules
+# classes/functions imported here just for backward compatibility before we
+# split the implementation of this file in several modules
 assert SignalBlocker
 assert MultiSignalBlocker
 assert SignalTimeoutError
 assert Record
+assert capture_exceptions
+assert format_captured_exceptions
 
 
 @pytest.yield_fixture(scope='session')
@@ -93,7 +94,7 @@ def pytest_runtest_setup(item):
         item.qt_exception_capture_manager = _QtExceptionCaptureManager()
         item.qt_exception_capture_manager.start()
     yield
-    _process_events(item)
+    _process_events()
     if capture_enabled:
         item.qt_exception_capture_manager.fail_if_exceptions_occurred('SETUP')
 
@@ -102,7 +103,7 @@ def pytest_runtest_setup(item):
 @pytest.mark.tryfirst
 def pytest_runtest_call(item):
     yield
-    _process_events(item)
+    _process_events()
     capture_enabled = _is_exception_capture_enabled(item)
     if capture_enabled:
         item.qt_exception_capture_manager.fail_if_exceptions_occurred('CALL')
@@ -116,18 +117,18 @@ def pytest_runtest_teardown(item):
     avoiding leaking events to the next test. Also, if exceptions have
     been captured during fixtures teardown, fail the test.
     """
-    _process_events(item)
+    _process_events()
     _close_widgets(item)
-    _process_events(item)
+    _process_events()
     yield
-    _process_events(item)
+    _process_events()
     capture_enabled = _is_exception_capture_enabled(item)
     if capture_enabled:
         item.qt_exception_capture_manager.fail_if_exceptions_occurred('TEARDOWN')
         item.qt_exception_capture_manager.finish()
 
 
-def _process_events(item):
+def _process_events():
     """Calls app.processEvents() while taking care of capturing exceptions
     or not based on the given item's configuration.
     """
