@@ -156,19 +156,8 @@ class QtBot(object):
 
     """
 
-    def __init__(self):
-        self._widgets = []  # list of weakref to QWidget instances
-
-    def _close(self):
-        """
-        Clear up method. Called at the end of each test that uses a ``qtbot`` fixture.
-        """
-        for w in self._widgets:
-            w = w()
-            if w is not None:
-                w.close()
-                w.deleteLater()
-        self._widgets[:] = []
+    def __init__(self, request):
+        self._request = request
 
     def addWidget(self, widget):
         """
@@ -178,7 +167,7 @@ class QtBot(object):
         :param QWidget widget:
             Widget to keep track of.
         """
-        self._widgets.append(weakref.ref(widget))
+        _add_widget(self._request.node, widget)
 
     add_widget = addWidget  # pep-8 alias
 
@@ -216,7 +205,7 @@ class QtBot(object):
         .. note:: As a convenience, it is also aliased as `stop`.
         """
         widget_and_visibility = []
-        for weak_widget in self._widgets:
+        for weak_widget in _iter_widgets(self._request.node):
             widget = weak_widget()
             if widget is not None:
                 widget_and_visibility.append((widget, widget.isVisible()))
@@ -325,3 +314,33 @@ class QtBot(object):
 
 # provide easy access to SignalTimeoutError to qtbot fixtures
 QtBot.SignalTimeoutError = SignalTimeoutError
+
+
+def _add_widget(item, widget):
+    """
+    Register a widget into the given pytest item for later closing.
+    """
+    qt_widgets = getattr(item, 'qt_widgets', [])
+    qt_widgets.append(weakref.ref(widget))
+    item.qt_widgets = qt_widgets
+
+
+def _close_widgets(item):
+    """
+    Close all widgets registered in the pytest item.
+    """
+    widgets = getattr(item, 'qt_widgets', None)
+    if widgets:
+        for w in item.qt_widgets:
+            w = w()
+            if w is not None:
+                w.close()
+                w.deleteLater()
+        del item.qt_widgets
+
+
+def _iter_widgets(item):
+    """
+    Iterates over widgets registered in the given pytest item.
+    """
+    return iter(getattr(item, 'qt_widgets', []))

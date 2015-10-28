@@ -5,7 +5,7 @@ from pytestqt.exceptions import capture_exceptions, format_captured_exceptions, 
     _QtExceptionCaptureManager
 from pytestqt.logging import QtLoggingPlugin, _QtMessageCapture, Record
 from pytestqt.qt_compat import QApplication, QT_API
-from pytestqt.qtbot import QtBot
+from pytestqt.qtbot import QtBot, _close_widgets
 from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError
 
 # modules imported here just for backward compatibility before we have split the implementation
@@ -35,7 +35,7 @@ def qapp():
 _qapp_instance = None
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def qtbot(qapp, request):
     """
     Fixture used to create a QtBot instance for using during testing.
@@ -43,9 +43,8 @@ def qtbot(qapp, request):
     Make sure to call addWidget for each top-level widget you create to ensure
     that they are properly closed after the test ends.
     """
-    result = QtBot()
-    yield result
-    result._close()
+    result = QtBot(request)
+    return result
 
 
 @pytest.fixture
@@ -117,6 +116,8 @@ def pytest_runtest_teardown(item):
     avoiding leaking events to the next test. Also, if exceptions have
     been captured during fixtures teardown, fail the test.
     """
+    _process_events(item)
+    _close_widgets(item)
     _process_events(item)
     yield
     _process_events(item)

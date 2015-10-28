@@ -171,6 +171,39 @@ def test_public_api_backward_compatibility():
     assert pytestqt.plugin.Record
 
 
+def test_widgets_closed_before_fixtures(testdir):
+    """
+    Ensure widgets added by "qtbot.add_widget" are closed before all other
+    fixtures are teardown. (#106).
+    """
+    testdir.makepyfile('''
+        import pytest
+        from pytestqt.qt_compat import QWidget
+
+        class Widget(QWidget):
+
+            closed = False
+
+            def closeEvent(self, e):
+                e.accept()
+                self.closed = True
+
+        @pytest.yield_fixture
+        def widget(qtbot):
+            w = Widget()
+            qtbot.add_widget(w)
+            yield w
+            assert w.closed
+
+        def test_foo(widget):
+            pass
+    ''')
+    result = testdir.runpytest()
+    result.stdout.fnmatch_lines([
+        '*= 1 passed in *'
+    ])
+
+
 class EventRecorder(QWidget):
 
     """
