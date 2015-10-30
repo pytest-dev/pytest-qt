@@ -11,10 +11,16 @@
 - ``qtbot`` now has a new ``wait`` method which does a blocking wait while the
   event loop continues to run, similar to ``QTest::qWait``. Thanks
   `@The-Compiler`_ for the PR (closes `107`_)!
+  
+- raise ``RuntimeError`` instead of ``ImportError`` when failing to import
+  any Qt binding: raising the latter causes `pluggy` in `pytest-2.8` to 
+  generate a subtle warning instead of a full blown error. 
+  Thanks `@Sheeo`_ for bringing this problem to attention (closes `109`_).
 
 .. _105: https://github.com/pytest-dev/pytest-qt/issues/105
 .. _106: https://github.com/pytest-dev/pytest-qt/issues/106
 .. _107: https://github.com/pytest-dev/pytest-qt/issues/107
+.. _109: https://github.com/pytest-dev/pytest-qt/issues/109
 
 
 1.8.0
@@ -264,3 +270,4 @@ First working version.
 .. _@fabioz: https://github.com/fabioz
 .. _@baudren: https://github.com/baudren
 .. _@itghisi: https://github.com/itghisi
+.. _@Sheeo: https://github.com/Sheeo
