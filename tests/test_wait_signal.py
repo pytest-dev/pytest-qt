@@ -312,6 +312,6 @@ def test_destroyed(qtbot):
 
 def test_qtbot_wait(qtbot, stop_watch):
     stop_watch.start()
-    qtbot.wait(100)
+    qtbot.wait(250)
     stop_watch.stop()
-    assert stop_watch.elapsed >= 95
+    assert stop_watch.elapsed >= 220
