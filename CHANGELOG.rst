@@ -8,8 +8,13 @@
 - Widgets registered by ``qtbot.addWidget`` are now closed  before all other
   fixtures are tear down (`106`_). Thanks `@The-Compiler`_ for request.
 
+- ``qtbot`` now has a new ``wait`` method which does a blocking wait while the
+  event loop continues to run, similar to ``QTest::qWait``. Thanks
+  `@The-Compiler`_ for the PR (closes `107`_)!
+
 .. _105: https://github.com/pytest-dev/pytest-qt/issues/105
 .. _106: https://github.com/pytest-dev/pytest-qt/issues/106
+.. _107: https://github.com/pytest-dev/pytest-qt/issues/107
 
 
 1.8.0

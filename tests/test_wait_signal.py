@@ -224,20 +224,24 @@ def stop_watch():
 
         def __init__(self):
             self._start_time = None
+            self.elapsed = None
 
         def start(self):
             self._start_time = get_time()
+
+        def stop(self):
+            self.elapsed = (get_time() - self._start_time) * 1000.0
 
         def check(self, timeout, *delays):
             """
             Make sure either timeout (if given) or at most of the given
             delays used to trigger a signal has passed.
             """
+            self.stop()
             if timeout is None:
                 timeout = max(delays) * 1.35  # 35% tolerance
             max_wait_ms = max(delays + (timeout,))
-            elapsed_ms = (get_time() - self._start_time) * 1000.0
-            assert elapsed_ms < max_wait_ms
+            assert self.elapsed < max_wait_ms
 
     return StopWatch()
 
@@ -304,3 +308,10 @@ def test_destroyed(qtbot):
         obj.deleteLater()
 
     assert sip.isdeleted(obj)
+
+
+def test_qtbot_wait(qtbot, stop_watch):
+    stop_watch.start()
+    qtbot.wait(100)
+    stop_watch.stop()
+    assert stop_watch.elapsed >= 95
