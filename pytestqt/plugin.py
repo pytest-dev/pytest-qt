@@ -1,18 +1,20 @@
 import pytest
 
 from pytestqt.exceptions import capture_exceptions, format_captured_exceptions, \
-    _is_exception_capture_disabled
+    _is_exception_capture_enabled, _QtExceptionCaptureManager
 from pytestqt.logging import QtLoggingPlugin, _QtMessageCapture, Record
 from pytestqt.qt_compat import QApplication, QT_API
-from pytestqt.qtbot import QtBot
+from pytestqt.qtbot import QtBot, _close_widgets
 from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError
 
-# modules imported here just for backward compatibility before we have split the implementation
-# of this file in several modules
+# classes/functions imported here just for backward compatibility before we
+# split the implementation of this file in several modules
 assert SignalBlocker
 assert MultiSignalBlocker
 assert SignalTimeoutError
 assert Record
+assert capture_exceptions
+assert format_captured_exceptions
 
 
 @pytest.yield_fixture(scope='session')
@@ -34,7 +36,7 @@ def qapp():
 _qapp_instance = None
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def qtbot(qapp, request):
     """
     Fixture used to create a QtBot instance for using during testing.
@@ -42,17 +44,8 @@ def qtbot(qapp, request):
     Make sure to call addWidget for each top-level widget you create to ensure
     that they are properly closed after the test ends.
     """
-    result = QtBot()
-    no_capture = _is_exception_capture_disabled(request.node)
-    if no_capture:
-        yield result  # pragma: no cover
-    else:
-        with capture_exceptions() as exceptions:
-            yield result
-        if exceptions:
-            pytest.fail(format_captured_exceptions(exceptions), pytrace=False)
-
-    result._close()
+    result = QtBot(request)
+    return result
 
 
 @pytest.fixture
@@ -91,31 +84,58 @@ def pytest_addoption(parser):
 
 
 @pytest.mark.hookwrapper
+@pytest.mark.tryfirst
+def pytest_runtest_setup(item):
+    """
+    Hook called after before test setup starts, to start capturing exceptions
+    as early as possible.
+    """
+    capture_enabled = _is_exception_capture_enabled(item)
+    if capture_enabled:
+        item.qt_exception_capture_manager = _QtExceptionCaptureManager()
+        item.qt_exception_capture_manager.start()
+    yield
+    _process_events()
+    if capture_enabled:
+        item.qt_exception_capture_manager.fail_if_exceptions_occurred('SETUP')
+
+
+@pytest.mark.hookwrapper
+@pytest.mark.tryfirst
+def pytest_runtest_call(item):
+    yield
+    _process_events()
+    capture_enabled = _is_exception_capture_enabled(item)
+    if capture_enabled:
+        item.qt_exception_capture_manager.fail_if_exceptions_occurred('CALL')
+
+
+@pytest.mark.hookwrapper
+@pytest.mark.trylast
 def pytest_runtest_teardown(item):
     """
     Hook called after each test tear down, to process any pending events and
-    avoiding leaking events to the next test.
+    avoiding leaking events to the next test. Also, if exceptions have
+    been captured during fixtures teardown, fail the test.
     """
-    _process_events(item)
+    _process_events()
+    _close_widgets(item)
+    _process_events()
     yield
-    _process_events(item)
+    _process_events()
+    capture_enabled = _is_exception_capture_enabled(item)
+    if capture_enabled:
+        item.qt_exception_capture_manager.fail_if_exceptions_occurred('TEARDOWN')
+        item.qt_exception_capture_manager.finish()
 
 
-def _process_events(item):
+def _process_events():
     """Calls app.processEvents() while taking care of capturing exceptions
     or not based on the given item's configuration.
     """
     app = QApplication.instance()
     if app is not None:
-        if _is_exception_capture_disabled(item):
-            app.processEvents()
-        else:
-            with capture_exceptions() as exceptions:
-                app.processEvents()
-            if exceptions:
-                pytest.fail('TEARDOWN ERROR: ' +
-                            format_captured_exceptions(exceptions),
-                            pytrace=False)
+        app.processEvents()
 
 
 def pytest_configure(config):

@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import sys
 import traceback
+import pytest
 
 
 @contextmanager
@@ -10,17 +11,54 @@ def capture_exceptions():
     and returns them as a list of (type, value, traceback) after the
     context ends.
     """
-    result = []
-
-    def hook(type_, value, tback):
-        result.append((type_, value, tback))
-
-    old_hook = sys.excepthook
-    sys.excepthook = hook
+    manager = _QtExceptionCaptureManager()
+    manager.start()
     try:
-        yield result
+        yield manager.exceptions
     finally:
-        sys.excepthook = old_hook
+        manager.finish()
+
+
+class _QtExceptionCaptureManager(object):
+    """
+    Manages exception capture context.
+    """
+
+    def __init__(self):
+        self.old_hook = None
+        self.exceptions = []
+
+    def start(self):
+        """Start exception capturing by installing a hook into sys.excepthook
+        that records exceptions received into ``self.exceptions``.
+        """
+        def hook(type_, value, tback):
+            self.exceptions.append((type_, value, tback))
+
+        self.old_hook = sys.excepthook
+        sys.excepthook = hook
+
+    def finish(self):
+        """Stop exception capturing, restoring the original hook.
+
+        Can be called multiple times.
+        """
+        if self.old_hook is not None:
+            sys.excepthook = self.old_hook
+            self.old_hook = None
+
+    def fail_if_exceptions_occurred(self, when):
+        """calls pytest.fail() with an informative message if exceptions
+        have been captured so far. Before pytest.fail() is called, also
+        finish capturing.
+        """
+        if self.exceptions:
+            self.finish()
+            exceptions = self.exceptions
+            self.exceptions = []
+            prefix = '%s ERROR: ' % when
+            pytest.fail(prefix + format_captured_exceptions(exceptions),
+                        pytrace=False)
 
 
 def format_captured_exceptions(exceptions):
@@ -37,8 +75,9 @@ def format_captured_exceptions(exceptions):
     return message
 
 
-def _is_exception_capture_disabled(item):
+def _is_exception_capture_enabled(item):
     """returns if exception capture is disabled for the given test item.
     """
-    return item.get_marker('qt_no_exception_capture') or \
-           item.config.getini('qt_no_exception_capture')
+    disabled = item.get_marker('qt_no_exception_capture') or \
+               item.config.getini('qt_no_exception_capture')
+    return not disabled

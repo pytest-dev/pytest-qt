@@ -1,3 +1,17 @@
+1.9.0
+-----
+
+- Exception capturing now happens as early/late as possible in order to catch
+  all possible exceptions (including fixtures)(`105`_). Thanks
+  `@The-Compiler`_ for the request.
+
+- Widgets registered by ``qtbot.addWidget`` are now closed  before all other
+  fixtures are tear down (`106`_). Thanks `@The-Compiler`_ for request.
+
+.. _105: https://github.com/pytest-dev/pytest-qt/issues/105
+.. _106: https://github.com/pytest-dev/pytest-qt/issues/106
+
+
 1.8.0
 -----
 
