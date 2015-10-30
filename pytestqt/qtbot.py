@@ -311,6 +311,18 @@ class QtBot(object):
 
     wait_signals = waitSignals  # pep-8 alias
 
+    def wait(self, ms):
+        """
+        .. versionadded:: 1.9
+
+        Waits for ``ms`` milliseconds.
+
+        While waiting, events will be processed and your test will stay
+        responsive to user interface events or network communication.
+        """
+        blocker = MultiSignalBlocker(timeout=ms)
+        blocker.wait()
+
 
 # provide easy access to SignalTimeoutError to qtbot fixtures
 QtBot.SignalTimeoutError = SignalTimeoutError
