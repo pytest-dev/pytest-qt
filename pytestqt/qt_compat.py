@@ -33,7 +33,7 @@ if not on_rtd:  # pragma: no cover
             return 'pyqt5'
         else:
             msg = 'pytest-qt requires either PySide, PyQt4 or PyQt5 to be installed'
-            raise ImportError(msg)
+            raise RuntimeError(msg)
 
     # backward compatibility support: PYTEST_QT_FORCE_PYQT
     if os.environ.get('PYTEST_QT_FORCE_PYQT', 'false') == 'true':
