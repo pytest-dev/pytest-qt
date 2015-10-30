@@ -83,7 +83,8 @@ def pytest_addoption(parser):
                          'default: "{0}"'.format(default))
 
 
-@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+@pytest.mark.hookwrapper
+@pytest.mark.tryfirst
 def pytest_runtest_setup(item):
     """
     Hook called after before test setup starts, to start capturing exceptions
