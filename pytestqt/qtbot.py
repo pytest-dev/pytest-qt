@@ -62,6 +62,7 @@ class QtBot(object):
     .. automethod:: addWidget
     .. automethod:: waitForWindowShown
     .. automethod:: stopForInteraction
+    .. automethod:: wait
 
     **Signals**
 
