@@ -222,3 +222,25 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
         '*1 error*',
     ])
 
+
+@pytest.mark.qt_no_exception_capture
+def test_capture_exceptions_context_manager(qapp):
+    """Test capture_exceptions() context manager.
+
+    While not used internally anymore, it is still part of the API and therefore
+    should be properly tested.
+    """
+    from pytestqt.qt_compat import QtCore
+    from pytestqt.plugin import capture_exceptions
+
+    class Receiver(QtCore.QObject):
+
+        def event(self, ev):
+            raise ValueError('mistakes were made')
+
+    r = Receiver()
+    with capture_exceptions() as exceptions:
+        qapp.sendEvent(r, QtCore.QEvent(QtCore.QEvent.User))
+        qapp.processEvents()
+
+    assert [str(e) for (t, e, tb) in exceptions] == ['mistakes were made']
