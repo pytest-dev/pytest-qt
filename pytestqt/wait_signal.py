@@ -136,6 +136,7 @@ class SignalBlocker(_AbstractSignalBlocker):
             except (TypeError, RuntimeError):  # pragma: no cover
                 # already disconnected by Qt?
                 pass
+        self._signals = []
 
 
 class MultiSignalBlocker(_AbstractSignalBlocker):
@@ -155,6 +156,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     def __init__(self, timeout=1000, raising=False):
         super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = {}
+        self._slots = {}
 
     def _add_signal(self, signal):
         """
@@ -164,7 +166,9 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         :param signal: QtCore.Signal
         """
         self._signals[signal] = False
-        signal.connect(functools.partial(self._signal_emitted, signal))
+        slot = functools.partial(self._signal_emitted, signal)
+        self._slots[signal] = slot
+        signal.connect(slot)
 
     def _signal_emitted(self, signal):
         """
@@ -176,12 +180,21 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         self._signals[signal] = True
         if all(self._signals.values()):
             try:
-                # of course setting signal_triggered can't raise, but
-                # leave this try/finally here as a reminder for future
-                # additions
                 self.signal_triggered = True
+                self._cleanup()
             finally:
                 self._loop.quit()
+
+    def _cleanup(self):
+        super(MultiSignalBlocker, self)._cleanup()
+        for signal, slot in self._slots.items():
+            try:
+                signal.disconnect(slot)
+            except (TypeError, RuntimeError):  # pragma: no cover
+                # already disconnected by Qt?
+                pass
+        self._signals.clear()
+        self._slots.clear()
 
 
 class SignalTimeoutError(Exception):
