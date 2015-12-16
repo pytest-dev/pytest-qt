@@ -55,11 +55,7 @@ class _AbstractSignalBlocker(object):
 
     def _cleanup(self):
         if self._timer is not None:
-            try:
-                self._timer.timeout.disconnect(self._quit_loop_by_timeout)
-            except (TypeError, RuntimeError):
-                # already disconnected by Qt?
-                pass
+            _silent_disconnect(self._timer.timeout, self._quit_loop_by_timeout)
             self._timer.stop()
             self._timer = None
 
@@ -131,11 +127,7 @@ class SignalBlocker(_AbstractSignalBlocker):
     def _cleanup(self):
         super(SignalBlocker, self)._cleanup()
         for signal in self._signals:
-            try:
-                signal.disconnect(self._quit_loop_by_signal)
-            except (TypeError, RuntimeError):  # pragma: no cover
-                # already disconnected by Qt?
-                pass
+            _silent_disconnect(signal, self._quit_loop_by_signal)
         self._signals = []
 
 
@@ -188,11 +180,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     def _cleanup(self):
         super(MultiSignalBlocker, self)._cleanup()
         for signal, slot in self._slots.items():
-            try:
-                signal.disconnect(slot)
-            except (TypeError, RuntimeError):  # pragma: no cover
-                # already disconnected by Qt?
-                pass
+            _silent_disconnect(signal, slot)
         self._signals.clear()
         self._slots.clear()
 
@@ -206,3 +194,12 @@ class SignalTimeoutError(Exception):
     """
     pass
 
+
+def _silent_disconnect(signal, slot):
+    """Disconnects a signal from a slot, ignoring errors. Sometimes
+    Qt might disconnect a signal automatically for unknown reasons.
+    """
+    try:
+        signal.disconnect(slot)
+    except (TypeError, RuntimeError):  # pragma: no cover
+        pass
