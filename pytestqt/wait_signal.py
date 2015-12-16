@@ -86,6 +86,13 @@ class SignalBlocker(_AbstractSignalBlocker):
     :ivar bool raising:
         If :class:`SignalTimeoutError` should be raised if a timeout occurred.
 
+    :ivar list args:
+        The arguments which were emitted by the signal, or None if the signal
+        wasn't emitted at all.
+
+    .. versionadded:: 1.10
+       The *args* attribute.
+
     .. automethod:: wait
     .. automethod:: connect
     """
@@ -93,6 +100,7 @@ class SignalBlocker(_AbstractSignalBlocker):
     def __init__(self, timeout=1000, raising=False):
         super(SignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = []
+        self.args = None
 
     def connect(self, signal):
         """
@@ -107,11 +115,12 @@ class SignalBlocker(_AbstractSignalBlocker):
         signal.connect(self._quit_loop_by_signal)
         self._signals.append(signal)
 
-    def _quit_loop_by_signal(self):
+    def _quit_loop_by_signal(self, *args):
         """
         quits the event loop and marks that we finished because of a signal.
         """
         self.signal_triggered = True
+        self.args = list(args)
         self._loop.quit()
         self._cleanup()
 

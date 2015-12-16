@@ -43,6 +43,22 @@ reached before the signal is triggered:
         assert_application_results(app)
 
 
+**Getting arguments of the emitted signal**
+
+.. versionadded:: 1.10
+
+The arguments emitted with the signal are available as the ``args`` attribute
+of the blocker:
+
+
+.. code-block:: python
+
+    def test_signal(qtbot):
+        ...
+        with qtbot.waitSignal(app.got_cmd) as blocker:
+            app.listen()
+        assert blocker.args == ['test']
+
 
 **waitSignals**
 
