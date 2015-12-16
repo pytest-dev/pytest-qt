@@ -1,5 +1,5 @@
 import functools
-from pytestqt.qt_compat import QtCore, QtTest
+from pytestqt.qt_compat import QtCore
 
 
 class _AbstractSignalBlocker(object):
@@ -100,7 +100,6 @@ class SignalBlocker(_AbstractSignalBlocker):
     def __init__(self, timeout=1000, raising=False):
         super(SignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = []
-        self._spy = None
         self.args = None
 
     def connect(self, signal):
@@ -113,24 +112,15 @@ class SignalBlocker(_AbstractSignalBlocker):
 
         :param signal: QtCore.Signal
         """
-        # Note we have to connect the spy *first* so the arguments are
-        # available when _quit_loop_by_signal is run.
-        if self._spy is None:
-            self._spy = QtTest.QSignalSpy(signal)
-            assert self._spy.isValid()
         signal.connect(self._quit_loop_by_signal)
         self._signals.append(signal)
 
-    def _quit_loop_by_signal(self):
+    def _quit_loop_by_signal(self, *args):
         """
         quits the event loop and marks that we finished because of a signal.
         """
         self.signal_triggered = True
-        if self._spy:
-            # signal was emitted once at this point, because we disconnect
-            # _quit_loop_by_signal here.
-            assert len(self._spy) == 1
-            self.args = list(self._spy[0])
+        self.args = list(args)
         self._loop.quit()
         self._cleanup()
 

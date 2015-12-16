@@ -307,8 +307,8 @@ class TestArgs:
             blocker.args
 
     def test_connected_signal(self, qtbot, signaller):
-        """A signal connected via .connect is ignored for args."""
+        """A second signal connected via .connect also works."""
         with qtbot.waitSignal(signaller.signal_args) as blocker:
             blocker.connect(signaller.signal_args_2)
             signaller.signal_args_2.emit('foo', 2342)
-        assert blocker.args is None
+        assert blocker.args == ['foo', 2342]
