@@ -168,6 +168,8 @@ def signaller(timer):
     class Signaller(QtCore.QObject):
         signal = Signal()
         signal_2 = Signal()
+        signal_args = Signal(str, int)
+        signal_args_2 = Signal(str, int)
 
     assert timer
 
@@ -274,3 +276,39 @@ def test_destroyed(qtbot):
 
     assert sip.isdeleted(obj)
 
+
+class TestArgs:
+
+    """Try to get the signal arguments from the signal blocker."""
+
+    def test_simple(self, qtbot, signaller):
+        """The blocker should store the signal args in an 'args' attribute."""
+        with qtbot.waitSignal(signaller.signal_args) as blocker:
+            signaller.signal_args.emit('test', 123)
+        assert blocker.args == ['test', 123]
+
+    def test_timeout(self, qtbot):
+        """If there's a timeout, the args attribute is None."""
+        with qtbot.waitSignal(timeout=100) as blocker:
+            pass
+        assert blocker.args is None
+
+    def test_without_args(self, qtbot, signaller):
+        """If a signal has no args, the args attribute is an empty list."""
+        with qtbot.waitSignal(signaller.signal) as blocker:
+            signaller.signal.emit()
+        assert blocker.args == []
+
+    def test_multi(self, qtbot, signaller):
+        """A MultiSignalBlocker doesn't have an args attribute."""
+        with qtbot.waitSignals([signaller.signal]) as blocker:
+            signaller.signal.emit()
+        with pytest.raises(AttributeError):
+            blocker.args
+
+    def test_connected_signal(self, qtbot, signaller):
+        """A signal connected via .connect is ignored for args."""
+        with qtbot.waitSignal(signaller.signal_args) as blocker:
+            blocker.connect(signaller.signal_args_2)
+            signaller.signal_args_2.emit('foo', 2342)
+        assert blocker.args is None
