@@ -1,3 +1,12 @@
+1.10.0
+------
+
+- ``SignalBlocker`` now has a ``args`` attribute with the arguments of the
+  signal that triggered it, or ``None`` on a time out (`115`_).
+  Thanks `@billyshambrook`_ for the request and `@The-Compiler`_ for the PR.
+
+.. _115: https://github.com/pytest-dev/pytest-qt/issues/115
+
 1.9.0
 -----
 
@@ -271,3 +280,4 @@ First working version.
 .. _@baudren: https://github.com/baudren
 .. _@itghisi: https://github.com/itghisi
 .. _@Sheeo: https://github.com/Sheeo
+.. _@billyshambrook: https://github.com/billyshambrook

@@ -60,6 +60,9 @@ of the blocker:
         assert blocker.args == ['test']
 
 
+Signals without arguments will set ``args`` to an empty list. If the time out
+is reached instead, ``args`` will be ``None``.
+
 **waitSignals**
 
 .. versionadded:: 1.4
