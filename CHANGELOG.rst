@@ -5,6 +5,8 @@
   signal that triggered it, or ``None`` on a time out (`115`_).
   Thanks `@billyshambrook`_ for the request and `@The-Compiler`_ for the PR.
 
+- ``MultiSignalBlocker`` is now properly disconnects from signals upon exit.
+
 .. _115: https://github.com/pytest-dev/pytest-qt/issues/115
 
 1.9.0
