@@ -48,8 +48,10 @@ class _AbstractSignalBlocker(object):
                                      self.timeout)
 
     def _quit_loop_by_timeout(self):
-        self._loop.quit()
-        self._cleanup()
+        try:
+            self._cleanup()
+        finally:
+            self._loop.quit()
 
     def _cleanup(self):
         if self._timer is not None:
@@ -119,10 +121,12 @@ class SignalBlocker(_AbstractSignalBlocker):
         """
         quits the event loop and marks that we finished because of a signal.
         """
-        self.signal_triggered = True
-        self.args = list(args)
-        self._loop.quit()
-        self._cleanup()
+        try:
+            self.signal_triggered = True
+            self.args = list(args)
+            self._cleanup()
+        finally:
+            self._loop.quit()
 
     def _cleanup(self):
         super(SignalBlocker, self)._cleanup()
@@ -171,8 +175,13 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         """
         self._signals[signal] = True
         if all(self._signals.values()):
-            self.signal_triggered = True
-            self._loop.quit()
+            try:
+                # of course setting signal_triggered can't raise, but
+                # leave this try/finally here as a reminder for future
+                # additions
+                self.signal_triggered = True
+            finally:
+                self._loop.quit()
 
 
 class SignalTimeoutError(Exception):
