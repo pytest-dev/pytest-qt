@@ -185,12 +185,58 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         self._slots.clear()
 
 
+class SignalEmittedSpy(object):
+
+    """
+    .. versionadded:: 1.4
+
+    An object which checks if a given signal has ever been emitted.
+
+    Intended to be used as a context manager.
+    """
+
+    def __init__(self, signal):
+        self.signal = signal
+        self.emitted = False
+        self.args = None
+
+    def slot(self, *args):
+        self.emitted = True
+        self.args = args
+
+    def __enter__(self):
+        self.signal.connect(self.slot)
+
+    def __exit__(self, type, value, traceback):
+        self.signal.disconnect(self.slot)
+
+    def assert_not_emitted(self):
+        if self.emitted:
+            if self.args:
+                raise SignalEmittedError("Signal %r unexpectedly emitted with "
+                                         "arguments %r" %
+                                         (self.signal, list(self.args)))
+            else:
+                raise SignalEmittedError("Signal %r unexpectedly emitted" %
+                                         (self.signal,))
+
+
 class SignalTimeoutError(Exception):
     """
     .. versionadded:: 1.4
 
     The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitSignal` if the
     *raising* parameter has been given and there was a timeout.
+    """
+    pass
+
+
+class SignalEmittedError(Exception):
+    """
+    .. versionadded:: 1.11
+
+    The exception thrown by :meth:`pytestqt.qtbot.QtBot.assertNotEmitted` if a
+    signal was emitted unexpectedly.
     """
     pass
 
