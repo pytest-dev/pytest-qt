@@ -188,7 +188,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
 class SignalEmittedSpy(object):
 
     """
-    .. versionadded:: 1.4
+    .. versionadded:: 1.11
 
     An object which checks if a given signal has ever been emitted.
 
