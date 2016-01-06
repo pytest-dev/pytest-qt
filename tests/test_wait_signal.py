@@ -96,6 +96,53 @@ def test_signal_triggered(qtbot, timer, stop_watch, wait_function, delay,
     stop_watch.check(timeout, delay)
 
 
+def test_raising_by_default(qtbot, testdir):
+    testdir.makeini("""
+        [pytest]
+        qt_wait_signal_raising = true
+    """)
+
+    testdir.makepyfile("""
+        import pytest
+        from pytestqt.qt_compat import QtCore, Signal
+
+        class Signaller(QtCore.QObject):
+            signal = Signal()
+
+        def test_foo(qtbot):
+            signaller = Signaller()
+
+            with pytest.raises(qtbot.SignalTimeoutError):
+                with qtbot.waitSignal(signaller.signal, timeout=10):
+                    pass
+    """)
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines(['*1 passed*'])
+
+
+def test_raising_by_default_overridden(qtbot, testdir):
+    testdir.makeini("""
+        [pytest]
+        qt_wait_signal_raising = true
+    """)
+
+    testdir.makepyfile("""
+        import pytest
+        from pytestqt.qt_compat import QtCore, Signal
+
+        class Signaller(QtCore.QObject):
+            signal = Signal()
+
+        def test_foo(qtbot):
+            signaller = Signaller()
+
+            with qtbot.waitSignal(signaller.signal, raising=False, timeout=10):
+                pass
+    """)
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines(['*1 passed*'])
+
+
 @pytest.mark.parametrize(
     ('delay_1', 'delay_2', 'timeout', 'expected_signal_triggered',
      'wait_function', 'raising'),
