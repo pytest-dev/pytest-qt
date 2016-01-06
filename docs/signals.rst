@@ -43,6 +43,20 @@ reached before the signal is triggered:
         assert_application_results(app)
 
 
+.. versionadded:: 1.11
+
+The ``qt_wait_signal_raising`` ini option can be used to override the default
+value of the ``raising`` parameter of the ``qtbot.waitSignal`` and
+``qtbot.waitSignals`` functions when omitted:
+
+.. code-block:: ini
+
+    [pytest]
+    qt_wait_signal_raising = true
+
+Calls which explicitly pass the ``raising`` parameter are not affected.
+
+
 **Getting arguments of the emitted signal**
 
 .. versionadded:: 1.10
