@@ -220,7 +220,7 @@ class QtBot(object):
 
     stop = stopForInteraction
 
-    def waitSignal(self, signal=None, timeout=1000, raising=False):
+    def waitSignal(self, signal=None, timeout=1000, raising=None):
         """
         .. versionadded:: 1.2
 
@@ -268,7 +268,7 @@ class QtBot(object):
 
     wait_signal = waitSignal  # pep-8 alias
 
-    def waitSignals(self, signals=None, timeout=1000, raising=False):
+    def waitSignals(self, signals=None, timeout=1000, raising=None):
         """
         .. versionadded:: 1.4
 
