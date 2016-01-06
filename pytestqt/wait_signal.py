@@ -1,7 +1,4 @@
 import functools
-
-import pytest
-
 from pytestqt.qt_compat import QtCore
 
 
@@ -19,17 +16,11 @@ class _AbstractSignalBlocker(object):
 
     """
 
-    def __init__(self, timeout=1000, raising=None):
+    def __init__(self, timeout=1000, raising=False):
         self._loop = QtCore.QEventLoop()
         self.timeout = timeout
         self.signal_triggered = False
-
-        if raising is None:
-            self.raising = pytest.config.getini('qt_wait_signal_raising')
-            #import pdb; pdb.set_trace()
-        else:
-            self.raising = raising
-
+        self.raising = raising
         if timeout is None:
             self._timer = None
         else:
@@ -53,7 +44,6 @@ class _AbstractSignalBlocker(object):
             self._timer.start()
         self._loop.exec_()
         if not self.signal_triggered and self.raising:
-            print("raising: {!r}".format(self.raising))
             raise SignalTimeoutError("Didn't get signal after %sms." %
                                      self.timeout)
 
@@ -105,7 +95,7 @@ class SignalBlocker(_AbstractSignalBlocker):
     .. automethod:: connect
     """
 
-    def __init__(self, timeout=1000, raising=None):
+    def __init__(self, timeout=1000, raising=False):
         super(SignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = []
         self.args = None
@@ -155,7 +145,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     .. automethod:: wait
     """
 
-    def __init__(self, timeout=1000, raising=None):
+    def __init__(self, timeout=1000, raising=False):
         super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = {}
         self._slots = {}

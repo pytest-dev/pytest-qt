@@ -1,12 +1,11 @@
 import functools
-import time
-import sys
 import fnmatch
 
 import pytest
 
 from pytestqt.qt_compat import QtCore, Signal, QT_API
 from pytestqt.wait_signal import SignalEmittedError
+
 
 def test_signal_blocker_exception(qtbot):
     """
@@ -136,9 +135,11 @@ def test_raising_by_default_overridden(qtbot, testdir):
 
         def test_foo(qtbot):
             signaller = Signaller()
+            signal = signaller.signal
 
-            with qtbot.waitSignal(signaller.signal, raising=False, timeout=10):
+            with qtbot.waitSignal(signal, raising=False, timeout=10) as blocker:
                 pass
+            assert not blocker.signal_triggered
     """)
     res = testdir.runpytest()
     res.stdout.fnmatch_lines(['*1 passed*'])

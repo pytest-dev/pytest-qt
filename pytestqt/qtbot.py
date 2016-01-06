@@ -261,6 +261,8 @@ class QtBot(object):
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
         """
+        if raising is None:
+            raising = self._request.config.getini('qt_wait_signal_raising')
         blocker = SignalBlocker(timeout=timeout, raising=raising)
         if signal is not None:
             blocker.connect(signal)
@@ -306,6 +308,8 @@ class QtBot(object):
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
         """
+        if raising is None:
+            raising = self._request.config.getini('qt_wait_signal_raising')
         blocker = MultiSignalBlocker(timeout=timeout, raising=raising)
         if signals is not None:
             for signal in signals:
