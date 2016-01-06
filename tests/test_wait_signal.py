@@ -1,11 +1,12 @@
 import functools
 import time
 import sys
+import fnmatch
 
 import pytest
 
 from pytestqt.qt_compat import QtCore, Signal, QT_API
-
+from pytestqt.wait_signal import SignalEmittedError
 
 def test_signal_blocker_exception(qtbot):
     """
@@ -312,3 +313,34 @@ class TestArgs:
             blocker.connect(signaller.signal_args_2)
             signaller.signal_args_2.emit('foo', 2342)
         assert blocker.args == ['foo', 2342]
+
+
+class TestAssertNotEmitted:
+
+    """Tests for qtbot.assertNotEmitted."""
+
+    def test_not_emitted(self, qtbot, signaller):
+        with qtbot.assertNotEmitted(signaller.signal):
+            pass
+
+    def test_emitted(self, qtbot, signaller):
+        with pytest.raises(SignalEmittedError) as excinfo:
+            with qtbot.assertNotEmitted(signaller.signal):
+                signaller.signal.emit()
+
+        fnmatch.fnmatchcase(str(excinfo.value),
+                            "Signal * unexpectedly emitted.")
+
+    def test_emitted_args(self, qtbot, signaller):
+        with pytest.raises(SignalEmittedError) as excinfo:
+            with qtbot.assertNotEmitted(signaller.signal_args):
+                signaller.signal_args.emit('foo', 123)
+
+        fnmatch.fnmatchcase(str(excinfo.value),
+                            "Signal * unexpectedly emitted with arguments "
+                            "['foo', 123]")
+
+    def test_disconnected(self, qtbot, signaller):
+        with qtbot.assertNotEmitted(signaller.signal):
+            pass
+        signaller.signal.emit()

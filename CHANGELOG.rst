@@ -1,3 +1,9 @@
+1.11.0
+------
+
+- ``qtbot`` now has a new ``assertNotEmitted`` context manager which can be
+  used to ensure the given signal is not emitted.
+
 1.10.0
 ------
 

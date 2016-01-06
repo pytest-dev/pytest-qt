@@ -1,6 +1,7 @@
 import functools
+import contextlib
 import weakref
-from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError
+from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError, SignalEmittedSpy
 from pytestqt.qt_compat import QtTest, QApplication
 
 
@@ -68,6 +69,7 @@ class QtBot(object):
 
     .. automethod:: waitSignal
     .. automethod:: waitSignals
+    .. automethod:: assertNotEmitted
 
     **Raw QTest API**
 
@@ -323,6 +325,23 @@ class QtBot(object):
         """
         blocker = MultiSignalBlocker(timeout=ms)
         blocker.wait()
+
+    @contextlib.contextmanager
+    def assertNotEmitted(self, signal):
+        """
+        .. versionadded:: 1.11
+
+        Make sure the given ``signal`` doesn't get emitted.
+
+        This is intended to be used as a context manager.
+        """
+        spy = SignalEmittedSpy(signal)
+        with spy:
+            yield
+        spy.assert_not_emitted()
+
+    assert_not_emitted = assertNotEmitted  # pep-8 alias
+
 
 
 # provide easy access to SignalTimeoutError to qtbot fixtures

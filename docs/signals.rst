@@ -82,3 +82,18 @@ the new ``raising`` parameter::
         # this will be reached after all workers emit their "finished"
         # signal or a qtbot.SignalTimeoutError will be raised
         assert_application_results(app)
+
+**Making sure a given signal is not emitted**
+
+.. versionadded:: 1.11
+
+If you want to ensure a signal is **not** emitted in a given block of code, use
+the :meth:`qtbot.assertNotEmitted <pytestqt.plugin.QtBot.assertNotEmitted>`
+context manager:
+
+.. code-block:: python
+
+    def test_no_error(qtbot):
+        ...
+        with qtbot.assertNotEmitted(app.worker.error):
+            app.worker.start()
