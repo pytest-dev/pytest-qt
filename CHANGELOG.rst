@@ -2,7 +2,10 @@
 ------
 
 - ``qtbot`` now has a new ``assertNotEmitted`` context manager which can be
-  used to ensure the given signal is not emitted.
+  used to ensure the given signal is not emitted (`92`_).
+  Thanks `@The-Compiler`_ for the PR!
+
+.. _92: https://github.com/pytest-dev/pytest-qt/issues/92
 
 1.10.0
 ------
