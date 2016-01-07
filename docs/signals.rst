@@ -1,5 +1,5 @@
-Waiting for threads, processes, etc.
-====================================
+waitSignal: Waiting for threads, processes, etc.
+================================================
 
 .. versionadded:: 1.2
 
@@ -17,15 +17,16 @@ ensuring the results are correct::
         with qtbot.waitSignal(app.worker.finished, timeout=10000) as blocker:
             blocker.connect(app.worker.failed)  # Can add other signals to blocker
             app.worker.start()
-            # Test will block at this point until signal is emitted or
-            # 10 seconds has elapsed
+            # Test will block at this point until either finished or failed
+            # signals is emitted or 10 seconds has elapsed
 
         assert blocker.signal_triggered, "process timed-out"
         assert_application_results(app)
 
 
 
-**raising parameter**
+raising parameter
+-----------------
 
 .. versionadded:: 1.4
 
@@ -43,6 +44,18 @@ reached before the signal is triggered:
         assert_application_results(app)
 
 
+.. note::
+
+    The default value for ``raising`` is planned to change to ``True`` starting in
+    pytest-qt version ``1.12``. Users wishing to preserve
+    the current behavior (``raising`` is ``False`` by default) should make
+    use of the new :ref:`qt_wait_signal_raising`.
+
+.. _qt_wait_signal_raising:
+
+qt_wait_signal_raising ini option
+---------------------------------
+
 .. versionadded:: 1.11
 
 The ``qt_wait_signal_raising`` ini option can be used to override the default
@@ -57,7 +70,8 @@ value of the ``raising`` parameter of the ``qtbot.waitSignal`` and
 Calls which explicitly pass the ``raising`` parameter are not affected.
 
 
-**Getting arguments of the emitted signal**
+Getting arguments of the emitted signal
+---------------------------------------
 
 .. versionadded:: 1.10
 
@@ -77,7 +91,8 @@ of the blocker:
 Signals without arguments will set ``args`` to an empty list. If the time out
 is reached instead, ``args`` will be ``None``.
 
-**waitSignals**
+waitSignals
+-----------
 
 .. versionadded:: 1.4
 
@@ -85,7 +100,7 @@ If you have to wait until **all** signals in a list are triggered, use
 :meth:`qtbot.waitSignals <pytestqt.plugin.QtBot.waitSignals>`, which receives
 a list of signals instead of a single signal. As with
 :meth:`qtbot.waitSignal <pytestqt.plugin.QtBot.waitSignal>`, it also supports
-the new ``raising`` parameter::
+the ``raising`` parameter::
 
     def test_workers(qtbot):
         workers = spawn_workers()
@@ -97,7 +112,8 @@ the new ``raising`` parameter::
         # signal or a qtbot.SignalTimeoutError will be raised
         assert_application_results(app)
 
-**Making sure a given signal is not emitted**
+Making sure a given signal is not emitted
+-----------------------------------------
 
 .. versionadded:: 1.11
 

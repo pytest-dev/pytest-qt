@@ -3,8 +3,8 @@ Qt Logging Capture
 
 .. versionadded:: 1.4
 
-Qt features its own logging mechanism through ``qInstallMsgHandler``
-(``qInstallMessageHandler`` on Qt5) and ``qDebug``, ``qWarning``, ``qCritical``
+Qt features its own logging mechanism through ``qInstallMessageHandler``
+(``qInstallMsgHandler`` on Qt4) and ``qDebug``, ``qWarning``, ``qCritical``
 functions. These are used by Qt to print warning messages when internal errors
 occur.
 
@@ -20,7 +20,7 @@ For example:
     def do_something():
         qWarning('this is a WARNING message')
 
-    def test_foo(qtlog):
+    def test_foo():
         do_something()
         assert 0
 
@@ -43,7 +43,8 @@ For example:
     1 failed in 0.01 seconds
 
 
-**Disabling Logging Capture**
+Disabling Logging Capture
+-------------------------
 
 Qt logging capture can be disabled altogether by passing the ``--no-qt-log``
 to the command line, which will fallback to the default Qt bahavior of printing
@@ -64,6 +65,10 @@ emitted messages directly to ``stderr``:
     test.py:8: AssertionError
     ---------------------------- Captured stderr call -----------------------------
     this is a WARNING message
+
+
+qtlog fixture
+-------------
 
 
 ``pytest-qt`` also provides a ``qtlog`` fixture that can used
@@ -100,7 +105,8 @@ context manager, or with the ``pytest.mark.no_qt_log`` mark:
 Keep in mind that when logging is disabled,
 ``qtlog.records`` will always be an empty list.
 
-**Log Formatting**
+Log Formatting
+--------------
 
 The output format of the messages can also be controlled by using the
 ``--qt-log-format`` command line option, which accepts a string with standard
