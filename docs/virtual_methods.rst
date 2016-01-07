@@ -47,7 +47,8 @@ are raised inside virtual methods, like this::
     E           RuntimeError: unexpected error
 
 
-**Disabling the automatic exception hook**
+Disabling the automatic exception hook
+--------------------------------------
 
 You can disable the automatic exception hook on individual tests by using a
 ``qt_no_exception_capture`` marker::

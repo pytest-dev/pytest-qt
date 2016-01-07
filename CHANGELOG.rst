@@ -1,11 +1,34 @@
 1.11.0
 ------
 
+.. note::
+
+    The default value for ``raising`` is planned to change to ``True`` starting in
+    pytest-qt version ``1.12``. Users wishing to preserve
+    the current behavior (``raising`` is ``False`` by default) should make
+    use of the new ``qt_wait_signal_raising`` ini option below.
+
+- New ``qt_wait_signal_raising`` ini option can be used to override the default
+  value of the ``raising`` parameter of the ``qtbot.waitSignal`` and
+  ``qtbot.waitSignals`` functions when omitted:
+
+  .. code-block:: ini
+
+      [pytest]
+      qt_wait_signal_raising = true
+
+  Calls which explicitly pass the ``raising`` parameter are not affected.
+  Thanks `@The-Compiler`_ for idea and initial work on a PR (`120`_).
+
+
 - ``qtbot`` now has a new ``assertNotEmitted`` context manager which can be
   used to ensure the given signal is not emitted (`92`_).
   Thanks `@The-Compiler`_ for the PR!
 
+
 .. _92: https://github.com/pytest-dev/pytest-qt/issues/92
+.. _120: https://github.com/pytest-dev/pytest-qt/issues/120
+
 
 1.10.0
 ------
@@ -190,7 +213,7 @@ Internal changes to improve memory management
 - ``QApplication`` instance is created only if it wasn't created yet 
   (`21`_, thanks `@fabioz`_!)
 
-- ``addWidget`` now keeps a weak reference its widgets (#20, thanks `@fabioz`_)
+- ``addWidget`` now keeps a weak reference its widgets (`20`_, thanks `@fabioz`_)
 
 .. _26: https://github.com/pytest-dev/pytest-qt/issues/26
 .. _21: https://github.com/pytest-dev/pytest-qt/issues/21

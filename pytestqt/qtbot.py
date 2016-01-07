@@ -220,7 +220,7 @@ class QtBot(object):
 
     stop = stopForInteraction
 
-    def waitSignal(self, signal=None, timeout=1000, raising=False):
+    def waitSignal(self, signal=None, timeout=1000, raising=None):
         """
         .. versionadded:: 1.2
 
@@ -261,6 +261,8 @@ class QtBot(object):
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
         """
+        if raising is None:
+            raising = self._request.config.getini('qt_wait_signal_raising')
         blocker = SignalBlocker(timeout=timeout, raising=raising)
         if signal is not None:
             blocker.connect(signal)
@@ -268,7 +270,7 @@ class QtBot(object):
 
     wait_signal = waitSignal  # pep-8 alias
 
-    def waitSignals(self, signals=None, timeout=1000, raising=False):
+    def waitSignals(self, signals=None, timeout=1000, raising=None):
         """
         .. versionadded:: 1.4
 
@@ -306,6 +308,8 @@ class QtBot(object):
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
         """
+        if raising is None:
+            raising = self._request.config.getini('qt_wait_signal_raising')
         blocker = MultiSignalBlocker(timeout=timeout, raising=raising)
         if signals is not None:
             for signal in signals:

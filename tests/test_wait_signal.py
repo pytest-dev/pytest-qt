@@ -1,12 +1,11 @@
 import functools
-import time
-import sys
 import fnmatch
 
 import pytest
 
 from pytestqt.qt_compat import QtCore, Signal, QT_API
 from pytestqt.wait_signal import SignalEmittedError
+
 
 def test_signal_blocker_exception(qtbot):
     """
@@ -95,6 +94,55 @@ def test_signal_triggered(qtbot, timer, stop_watch, wait_function, delay,
     assert blocker.signal_triggered == expected_signal_triggered
 
     stop_watch.check(timeout, delay)
+
+
+def test_raising_by_default(qtbot, testdir):
+    testdir.makeini("""
+        [pytest]
+        qt_wait_signal_raising = true
+    """)
+
+    testdir.makepyfile("""
+        import pytest
+        from pytestqt.qt_compat import QtCore, Signal
+
+        class Signaller(QtCore.QObject):
+            signal = Signal()
+
+        def test_foo(qtbot):
+            signaller = Signaller()
+
+            with pytest.raises(qtbot.SignalTimeoutError):
+                with qtbot.waitSignal(signaller.signal, timeout=10):
+                    pass
+    """)
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines(['*1 passed*'])
+
+
+def test_raising_by_default_overridden(qtbot, testdir):
+    testdir.makeini("""
+        [pytest]
+        qt_wait_signal_raising = true
+    """)
+
+    testdir.makepyfile("""
+        import pytest
+        from pytestqt.qt_compat import QtCore, Signal
+
+        class Signaller(QtCore.QObject):
+            signal = Signal()
+
+        def test_foo(qtbot):
+            signaller = Signaller()
+            signal = signaller.signal
+
+            with qtbot.waitSignal(signal, raising=False, timeout=10) as blocker:
+                pass
+            assert not blocker.signal_triggered
+    """)
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines(['*1 passed*'])
 
 
 @pytest.mark.parametrize(

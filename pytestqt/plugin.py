@@ -60,6 +60,8 @@ def qtlog(request):
 def pytest_addoption(parser):
     parser.addini('qt_no_exception_capture',
                   'disable automatic exception capture')
+    parser.addini('qt_wait_signal_raising',
+                  'Default value for the raising parameter of qtbot.waitSignal')
 
     default_log_fail = QtLoggingPlugin.LOG_FAIL_OPTIONS[0]
     parser.addini('qt_log_level_fail',
