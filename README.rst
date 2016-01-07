@@ -52,22 +52,6 @@ This allows you to test and make sure your view layer is behaving the way you ex
 
 |python| |version| |downloads| |ci| |appveyor| |coverage| |docs|
 
-Requirements
-============
-
-Works with either PySide_, PyQt_ (``PyQt4`` and ``PyQt5``) picking whichever
-is available on the system, giving preference to the first one installed in
-this order:
-
-- ``PySide``
-- ``PyQt4``
-- ``PyQt5``
-
-To force a particular API, set the environment variable ``PYTEST_QT_API`` to
-``pyside``, ``pyqt4``, ``pyqt4v2`` or ``pyqt5``. ``pyqt4v2`` sets the ``PyQt4``
-API to `version 2 <version2>`_
-
-.. _version2: http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
 
 Features
 ========
@@ -85,6 +69,22 @@ Features
 .. _waitSignals: https://pytest-qt.readthedocs.org/en/latest/signals.html
 .. _Exceptions in virtual methods and slots: https://pytest-qt.readthedocs.org/en/latest/virtual_methods.html
 
+Requirements
+============
+
+Works with either PySide_, PyQt_ (``PyQt4`` and ``PyQt5``) picking whichever
+is available on the system, giving preference to the first one installed in
+this order:
+
+- ``PySide``
+- ``PyQt4``
+- ``PyQt5``
+
+To force a particular API, set the environment variable ``PYTEST_QT_API`` to
+``pyside``, ``pyqt4``, ``pyqt4v2`` or ``pyqt5``. ``pyqt4v2`` sets the ``PyQt4``
+API to `version 2 <http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html>`_.
+
+
 Documentation
 =============
 
@@ -97,7 +97,7 @@ Change Log
 
 Please consult the `changelog page`_.
 
-.. _changelog page: https://github.com/pytest-dev/pytest-qt/blob/master/CHANGELOG.rst
+.. _changelog page: https://pytest-qt.readthedocs.org/en/latest/changelog.html
 
 Bugs/Requests
 =============
