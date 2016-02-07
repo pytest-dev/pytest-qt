@@ -59,6 +59,6 @@ setup(
         'Topic :: Software Development :: Testing',
         'Topic :: Software Development :: User Interfaces',
     ],
-    tests_requires=['pytest'],
+    tests_require=['pytest'],
     cmdclass={'test': PyTest},
 )
