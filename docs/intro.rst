@@ -59,6 +59,15 @@ Or alternatively, download the package from pypi_, extract and execute::
 
 Both methods will automatically register it for usage in ``py.test``.
 
+Related plugins
+---------------
+
+You can also install the `pytest-xvfb`_-plugin to run your tests in `Xvfb`_
+which prevents windows popping up on Linux (if Xvfb is installed).
+
+.. _pytest-xvfb: https://github.com/The-Compiler/pytest-xvfb
+.. _Xvfb: http://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml
+
 Development
 -----------
 
