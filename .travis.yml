@@ -33,7 +33,7 @@ install:
  - pip install -U pytest
 
  # others
- - pip install coveralls --use-wheel
+ - pip install coveralls pytest-xvfb --use-wheel
 
 script:
  - python setup.py develop
