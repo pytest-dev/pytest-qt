@@ -149,6 +149,11 @@ Many thanks to:
 .. |pycharm| image:: https://www.jetbrains.com/pycharm/docs/logo_pycharm.png
   :target: https://www.jetbrains.com/pycharm
   
+.. |pydev| image:: http://www.pydev.org/images/pydev_banner3.png
+  :target: https://www.pydev.org
+  
 |pycharm|  
+
+|pydev|  
 
 .. _tox: http://tox.readthedocs.org
