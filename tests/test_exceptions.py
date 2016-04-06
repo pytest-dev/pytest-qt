@@ -1,6 +1,6 @@
+from pytestqt.exceptions import capture_exceptions, format_captured_exceptions
 import pytest
 import sys
-from pytestqt.exceptions import format_captured_exceptions, capture_exceptions
 
 
 @pytest.mark.parametrize('raise_error', [False, True])
@@ -246,33 +246,24 @@ def test_capture_exceptions_context_manager(qapp):
     assert [str(e) for (t, e, tb) in exceptions] == ['mistakes were made']
 
 
-def test_exceptions_to_stderr(qapp):
+def test_exceptions_to_stderr(qapp, capsys):
     """
     Exceptions should still be reported to stderr.
     """
-    try:
-        from io import StringIO
-    except:
-        from StringIO import StringIO
-    old = sys.stderr
-    new = sys.stderr = StringIO()
-    
-    try:
-        called = []
-        from pytestqt.qt_compat import QWidget, QEvent
+    called = []
+    from pytestqt.qt_compat import QWidget, QEvent
 
-        class MyWidget(QWidget):
+    class MyWidget(QWidget):
 
-            def event(self, ev):
-                called.append(1)
-                raise RuntimeError('event processed')
+        def event(self, ev):
+            called.append(1)
+            raise RuntimeError('event processed')
 
-        w = MyWidget()
-        with capture_exceptions() as exceptions:
-            qapp.postEvent(w, QEvent(QEvent.User))
-            qapp.processEvents()
-            assert called
-            del exceptions[:]
-            assert "raise RuntimeError('event processed')" in new.getvalue()
-    finally:
-        sys.stderr = old
+    w = MyWidget()
+    with capture_exceptions() as exceptions:
+        qapp.postEvent(w, QEvent(QEvent.User))
+        qapp.processEvents()
+    assert called
+    del exceptions[:]
+    _out, err = capsys.readouterr()
+    assert "raise RuntimeError('event processed')" in err
