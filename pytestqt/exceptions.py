@@ -34,6 +34,7 @@ class _QtExceptionCaptureManager(object):
         """
         def hook(type_, value, tback):
             self.exceptions.append((type_, value, tback))
+            sys.stderr.write(format_captured_exceptions([(type_, value, tback)]))
 
         self.old_hook = sys.excepthook
         sys.excepthook = hook
