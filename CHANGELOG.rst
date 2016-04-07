@@ -1,3 +1,12 @@
+1.12.dev
+--------
+
+- Exceptions caught by ``pytest-qt`` in ``sys.excepthook`` are now also printed
+  to ``stderr``, making debugging them easier from within an IDE.
+  Thanks `@fabioz`_ for the PR (`126`_)!
+
+.. _126: https://github.com/pytest-dev/pytest-qt/pull/126
+
 1.11.0
 ------
 
