@@ -13,211 +13,181 @@ from __future__ import division
 from collections import namedtuple
 import os
 
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
-if not on_rtd:  # pragma: no cover
+VersionTuple = namedtuple('VersionTuple', 'qt_api, qt_api_version, runtime, compiled')
 
-    def _try_import(name):
-        try:
-            __import__(name)
-            return True
-        except ImportError:
-            return False
+class _QtApi:
+    """
+    Interface to the underlying Qt API currently configured for pytest-qt.
 
-    def _guess_qt_api():
-        if _try_import('PyQt5'):
+    This object lazily loads all class references and other objects upon the ``set_qt_api`` method,
+    providing a uniform way to access the Qt classes.
+    """
+
+    def _get_qt_api_from_env(self):
+        api = os.environ.get('PYTEST_QT_API')
+        if api is not None:
+            api = api.lower()
+            if api not in ('pyside', 'pyqt4', 'pyqt4v2', 'pyqt5'):  # pragma: no cover
+                msg = 'Invalid value for $PYTEST_QT_API: %s'
+                raise RuntimeError(msg % qt_api)
+        return api
+
+    def _guess_qt_api(self):  # pragma: no cover
+        def _can_import(name):
+            try:
+                __import__(name)
+                return True
+            except ImportError:
+                return False
+
+        if _can_import('PyQt5'):
             return 'pyqt5'
-        elif _try_import('PySide'):
+        elif _can_import('PySide'):
             return 'pyside'
-        elif _try_import('PyQt4'):
+        elif _can_import('PyQt4'):
             return 'pyqt4'
-        else:
+        return None
+
+    def set_qt_api(self, api):
+        self.pytest_qt_api = api or self._get_qt_api_from_env() or self._guess_qt_api()
+        if not self.pytest_qt_api:  # pragma: no cover
             msg = 'pytest-qt requires either PySide, PyQt4 or PyQt5 to be installed'
             raise RuntimeError(msg)
 
-    # backward compatibility support: PYTEST_QT_FORCE_PYQT
-    if os.environ.get('PYTEST_QT_FORCE_PYQT', 'false') == 'true':
-        QT_API = 'pyqt4'
-    else:
-        QT_API = os.environ.get('PYTEST_QT_API')
-        if QT_API is not None:
-            QT_API = QT_API.lower()
-            if QT_API not in ('pyside', 'pyqt4', 'pyqt4v2', 'pyqt5'):
-                msg = 'Invalid value for $PYTEST_QT_API: %s'
-                raise RuntimeError(msg % QT_API)
-        else:
-            QT_API = _guess_qt_api()
+        _root_modules = {
+            'pyside': 'PySide',
+            'pyqt4': 'PyQt4',
+            'pyqt4v2': 'PyQt4',
+            'pyqt5': 'PyQt5',
+        }
+        _root_module = _root_modules[self.pytest_qt_api]
 
-    # backward compatibility
-    USING_PYSIDE = QT_API == 'pyside'
+        def _import_module(module_name):
+            m = __import__(_root_module, globals(), locals(), [module_name], 0)
+            return getattr(m, module_name)
 
-    def _import_module(module_name):
-        m = __import__(_root_module, globals(), locals(), [module_name], 0)
-        return getattr(m, module_name)
+        if self.pytest_qt_api == 'pyqt4v2':
+            # the v2 api in PyQt4
+            # http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
+            import sip
+            sip.setapi("QDate", 2)
+            sip.setapi("QDateTime", 2)
+            sip.setapi("QString", 2)
+            sip.setapi("QTextStream", 2)
+            sip.setapi("QTime", 2)
+            sip.setapi("QUrl", 2)
+            sip.setapi("QVariant", 2)
 
-    _root_modules = {
-        'pyside': 'PySide',
-        'pyqt4': 'PyQt4',
-        'pyqt4v2': 'PyQt4',
-        'pyqt5': 'PyQt5',
-    }
-    _root_module = _root_modules[QT_API]
+        self.QtCore = QtCore = _import_module('QtCore')
+        self.QtGui = QtGui = _import_module('QtGui')
+        self.QtTest = _import_module('QtTest')
+        self.Qt = QtCore.Qt
+        self.QEvent = QtCore.QEvent
 
-    if QT_API == 'pyqt4v2':
-        # the v2 api in PyQt4
-        # http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
-        import sip
-        sip.setapi("QDate", 2)
-        sip.setapi("QDateTime", 2)
-        sip.setapi("QString", 2)
-        sip.setapi("QTextStream", 2)
-        sip.setapi("QTime", 2)
-        sip.setapi("QUrl", 2)
-        sip.setapi("QVariant", 2)
+        self.qDebug = QtCore.qDebug
+        self.qWarning = QtCore.qWarning
+        self.qCritical = QtCore.qCritical
+        self.qFatal = QtCore.qFatal
+        self.QtDebugMsg = QtCore.QtDebugMsg
+        self.QtWarningMsg = QtCore.QtWarningMsg
+        self.QtCriticalMsg = QtCore.QtCriticalMsg
+        self.QtFatalMsg = QtCore.QtFatalMsg
 
-    QtCore = _import_module('QtCore')
-    QtGui = _import_module('QtGui')
-    QtTest = _import_module('QtTest')
-    Qt = QtCore.Qt
-    QEvent = QtCore.QEvent
+        # Qt4 and Qt5 have different functions to install a message handler;
+        # the plugin will try to use the one that is not None
+        self.qInstallMsgHandler = None
+        self.qInstallMessageHandler = None
 
-    qDebug = QtCore.qDebug
-    qWarning = QtCore.qWarning
-    qCritical = QtCore.qCritical
-    qFatal = QtCore.qFatal
-    QtDebugMsg = QtCore.QtDebugMsg
-    QtWarningMsg = QtCore.QtWarningMsg
-    QtCriticalMsg = QtCore.QtCriticalMsg
-    QtFatalMsg = QtCore.QtFatalMsg
+        if self.pytest_qt_api == 'pyside':
+            self.Signal = QtCore.Signal
+            self.Slot = QtCore.Slot
+            self.Property = QtCore.Property
+            self.QApplication = QtGui.QApplication
+            self.QWidget = QtGui.QWidget
+            self.QStringListModel = QtGui.QStringListModel
+            self.qInstallMsgHandler = QtCore.qInstallMsgHandler
 
-    # Qt4 and Qt5 have different functions to install a message handler;
-    # the plugin will try to use the one that is not None
-    qInstallMsgHandler = None
-    qInstallMessageHandler = None
-
-    VersionTuple = namedtuple('VersionTuple',
-                              'qt_api, qt_api_version, runtime, compiled')
-
-    if QT_API == 'pyside':
-        import PySide
-        Signal = QtCore.Signal
-        Slot = QtCore.Slot
-        Property = QtCore.Property
-        QApplication = QtGui.QApplication
-        QWidget = QtGui.QWidget
-        qInstallMsgHandler = QtCore.qInstallMsgHandler
-
-        QStandardItem = QtGui.QStandardItem
-        QStandardItemModel = QtGui.QStandardItemModel
-        QStringListModel = QtGui.QStringListModel
-        QSortFilterProxyModel = QtGui.QSortFilterProxyModel
-        QAbstractListModel = QtCore.QAbstractListModel
-        QAbstractTableModel = QtCore.QAbstractTableModel
-
-        def extract_from_variant(variant):
-            """PySide does not expose QVariant API"""
-            return variant
-
-        def make_variant(value=None):
-            """PySide does not expose QVariant API"""
-            return value
-
-        def get_versions():
-            return VersionTuple('PySide', PySide.__version__, QtCore.qVersion(),
-                                QtCore.__version__)
-
-    elif QT_API in ('pyqt4', 'pyqt4v2', 'pyqt5'):
-        Signal = QtCore.pyqtSignal
-        Slot = QtCore.pyqtSlot
-        Property = QtCore.pyqtProperty
-
-        if QT_API == 'pyqt5':
-            _QtWidgets = _import_module('QtWidgets')
-            QApplication = _QtWidgets.QApplication
-            QWidget = _QtWidgets.QWidget
-            qInstallMessageHandler = QtCore.qInstallMessageHandler
-
-            QStringListModel = QtCore.QStringListModel
-            QSortFilterProxyModel = QtCore.QSortFilterProxyModel
+            self.QStandardItem = QtGui.QStandardItem
+            self.QStandardItemModel = QtGui.QStandardItemModel
+            self.QStringListModel = QtGui.QStringListModel
+            self.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
+            self.QAbstractListModel = QtCore.QAbstractListModel
+            self.QAbstractTableModel = QtCore.QAbstractTableModel
 
             def extract_from_variant(variant):
-                """returns python object from the given QVariant"""
-                if isinstance(variant, QtCore.QVariant):
-                    return variant.value()
+                """PySide does not expose QVariant API"""
                 return variant
 
-            qt_api_name = 'PyQt5'
-        else:
-            QApplication = QtGui.QApplication
-            QWidget = QtGui.QWidget
-            qInstallMsgHandler = QtCore.qInstallMsgHandler
-
-            QStringListModel = QtGui.QStringListModel
-            QSortFilterProxyModel = QtGui.QSortFilterProxyModel
-
-            def extract_from_variant(variant):
-                """returns python object from the given QVariant"""
-                if isinstance(variant, QtCore.QVariant):
-                    return variant.toPyObject()
-                return variant
-
-            qt_api_name = 'PyQt4'
-
-        QStandardItem = QtGui.QStandardItem
-        QStandardItemModel = QtGui.QStandardItemModel
-        QAbstractListModel = QtCore.QAbstractListModel
-        QAbstractTableModel = QtCore.QAbstractTableModel
-
-        def get_versions():
-            return VersionTuple(qt_api_name, QtCore.PYQT_VERSION_STR,
-                                QtCore.qVersion(), QtCore.QT_VERSION_STR)
-
-        def make_variant(value=None):
-            """Return a QVariant object from the given Python builtin"""
-            # PyQt4 doesn't allow one to instantiate any QVariant at all:
-            # QVariant represents a mapped type and cannot be instantiated
-            if QT_API in ['pyqt4', 'pyqt4v2']:
+            def make_variant(value=None):
+                """PySide does not expose QVariant API"""
                 return value
-            return QtCore.QVariant(value)
 
-else:  # pragma: no cover
-    USING_PYSIDE = True
+            self.extract_from_variant = extract_from_variant
+            self.make_variant = make_variant
 
-    # mock Qt when we are generating documentation at readthedocs.org
-    class Mock(object):
-        def __init__(self, *args, **kwargs):
-            pass
-    
-        def __call__(self, *args, **kwargs):
-            return Mock()
-    
-        @classmethod
-        def __getattr__(cls, name):
-            if name in ('__file__', '__path__'):
-                return '/dev/null'
-            elif name in ('__name__', '__qualname__'):
-                return name
-            elif name == '__annotations__':
-                return {}
+        elif self.pytest_qt_api in ('pyqt4', 'pyqt4v2', 'pyqt5'):
+            self.Signal = QtCore.pyqtSignal
+            self.Slot = QtCore.pyqtSlot
+            self.Property = QtCore.pyqtProperty
+
+            if self.pytest_qt_api == 'pyqt5':
+                _QtWidgets = _import_module('QtWidgets')
+                self.QApplication = _QtWidgets.QApplication
+                self.QWidget = _QtWidgets.QWidget
+                self.qInstallMessageHandler = QtCore.qInstallMessageHandler
+
+                self.QStringListModel = QtCore.QStringListModel
+                self.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
+
+                def extract_from_variant(variant):
+                    """returns python object from the given QVariant"""
+                    if isinstance(variant, QtCore.QVariant):
+                        return variant.value()
+                    return variant
+
+                def make_variant(value=None):
+                    """Return a QVariant object from the given Python builtin"""
+                    # PyQt4 doesn't allow one to instantiate any QVariant at all:
+                    # QVariant represents a mapped type and cannot be instantiated
+                    return QtCore.QVariant(value)
+
             else:
-                return Mock()
-    
-    QtGui = Mock()
-    QtCore = Mock()
-    QtTest = Mock()
-    Qt = Mock()
-    QEvent = Mock()
-    QApplication = Mock()
-    QWidget = Mock()
-    qInstallMsgHandler = Mock()
-    qInstallMessageHandler = Mock()
-    qDebug = Mock()
-    qWarning = Mock()
-    qCritical = Mock()
-    qFatal = Mock()
-    QtDebugMsg = Mock()
-    QtWarningMsg = Mock()
-    QtCriticalMsg = Mock()
-    QtFatalMsg = Mock()
-    QT_API = '<none>'
-    extract_from_variant = Mock()
+                self.QApplication = QtGui.QApplication
+                self.QWidget = QtGui.QWidget
+                self.qInstallMsgHandler = QtCore.qInstallMsgHandler
+
+                self.QStringListModel = QtGui.QStringListModel
+                self.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
+
+                def extract_from_variant(variant):
+                    """returns python object from the given QVariant"""
+                    if isinstance(variant, QtCore.QVariant):
+                        return variant.toPyObject()
+                    return variant
+
+                def make_variant(value=None):
+                    """Return a QVariant object from the given Python builtin"""
+                    # PyQt4 doesn't allow one to instantiate any QVariant at all:
+                    # QVariant represents a mapped type and cannot be instantiated
+                    return value
+
+            self.QStandardItem = QtGui.QStandardItem
+            self.QStandardItemModel = QtGui.QStandardItemModel
+            self.QAbstractListModel = QtCore.QAbstractListModel
+            self.QAbstractTableModel = QtCore.QAbstractTableModel
+
+            self.extract_from_variant = extract_from_variant
+            self.make_variant = make_variant
+
+    def get_versions(self):
+        if self.pytest_qt_api == 'pyside':
+            import PySide
+            return VersionTuple('PySide', PySide.__version__, self.QtCore.qVersion(),
+                                self.QtCore.__version__)
+        else:
+            qt_api_name = 'PyQt5' if self.pytest_qt_api == 'pyqt5' else 'PyQt4'
+            return VersionTuple(qt_api_name, self.QtCore.PYQT_VERSION_STR,
+                                self.QtCore.qVersion(), self.QtCore.QT_VERSION_STR)
+
+qt_api = _QtApi()

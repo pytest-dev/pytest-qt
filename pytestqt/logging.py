@@ -4,8 +4,7 @@ import datetime
 import re
 from py._code.code import TerminalRepr, ReprFileLocation
 import pytest
-from pytestqt.qt_compat import qInstallMsgHandler, qInstallMessageHandler, \
-    QtDebugMsg, QtWarningMsg, QtCriticalMsg, QtFatalMsg
+from pytestqt.qt_compat import qt_api
 
 
 class QtLoggingPlugin(object):
@@ -71,6 +70,12 @@ class QtLoggingPlugin(object):
                 long_repr = getattr(report, 'longrepr', None)
                 if hasattr(long_repr, 'addsection'):  # pragma: no cover
                     log_format = self.config.getoption('qt_log_format')
+                    if log_format is None:
+                        if qt_api.pytest_qt_api == 'pyqt5':
+                            log_format = '{rec.context.file}:{rec.context.function}:' \
+                                      '{rec.context.line}:\n    {rec.type_name}: {rec.message}'
+                        else:
+                            log_format = '{rec.type_name}: {rec.message}'
                     lines = []
                     for rec in item.qt_log_capture.records:
                         suffix = ' (IGNORED)' if rec.ignored else ''
@@ -103,11 +108,11 @@ class _QtMessageCapture(object):
         """
         Start receiving messages from Qt.
         """
-        if qInstallMsgHandler:
-            previous_handler = qInstallMsgHandler(self._handle_no_context)
+        if qt_api.qInstallMsgHandler:
+            previous_handler = qt_api.qInstallMsgHandler(self._handle_no_context)
         else:
-            assert qInstallMessageHandler
-            previous_handler = qInstallMessageHandler(self._handle_with_context)
+            assert qt_api.qInstallMessageHandler
+            previous_handler = qt_api.qInstallMessageHandler(self._handle_with_context)
         self._previous_handler = previous_handler
 
     def _stop(self):
@@ -115,11 +120,11 @@ class _QtMessageCapture(object):
         Stop receiving messages from Qt, restoring the previously installed
         handler.
         """
-        if qInstallMsgHandler:
-            qInstallMsgHandler(self._previous_handler)
+        if qt_api.qInstallMsgHandler:
+            qt_api.qInstallMsgHandler(self._previous_handler)
         else:
-            assert qInstallMessageHandler
-            qInstallMessageHandler(self._previous_handler)
+            assert qt_api.qInstallMessageHandler
+            qt_api.qInstallMessageHandler(self._previous_handler)
 
     @contextmanager
     def disabled(self):
@@ -230,10 +235,10 @@ class Record(object):
         """
         if not getattr(cls, '_type_name_map', None):
             cls._type_name_map = {
-                QtDebugMsg: 'QtDebugMsg',
-                QtWarningMsg: 'QtWarningMsg',
-                QtCriticalMsg: 'QtCriticalMsg',
-                QtFatalMsg: 'QtFatalMsg',
+                qt_api.QtDebugMsg: 'QtDebugMsg',
+                qt_api.QtWarningMsg: 'QtWarningMsg',
+                qt_api.QtCriticalMsg: 'QtCriticalMsg',
+                qt_api.QtFatalMsg: 'QtFatalMsg',
             }
         return cls._type_name_map[msg_type]
 
@@ -245,10 +250,10 @@ class Record(object):
         """
         if not getattr(cls, '_log_type_name_map', None):
             cls._log_type_name_map = {
-                QtDebugMsg: 'DEBUG',
-                QtWarningMsg: 'WARNING',
-                QtCriticalMsg: 'CRITICAL',
-                QtFatalMsg: 'FATAL',
+                qt_api.QtDebugMsg: 'DEBUG',
+                qt_api.QtWarningMsg: 'WARNING',
+                qt_api.QtCriticalMsg: 'CRITICAL',
+                qt_api.QtFatalMsg: 'FATAL',
             }
         return cls._log_type_name_map[msg_type]
 

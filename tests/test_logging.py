@@ -2,8 +2,7 @@ import datetime
 
 import pytest
 
-from pytestqt.qt_compat import qDebug, qWarning, qCritical, QtDebugMsg, \
-    QtWarningMsg, QtCriticalMsg, QT_API
+from pytestqt.qt_compat import qt_api
 
 
 @pytest.mark.parametrize('test_succeeds', [True, False])
@@ -17,25 +16,24 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
     testdir.makepyfile(
         """
         import sys
-        from pytestqt.qt_compat import qDebug, qWarning, qCritical, \
-            qInstallMessageHandler, qInstallMsgHandler
+        from pytestqt.qt_compat import qt_api
 
         def to_unicode(s):
             return s.decode('utf-8', 'replace') if isinstance(s, bytes) else s
 
-        if qInstallMessageHandler:
+        if qt_api.qInstallMessageHandler:
             def print_msg(msg_type, context, message):
                 sys.stderr.write(to_unicode(message) + '\\n')
-            qInstallMessageHandler(print_msg)
+            qt_api.qInstallMessageHandler(print_msg)
         else:
             def print_msg(msg_type, message):
                 sys.stderr.write(to_unicode(message) + '\\n')
-            qInstallMsgHandler(print_msg)
+            qt_api.qInstallMsgHandler(print_msg)
 
         def test_types():
-            qDebug('this is a DEBUG message')
-            qWarning('this is a WARNING message')
-            qCritical('this is a CRITICAL message')
+            qt_api.qDebug('this is a DEBUG message')
+            qt_api.qWarning('this is a WARNING message')
+            qt_api.qCritical('this is a CRITICAL message')
             assert {0}
         """.format(test_succeeds)
     )
@@ -64,14 +62,14 @@ def test_qtlog_fixture(qtlog):
     """
     Test qtlog fixture.
     """
-    qDebug('this is a DEBUG message')
-    qWarning('this is a WARNING message')
-    qCritical('this is a CRITICAL message')
+    qt_api.qDebug('this is a DEBUG message')
+    qt_api.qWarning('this is a WARNING message')
+    qt_api.qCritical('this is a CRITICAL message')
     records = [(m.type, m.message.strip()) for m in qtlog.records]
     assert records == [
-        (QtDebugMsg, 'this is a DEBUG message'),
-        (QtWarningMsg, 'this is a WARNING message'),
-        (QtCriticalMsg, 'this is a CRITICAL message'),
+        (qt_api.QtDebugMsg, 'this is a DEBUG message'),
+        (qt_api.QtWarningMsg, 'this is a WARNING message'),
+        (qt_api.QtCriticalMsg, 'this is a CRITICAL message'),
     ]
     # `records` attribute is read-only
     with pytest.raises(AttributeError):
@@ -87,10 +85,10 @@ def test_fixture_with_logging_disabled(testdir):
     """
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning
+        from pytestqt.qt_compat import qt_api
 
         def test_types(qtlog):
-            qWarning('message')
+            qt_api.qWarning('message')
             assert qtlog.records == []
         """
     )
@@ -119,10 +117,10 @@ def test_disable_qtlog_context_manager(testdir, use_context_manager):
 
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qCritical
+        from pytestqt.qt_compat import qt_api
         def test_1(qtlog):
             {code}
-                qCritical('message')
+                qt_api.qCritical('message')
         """.format(code=code)
     )
     res = testdir.inline_run()
@@ -147,11 +145,11 @@ def test_disable_qtlog_mark(testdir, use_mark):
 
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qCritical
+        from pytestqt.qt_compat import qt_api
         import pytest
         {mark}
         def test_1():
-            qCritical('message')
+            qt_api.qCritical('message')
         """.format(mark=mark)
     )
     res = testdir.inline_run()
@@ -167,9 +165,9 @@ def test_logging_formatting(testdir):
     """
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning
+        from pytestqt.qt_compat import qt_api
         def test_types():
-            qWarning('this is a WARNING message')
+            qt_api.qWarning('this is a WARNING message')
             assert 0
         """
     )
@@ -200,13 +198,13 @@ def test_logging_fails_tests(testdir, level, expect_passes):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical, qDebug
+        from pytestqt.qt_compat import qt_api
         def test_1():
-            qDebug('this is a DEBUG message')
+            qt_api.qDebug('this is a DEBUG message')
         def test_2():
-            qWarning('this is a WARNING message')
+            qt_api.qWarning('this is a WARNING message')
         def test_3():
-            qCritical('this is a CRITICAL message')
+            qt_api.qCritical('this is a CRITICAL message')
         def test_4():
             assert 1
         """
@@ -265,19 +263,19 @@ def test_logging_fails_ignore(testdir):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qCritical
+        from pytestqt.qt_compat import qt_api
         import pytest
 
         def test1():
-            qCritical('a critical message')
+            qt_api.qCritical('a critical message')
         def test2():
-            qCritical('WM_DESTROY was sent')
+            qt_api.qCritical('WM_DESTROY was sent')
         def test3():
-            qCritical('WM_DESTROY was sent')
+            qt_api.qCritical('WM_DESTROY was sent')
             assert 0
         def test4():
-            qCritical('WM_PAINT not handled')
-            qCritical('another critical message')
+            qt_api.qCritical('WM_PAINT not handled')
+            qt_api.qCritical('another critical message')
         """
     )
     res = testdir.runpytest()
@@ -328,12 +326,12 @@ def test_logging_mark_with_extend(testdir, message, marker_args):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qCritical
+        from pytestqt.qt_compat import qt_api
         import pytest
 
         @pytest.mark.qt_log_ignore({marker_args})
         def test1():
-            qCritical('{message}')
+            qt_api.qCritical('{message}')
         """.format(message=message, marker_args=marker_args)
     )
     res = testdir.inline_run()
@@ -359,12 +357,12 @@ def test_logging_mark_without_extend(testdir, message, error_expected):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qCritical
+        from pytestqt.qt_compat import qt_api
         import pytest
 
         @pytest.mark.qt_log_ignore('match-mark', extend=False)
         def test1():
-            qCritical('{message}')
+            qt_api.qCritical('{message}')
         """.format(message=message)
     )
     res = testdir.inline_run()
@@ -416,12 +414,12 @@ def test_logging_fails_ignore_mark_multiple(testdir, apply_mark):
         mark = ''
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qCritical
+        from pytestqt.qt_compat import qt_api
         import pytest
         @pytest.mark.qt_log_level_fail('CRITICAL')
         {mark}
         def test1():
-            qCritical('WM_PAINT was sent')
+            qt_api.qCritical('WM_PAINT was sent')
         """.format(mark=mark)
     )
     res = testdir.inline_run()
@@ -444,16 +442,16 @@ def test_lineno_failure(testdir):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning
+        from pytestqt.qt_compat import qt_api
         def test_foo():
             assert foo() == 10
         def foo():
-            qWarning('this is a WARNING message')
+            qt_api.qWarning('this is a WARNING message')
             return 10
         """
     )
     res = testdir.runpytest()
-    if QT_API == 'pyqt5':
+    if qt_api.pytest_qt_api == 'pyqt5':
         res.stdout.fnmatch_lines([
             '*test_lineno_failure.py:2: Failure*',
             '*test_lineno_failure.py:foo:5:*',
@@ -463,8 +461,6 @@ def test_lineno_failure(testdir):
         res.stdout.fnmatch_lines('*test_lineno_failure.py:2: Failure*')
 
 
-@pytest.mark.skipif(QT_API != 'pyqt5',
-                    reason='Context information only available in PyQt5')
 def test_context_none(testdir):
     """
     Sometimes PyQt5 will emit a context with some/all attributes set as None
@@ -474,14 +470,16 @@ def test_context_none(testdir):
 
     :type testdir: _pytest.pytester.TmpTestdir
     """
+    if qt_api.pytest_qt_api != 'pyqt5':
+        pytest.skip('Context information only available in PyQt5')
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import QtWarningMsg
+        from pytestqt.qt_compat import qt_api
 
         def test_foo(request):
             log_capture = request.node.qt_log_capture
             context = log_capture._Context(None, None, None)
-            log_capture._handle_with_context(QtWarningMsg,
+            log_capture._handle_with_context(qt_api.QtWarningMsg,
                                              context, "WARNING message")
             assert 0
         """

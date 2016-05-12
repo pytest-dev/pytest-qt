@@ -37,8 +37,19 @@ New Features
   is met or a timeout is reached. Useful for testing some features in X window environments
   due to its asynchronous nature.
 
+* Now which Qt binding ``pytest-qt`` should use can be configured by the ``qt_api`` config option.
+  Thanks `@The-Compiler`_ for the request (`#129`_).
+
+- ``PYTEST_QT_FORCE_PYQT`` environment variable is no longer supported.
+
+- While ``pytestqt.qt_compat`` is an internal module and shouldn't be imported directly,
+  it is known that some test suites did import it. This module now uses a lazy-load mechanism
+  to load Qt classes and objects, so the old symbols (``QtCore``, ``QApplication``, etc.) are
+  no longer available from it.
+
 .. _#134: https://github.com/pytest-dev/pytest-qt/issues/134
 .. _#63: https://github.com/pytest-dev/pytest-qt/pull/63
+.. _#129: https://github.com/pytest-dev/pytest-qt/issues/129
 
 
 Other Changes

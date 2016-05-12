@@ -1,10 +1,10 @@
 import pytest
 
-from pytestqt.qt_compat import USING_PYSIDE
+# noinspection PyUnresolvedReferences
+from pytestqt.qt_compat import qt_api
 
 
-fails_on_pyqt = pytest.mark.xfail(not USING_PYSIDE,
-                                  reason='not exported by PyQt')
+fails_on_pyqt = pytest.mark.xfail('qt_api.pytest_qt_api != "pyside"')
 
 
 @pytest.mark.parametrize('expected_method', [

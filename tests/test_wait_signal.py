@@ -3,7 +3,7 @@ import fnmatch
 
 import pytest
 
-from pytestqt.qt_compat import QtCore, Signal, QT_API
+from pytestqt.qt_compat import qt_api
 from pytestqt.wait_signal import SignalEmittedError
 
 
@@ -110,10 +110,10 @@ def test_raising(qtbot, testdir, configval, raises):
 
     testdir.makepyfile("""
         import pytest
-        from pytestqt.qt_compat import QtCore, Signal
+        from pytestqt.qt_compat import qt_api
 
-        class Signaller(QtCore.QObject):
-            signal = Signal()
+        class Signaller(qt_api.QtCore.QObject):
+            signal = qt_api.Signal()
 
         def test_foo(qtbot):
             signaller = Signaller()
@@ -137,10 +137,10 @@ def test_raising_by_default_overridden(qtbot, testdir):
 
     testdir.makepyfile("""
         import pytest
-        from pytestqt.qt_compat import QtCore, Signal
+        from pytestqt.qt_compat import qt_api
 
-        class Signaller(QtCore.QObject):
-            signal = Signal()
+        class Signaller(qt_api.QtCore.QObject):
+            signal = qt_api.Signal()
 
         def test_foo(qtbot):
             signaller = Signaller()
@@ -222,11 +222,11 @@ def signaller(timer):
     with "timer" are disconnected before the Signaller() object is destroyed.
     This was the reason for some random crashes experienced on Windows (#80).
     """
-    class Signaller(QtCore.QObject):
-        signal = Signal()
-        signal_2 = Signal()
-        signal_args = Signal(str, int)
-        signal_args_2 = Signal(str, int)
+    class Signaller(qt_api.QtCore.QObject):
+        signal = qt_api.Signal()
+        signal_2 = qt_api.Signal()
+        signal_args = qt_api.Signal(str, int)
+        signal_args_2 = qt_api.Signal(str, int)
 
     assert timer
 
@@ -242,10 +242,10 @@ def timer():
     The fixture is responsible for cleaning up after the timers.
     """
 
-    class Timer(QtCore.QObject):
+    class Timer(qt_api.QtCore.QObject):
 
         def __init__(self):
-            QtCore.QObject.__init__(self)
+            qt_api.QtCore.QObject.__init__(self)
             self.timers_and_slots = []
 
         def shutdown(self):
@@ -255,7 +255,7 @@ def timer():
             self.timers_and_slots[:] = []
 
         def single_shot(self, signal, delay):
-            t = QtCore.QTimer(self)
+            t = qt_api.QtCore.QTimer(self)
             t.setSingleShot(True)
             slot = functools.partial(self._emit, signal)
             t.timeout.connect(slot)
@@ -316,15 +316,17 @@ def test_wait_twice(qtbot, timer, multiple, do_timeout, signaller):
             signaller.signal.emit()
 
 
-@pytest.mark.skipif(QT_API == 'pyside', reason='test crashes PySide')
 def test_destroyed(qtbot):
     """Test that waitSignal works with the destroyed signal (#82).
 
     For some reason, this crashes PySide although it seems perfectly fine code.
     """
+    if qt_api.pytest_qt_api == 'pyside':
+        pytest.skip('test crashes PySide')
+
     import sip
 
-    class Obj(QtCore.QObject):
+    class Obj(qt_api.QtCore.QObject):
         pass
 
     obj = Obj()
