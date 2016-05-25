@@ -34,7 +34,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
 .. |downloads| image:: http://img.shields.io/pypi/dm/pytest-qt.svg
   :target: https://pypi.python.org/pypi/pytest-qt
   
-.. |ci| image:: http://img.shields.io/travis/pytest-dev/pytest-qt.svg
+.. |travis| image:: https://img.shields.io/travis/pytest-dev/pytest-qt/master.svg
   :target: https://travis-ci.org/pytest-dev/pytest-qt
 
 .. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-qt.svg
@@ -43,14 +43,14 @@ This allows you to test and make sure your view layer is behaving the way you ex
 .. |docs| image:: https://readthedocs.org/projects/pytest-qt/badge/?version=latest
   :target: https://pytest-qt.readthedocs.org
 
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/9s5jr17hxcxeo6yx/branch/master?svg=true
+.. |appveyor| image:: https://img.shields.io/appveyor/ci/pytest-dev/pytest-qt/master.svg
   :target: https://ci.appveyor.com/project/nicoddemus/pytest-qt
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/pytest-qt.svg
   :target: https://pypi.python.org/pypi/pytest-qt/
   :alt: Supported Python versions
 
-|python| |version| |downloads| |ci| |appveyor| |coverage| |docs|
+|python| |version| |downloads| |travis| |appveyor| |coverage| |docs|
 
 
 Features
