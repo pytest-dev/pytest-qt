@@ -41,7 +41,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
   :target: https://coveralls.io/r/pytest-dev/pytest-qt
 
 .. |docs| image:: https://readthedocs.org/projects/pytest-qt/badge/?version=latest
-  :target: https://pytest-qt.readthedocs.org
+  :target: https://pytest-qt.readthedocs.io
 
 .. |appveyor| image:: https://img.shields.io/appveyor/ci/pytest-dev/pytest-qt/master.svg
   :target: https://ci.appveyor.com/project/nicoddemus/pytest-qt
@@ -63,11 +63,11 @@ Features
 - `Exceptions in virtual methods and slots`_ are automatically captured and
   fail tests accordingly.
 
-.. _qtbot: https://pytest-qt.readthedocs.org/en/latest/reference.html#module-pytestqt.qtbot
-.. _Automatic capture: https://pytest-qt.readthedocs.org/en/latest/logging.html
-.. _waitSignal: https://pytest-qt.readthedocs.org/en/latest/signals.html
-.. _waitSignals: https://pytest-qt.readthedocs.org/en/latest/signals.html
-.. _Exceptions in virtual methods and slots: https://pytest-qt.readthedocs.org/en/latest/virtual_methods.html
+.. _qtbot: https://pytest-qt.readthedocs.io/en/latest/reference.html#module-pytestqt.qtbot
+.. _Automatic capture: https://pytest-qt.readthedocs.io/en/latest/logging.html
+.. _waitSignal: https://pytest-qt.readthedocs.io/en/latest/signals.html
+.. _waitSignals: https://pytest-qt.readthedocs.io/en/latest/signals.html
+.. _Exceptions in virtual methods and slots: https://pytest-qt.readthedocs.io/en/latest/virtual_methods.html
 
 Requirements
 ============
@@ -90,14 +90,14 @@ Documentation
 
 Full documentation and tutorial available at `Read the Docs`_.
 
-.. _Read The Docs: https://pytest-qt.readthedocs.org
+.. _Read The Docs: https://pytest-qt.readthedocs.io
 
 Change Log
 ==========
 
 Please consult the `changelog page`_.
 
-.. _changelog page: https://pytest-qt.readthedocs.org/en/latest/changelog.html
+.. _changelog page: https://pytest-qt.readthedocs.io/en/latest/changelog.html
 
 Bugs/Requests
 =============
@@ -156,4 +156,4 @@ Many thanks to:
 
 |pydev|  
 
-.. _tox: http://tox.readthedocs.org
+.. _tox: https://tox.readthedocs.io
