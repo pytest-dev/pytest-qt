@@ -81,7 +81,6 @@ class QtBot(object):
 
     Below are methods used to simulate sending key events to widgets:
 
-    .. staticmethod:: keyPress(widget, key[, modifier=Qt.NoModifier[, delay=-1]])
     .. staticmethod:: keyClick (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
     .. staticmethod:: keyClicks (widget, key sequence[, modifier=Qt.NoModifier[, delay=-1]])
     .. staticmethod:: keyEvent (action, widget, key[, modifier=Qt.NoModifier[, delay=-1]])
