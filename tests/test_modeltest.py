@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from pytestqt.qt_compat import QStandardItemModel, QStandardItem, \
@@ -5,6 +7,24 @@ from pytestqt.qt_compat import QStandardItemModel, QStandardItem, \
     QAbstractListModel, QtCore
 
 pytestmark = pytest.mark.usefixtures('qtbot')
+
+
+class BasicModel(QtCore.QAbstractItemModel):
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        return None
+
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        return 0
+
+    def columnCount(self, parent=QtCore.QModelIndex()):
+        return 0
+
+    def index(self, row, column, parent=QtCore.QModelIndex()):
+        return QtCore.QModelIndex()
+
+    def parent(self, index):
+        return QtCore.QModelIndex()
 
 
 def test_standard_item_model(qtmodeltester):
@@ -142,3 +162,82 @@ def check_model(qtmodeltester):
             with pytest.raises(AssertionError):
                 qtmodeltester.check(model)
     return check
+
+
+def test_invalid_column_count(qtmodeltester):
+    """Basic check with an invalid model."""
+    class Model(BasicModel):
+        def columnCount(self, parent=QtCore.QModelIndex()):
+            return -1
+
+    model = Model()
+
+    with pytest.raises(AssertionError):
+        qtmodeltester.check(model)
+
+
+def test_changing_model_insert(qtmodeltester):
+    model = QStandardItemModel()
+    item = QStandardItem('foo')
+    qtmodeltester.check(model)
+    model.insertRow(0, item)
+
+
+def test_changing_model_remove(qtmodeltester):
+    model = QStandardItemModel()
+    item = QStandardItem('foo')
+    model.setItem(0, 0, item)
+    qtmodeltester.check(model)
+    model.removeRow(0)
+
+
+def test_changing_model_data(qtmodeltester):
+    model = QStandardItemModel()
+    item = QStandardItem('foo')
+    model.setItem(0, 0, item)
+    qtmodeltester.check(model)
+    model.setData(model.index(0, 0), 'hello world')
+
+
+@pytest.mark.parametrize('orientation', [QtCore.Qt.Horizontal,
+                                         QtCore.Qt.Vertical])
+def test_changing_model_header_data(qtmodeltester, orientation):
+    model = QStandardItemModel()
+    item = QStandardItem('foo')
+    model.setItem(0, 0, item)
+    qtmodeltester.check(model)
+    model.setHeaderData(0, orientation, 'blah')
+
+
+def test_changing_model_sort(qtmodeltester):
+    """Sorting emits layoutChanged"""
+    model = QStandardItemModel()
+    item = QStandardItem('foo')
+    model.setItem(0, 0, item)
+    qtmodeltester.check(model)
+    model.sort(0)
+
+
+def test_nop(qtmodeltester):
+    """We should not get a crash on cleanup with no model."""
+    pass
+
+
+def test_fetch_more(qtmodeltester):
+    class Model(BasicModel):
+
+        def rowCount(self, parent=None):
+            if parent is None:
+                1/0
+                return 1
+            else:
+                return 0
+
+        def canFetchMore(self, parent):
+            return True
+
+        def fetchMore(self, parent):
+            pass
+
+    model = Model()
+    qtmodeltester.check(model)
