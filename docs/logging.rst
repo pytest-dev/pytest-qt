@@ -219,7 +219,7 @@ defined by ``qt_log_ignore`` make tests fail as usual:
     QtCriticalMsg: QObject: widget destroyed in another thread
 
 
-You can also override ``qt_log_level_fail`` and ``qt_log_ignore`` settins
+You can also override ``qt_log_level_fail`` and ``qt_log_ignore`` settings
 from ``pytest.ini`` in some tests by using a mark with the same name:
 
 .. code-block:: python
