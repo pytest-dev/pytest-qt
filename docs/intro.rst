@@ -57,7 +57,7 @@ Or alternatively, download the package from pypi_, extract and execute::
 
 .. _pypi: http://pypi.python.org/pypi/pytest-qt/
 
-Both methods will automatically register it for usage in ``py.test``.
+Both methods will automatically register it for usage in ``pytest``.
 
 Development
 -----------
