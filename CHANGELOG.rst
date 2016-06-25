@@ -4,6 +4,9 @@
 Breaking changes
 ================
 
+With pytest-qt 2.0, we changed some defaults to values we think are much better.
+However, this required some backwards-incompatible changes:
+
 - ``pytest-qt`` now defaults to using ``PyQt5`` if ``PYTEST_QT_API`` is not set.
   Before, it preferred ``PySide`` which is using the discontinued Qt4.
 
