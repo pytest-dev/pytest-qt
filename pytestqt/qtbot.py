@@ -292,8 +292,8 @@ class QtBot(object):
            blocker.wait()
 
         :param list signals:
-            A list of :class:`Signal`s to wait for. Set to ``None`` to just use
-            timeout.
+            A list of :class:`Signal` objects to wait for. Set to ``None`` to
+            just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
