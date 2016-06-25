@@ -4,6 +4,8 @@
 - ``pytest-qt`` now defaults to using ``PyQt5`` if ``PYTEST_QT_API`` is not set.
   Before, it preferred ``PySide`` which is using the discontinued Qt4.
 
+- Python 3 versions prior to 3.4 are no longer supported.
+
 - Exceptions caught by ``pytest-qt`` in ``sys.excepthook`` are now also printed
   to ``stderr``, making debugging them easier from within an IDE.
   Thanks `@fabioz`_ for the PR (`126`_)!

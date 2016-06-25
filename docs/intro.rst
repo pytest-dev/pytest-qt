@@ -26,7 +26,7 @@ interaction, like key presses and mouse clicks::
 Requirements
 ------------
 
-Python 2.7 or later, including Python 3+.
+Python 2.7 or later, including Python 3.4+.
 
 Requires pytest version 2.7 or later.
 
