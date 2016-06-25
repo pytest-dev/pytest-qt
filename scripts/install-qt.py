@@ -27,11 +27,13 @@ if 'APPVEYOR' in os.environ:
     base_url = 'http://downloads.sourceforge.net/project/pyqt/'
     downloads = {
         'py34-pyqt5': 'PyQt5/PyQt-5.5/PyQt5-5.5-gpl-Py3.4-Qt5.5.0-x32.exe',
+        'py35-pyqt5': 'PyQt5/PyQt-5.6/PyQt5-5.6-gpl-Py3.5-Qt5.6.0-x32-2.exe',
         'py34-pyqt4': 'PyQt4/PyQt-4.11.4/PyQt4-4.11.4-gpl-Py3.4-Qt4.8.7-x32.exe',
         'py27-pyqt4': 'PyQt4/PyQt-4.11.4/PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe',
     }
     if 'INSTALL_QT' in os.environ:
         fix_registry('34')
+        fix_registry('35')
         fix_registry('27')
         caption = os.environ['INSTALL_QT']
         url = downloads[caption]
