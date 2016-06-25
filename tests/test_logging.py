@@ -308,40 +308,12 @@ def test_logging_fails_ignore(testdir):
     res.stdout.fnmatch_lines(lines)
 
 
-@pytest.mark.parametrize('mark_regex', ['WM_DESTROY.*sent', 'no-match', None])
-def test_logging_fails_ignore_mark(testdir, mark_regex):
-    """
-    Test qt_log_ignore mark overrides config option.
-
-    :type testdir: _pytest.pytester.TmpTestdir
-    """
-    testdir.makeini(
-        """
-        [pytest]
-        qt_log_level_fail = CRITICAL
-        qt_log_ignore = no-match
-        """
-    )
-    if mark_regex:
-        mark = '@pytest.mark.qt_log_ignore("{0}")'.format(mark_regex)
-    else:
-        mark = ''
-    testdir.makepyfile(
-        """
-        from pytestqt.qt_compat import qCritical
-        import pytest
-        {mark}
-        def test1():
-            qCritical('WM_DESTROY was sent')
-        """.format(mark=mark)
-    )
-    res = testdir.inline_run()
-    passed = 1 if mark_regex == 'WM_DESTROY.*sent' else 0
-    res.assertoutcome(passed=passed, failed=int(not passed))
-
-
 @pytest.mark.parametrize('message', ['match-global', 'match-mark'])
-def test_logging_mark_with_extend(testdir, message):
+@pytest.mark.parametrize('marker_args', [
+    "'match-mark', extend=True",
+    "'match-mark'"
+])
+def test_logging_mark_with_extend(testdir, message, marker_args):
     """
     Test qt_log_ignore mark with extend=True.
 
@@ -359,13 +331,48 @@ def test_logging_mark_with_extend(testdir, message):
         from pytestqt.qt_compat import qCritical
         import pytest
 
-        @pytest.mark.qt_log_ignore('match-mark', extend=True)
+        @pytest.mark.qt_log_ignore({marker_args})
+        def test1():
+            qCritical('{message}')
+        """.format(message=message, marker_args=marker_args)
+    )
+    res = testdir.inline_run()
+    res.assertoutcome(passed=1, failed=0)
+
+
+@pytest.mark.parametrize('message, error_expected', [
+    ('match-global', True),
+    ('match-mark', False),
+])
+def test_logging_mark_without_extend(testdir, message, error_expected):
+    """
+    Test qt_log_ignore mark with extend=False.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = CRITICAL
+        qt_log_ignore = match-global
+        """
+    )
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qCritical
+        import pytest
+
+        @pytest.mark.qt_log_ignore('match-mark', extend=False)
         def test1():
             qCritical('{message}')
         """.format(message=message)
     )
     res = testdir.inline_run()
-    res.assertoutcome(passed=1, failed=0)
+
+    if error_expected:
+        res.assertoutcome(passed=0, failed=1)
+    else:
+        res.assertoutcome(passed=1, failed=0)
 
 
 def test_logging_mark_with_invalid_argument(testdir):
