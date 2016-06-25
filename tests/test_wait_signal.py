@@ -96,11 +96,17 @@ def test_signal_triggered(qtbot, timer, stop_watch, wait_function, delay,
     stop_watch.check(timeout, delay)
 
 
-def test_raising_by_default(qtbot, testdir):
-    testdir.makeini("""
-        [pytest]
-        qt_wait_signal_raising = true
-    """)
+@pytest.mark.parametrize('configval, raises', [
+    ('false', False),
+    ('true', True),
+    (None, True),
+])
+def test_raising(qtbot, testdir, configval, raises):
+    if configval is not None:
+        testdir.makeini("""
+            [pytest]
+            qt_wait_signal_raising = {}
+        """.format(configval))
 
     testdir.makepyfile("""
         import pytest
@@ -112,18 +118,21 @@ def test_raising_by_default(qtbot, testdir):
         def test_foo(qtbot):
             signaller = Signaller()
 
-            with pytest.raises(qtbot.SignalTimeoutError):
-                with qtbot.waitSignal(signaller.signal, timeout=10):
-                    pass
+            with qtbot.waitSignal(signaller.signal, timeout=10):
+                pass
     """)
     res = testdir.runpytest()
-    res.stdout.fnmatch_lines(['*1 passed*'])
+
+    if raises:
+        res.stdout.fnmatch_lines(['*1 failed*'])
+    else:
+        res.stdout.fnmatch_lines(['*1 passed*'])
 
 
 def test_raising_by_default_overridden(qtbot, testdir):
     testdir.makeini("""
         [pytest]
-        qt_wait_signal_raising = true
+        qt_wait_signal_raising = false
     """)
 
     testdir.makepyfile("""
@@ -137,12 +146,11 @@ def test_raising_by_default_overridden(qtbot, testdir):
             signaller = Signaller()
             signal = signaller.signal
 
-            with qtbot.waitSignal(signal, raising=False, timeout=10) as blocker:
+            with qtbot.waitSignal(signal, raising=True, timeout=10) as blocker:
                 pass
-            assert not blocker.signal_triggered
     """)
     res = testdir.runpytest()
-    res.stdout.fnmatch_lines(['*1 passed*'])
+    res.stdout.fnmatch_lines(['*1 failed*'])
 
 
 @pytest.mark.parametrize(
@@ -297,9 +305,9 @@ def test_wait_twice(qtbot, timer, multiple, do_timeout, signaller):
         arg = signaller.signal
 
     if do_timeout:
-        with func(arg, timeout=100):
+        with func(arg, timeout=100, raising=False):
             timer.single_shot(signaller.signal, 200)
-        with func(arg, timeout=100):
+        with func(arg, timeout=100, raising=False):
             timer.single_shot(signaller.signal, 200)
     else:
         with func(arg):
@@ -338,7 +346,7 @@ class TestArgs:
 
     def test_timeout(self, qtbot):
         """If there's a timeout, the args attribute is None."""
-        with qtbot.waitSignal(timeout=100) as blocker:
+        with qtbot.waitSignal(timeout=100, raising=False) as blocker:
             pass
         assert blocker.args is None
 

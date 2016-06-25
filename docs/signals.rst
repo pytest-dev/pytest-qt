@@ -17,10 +17,10 @@ ensuring the results are correct::
         with qtbot.waitSignal(app.worker.finished, timeout=10000) as blocker:
             blocker.connect(app.worker.failed)  # Can add other signals to blocker
             app.worker.start()
-            # Test will block at this point until either finished or failed
-            # signals is emitted or 10 seconds has elapsed
+            # Test will block at this point until either the "finished" or the
+            # "failed" signal is emitted. If 10 seconds passed without a signal,
+            # SignalTimeoutError will be raised.
 
-        assert blocker.signal_triggered, "process timed-out"
         assert_application_results(app)
 
 
@@ -29,8 +29,9 @@ raising parameter
 -----------------
 
 .. versionadded:: 1.4
+.. versionchanged:: 2.0                  
 
-You can pass ``raising=True`` to raise a
+You can pass ``raising=False`` to avoid raising a
 :class:`qtbot.SignalTimeoutError <SignalTimeoutError>` if the timeout is
 reached before the signal is triggered:
 
@@ -38,18 +39,14 @@ reached before the signal is triggered:
 
     def test_long_computation(qtbot):
         ...
-        with qtbot.waitSignal(app.worker.finished, raising=True) as blocker:
+        with qtbot.waitSignal(app.worker.finished, raising=False) as blocker:
             app.worker.start()
-        # if timeout is reached, qtbot.SignalTimeoutError will be raised at this point
+
         assert_application_results(app)
 
-
-.. note::
-
-    The default value for ``raising`` is planned to change to ``True`` starting in
-    pytest-qt version ``1.12``. Users wishing to preserve
-    the current behavior (``raising`` is ``False`` by default) should make
-    use of the new :ref:`qt_wait_signal_raising`.
+        # qtbot.SignalTimeoutError is not raised, but you can still manually
+        # check whether the signal was triggered:
+        assert blocker.signal_triggered, "process timed-out"
 
 .. _qt_wait_signal_raising:
 
@@ -57,6 +54,7 @@ qt_wait_signal_raising ini option
 ---------------------------------
 
 .. versionadded:: 1.11
+.. versionchanged:: 2.0                  
 
 The ``qt_wait_signal_raising`` ini option can be used to override the default
 value of the ``raising`` parameter of the ``qtbot.waitSignal`` and
@@ -65,7 +63,7 @@ value of the ``raising`` parameter of the ``qtbot.waitSignal`` and
 .. code-block:: ini
 
     [pytest]
-    qt_wait_signal_raising = true
+    qt_wait_signal_raising = false
 
 Calls which explicitly pass the ``raising`` parameter are not affected.
 
@@ -104,7 +102,7 @@ the ``raising`` parameter::
 
     def test_workers(qtbot):
         workers = spawn_workers()
-        with qtbot.waitSignal([w.finished for w in workers], raising=True):
+        with qtbot.waitSignal([w.finished for w in workers]):
             for w in workers:
                 w.start()
 

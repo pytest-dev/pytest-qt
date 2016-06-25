@@ -14,6 +14,10 @@ Breaking changes
   You can pass ``extend=False`` to get the old behaviour of overriding the
   patterns.
 
+- ``qtbot.waitSignal`` now defaults to ``raising=True`` and raises an exception
+  on timeouts. You can set ``qt_wait_signal_raising = false`` in your config to
+  get back the old behaviour.
+
 Other changes
 =============
 

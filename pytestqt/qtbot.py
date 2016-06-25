@@ -262,6 +262,8 @@ class QtBot(object):
         :param bool raising:
             If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
             should be raised if a timeout occurred.
+            This defaults to ``True`` unless ``qt_wait_signal_raising = false``
+            is set in the config.
         :returns:
             ``SignalBlocker`` object. Call ``SignalBlocker.wait()`` to wait.
 
@@ -270,7 +272,11 @@ class QtBot(object):
            else you will block indefinitely. We throw an error if this occurs.
         """
         if raising is None:
-            raising = self._request.config.getini('qt_wait_signal_raising')
+            raising_val = self._request.config.getini('qt_wait_signal_raising')
+            if not raising_val:
+                raising = True
+            else:
+                raising = _parse_ini_boolean(raising_val)
         blocker = SignalBlocker(timeout=timeout, raising=raising)
         if signal is not None:
             blocker.connect(signal)
@@ -308,6 +314,8 @@ class QtBot(object):
         :param bool raising:
             If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
             should be raised if a timeout occurred.
+            This defaults to ``True`` unless ``qt_wait_signal_raising = false``
+            is set in the config.
         :returns:
             ``MultiSignalBlocker`` object. Call ``MultiSignalBlocker.wait()``
             to wait.
@@ -335,7 +343,7 @@ class QtBot(object):
         While waiting, events will be processed and your test will stay
         responsive to user interface events or network communication.
         """
-        blocker = MultiSignalBlocker(timeout=ms)
+        blocker = MultiSignalBlocker(timeout=ms, raising=False)
         blocker.wait()
 
     @contextlib.contextmanager

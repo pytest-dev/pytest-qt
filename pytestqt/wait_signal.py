@@ -16,7 +16,7 @@ class _AbstractSignalBlocker(object):
 
     """
 
-    def __init__(self, timeout=1000, raising=False):
+    def __init__(self, timeout=1000, raising=True):
         self._loop = QtCore.QEventLoop()
         self.timeout = timeout
         self.signal_triggered = False
@@ -101,7 +101,7 @@ class SignalBlocker(_AbstractSignalBlocker):
     .. automethod:: connect
     """
 
-    def __init__(self, timeout=1000, raising=False):
+    def __init__(self, timeout=1000, raising=True):
         super(SignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = []
         self.args = None
@@ -151,7 +151,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     .. automethod:: wait
     """
 
-    def __init__(self, timeout=1000, raising=False):
+    def __init__(self, timeout=1000, raising=True):
         super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = {}
         self._slots = {}
