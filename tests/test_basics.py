@@ -2,6 +2,7 @@ import weakref
 import pytest
 from pytestqt.qt_compat import QtGui, Qt, QEvent, QtCore, QApplication, \
     QWidget
+import pytestqt.qtbot
 
 
 def test_basics(qtbot):
@@ -245,9 +246,18 @@ def event_recorder(qtbot):
     return widget
 
 
-def test_parse_ini_boolean():
-    import pytestqt.qtbot
-    assert pytestqt.qtbot._parse_ini_boolean('True') is True
-    assert pytestqt.qtbot._parse_ini_boolean('false') is False
+@pytest.mark.parametrize('value, expected', [
+    (True, True),
+    (False, False),
+    ('True', True),
+    ('False', False),
+    ('true', True),
+    ('false', False),
+])
+def test_parse_ini_boolean_valid(value, expected):
+    assert pytestqt.qtbot._parse_ini_boolean(value) == expected
+
+
+def test_parse_ini_boolean_invalid():
     with pytest.raises(ValueError):
         pytestqt.qtbot._parse_ini_boolean('foo')
