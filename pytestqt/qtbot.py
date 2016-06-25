@@ -118,7 +118,7 @@ class QtBot(object):
         :return type: str
         :returns: the equivalent character string.
 
-        .. note:: this method is not available in PyQt.
+        .. note:: This method is not available in PyQt.
 
     ---
 
@@ -168,6 +168,8 @@ class QtBot(object):
 
         :param QWidget widget:
             Widget to keep track of.
+
+        .. note:: This method is also available as ``add_widget`` (pep-8 alias)
         """
         _add_widget(self._request.node, widget)
 
@@ -184,6 +186,8 @@ class QtBot(object):
 
         .. note:: In Qt5, the actual method called is qWaitForWindowExposed,
             but this name is kept for backward compatibility
+
+        .. note:: This method is also available as ``wait_for_window_shown`` (pep-8 alias)
         """
         if hasattr(QtTest.QTest, 'qWaitForWindowShown'):  # pragma: no cover
             # PyQt4 and PySide
@@ -259,6 +263,8 @@ class QtBot(object):
         .. note::
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
+
+        .. note:: This method is also available as ``wait_signal`` (pep-8 alias)
         """
         if raising is None:
             raising = self._request.config.getini('qt_wait_signal_raising')
@@ -306,6 +312,8 @@ class QtBot(object):
         .. note::
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
+
+        .. note:: This method is also available as ``wait_signals`` (pep-8 alias)
         """
         if raising is None:
             raising = self._request.config.getini('qt_wait_signal_raising')
@@ -337,6 +345,9 @@ class QtBot(object):
         Make sure the given ``signal`` doesn't get emitted.
 
         This is intended to be used as a context manager.
+
+        .. note:: This method is also available as ``assert_not_emitted``
+                  (pep-8 alias)
         """
         spy = SignalEmittedSpy(signal)
         with spy:
