@@ -35,6 +35,7 @@ class _AbstractSignalBlocker(object):
         :raise ValueError: if no signals are connected and timeout is None; in
             this case it would wait forever.
         """
+        __tracebackhide__ = True
         if self.signal_triggered:
             return
         if self.timeout is None and not self._signals:
@@ -63,6 +64,7 @@ class _AbstractSignalBlocker(object):
         return self
 
     def __exit__(self, type, value, traceback):
+        __tracebackhide__ = True
         if value is None:
             # only wait if no exception happened inside the "with" block
             self.wait()
