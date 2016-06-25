@@ -5,6 +5,15 @@ from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeou
 from pytestqt.qt_compat import QtTest, QApplication
 
 
+def _parse_ini_boolean(value):
+    if value in (True, False):
+        return value
+    try:
+        return {'true': True, 'false': False}[value.lower()]
+    except KeyError:
+        raise ValueError('unknown string for bool: %r' % value)
+
+
 def _inject_qtest_methods(cls):
     """
     Injects QTest methods into the given class QtBot, so the user can access

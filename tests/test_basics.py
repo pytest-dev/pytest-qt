@@ -243,3 +243,11 @@ def event_recorder(qtbot):
     widget = EventRecorder()
     qtbot.addWidget(widget)
     return widget
+
+
+def test_parse_ini_boolean():
+    import pytestqt.qtbot
+    assert pytestqt.qtbot._parse_ini_boolean('True') is True
+    assert pytestqt.qtbot._parse_ini_boolean('false') is False
+    with pytest.raises(ValueError):
+        pytestqt.qtbot._parse_ini_boolean('foo')
