@@ -1,5 +1,8 @@
-1.12.dev
---------
+2.0
+---
+
+- ``pytest-qt`` now defaults to using ``PyQt5`` if ``PYTEST_QT_API`` is not set.
+  Before, it preferred ``PySide`` which is using the discontinued Qt4.
 
 - Exceptions caught by ``pytest-qt`` in ``sys.excepthook`` are now also printed
   to ``stderr``, making debugging them easier from within an IDE.

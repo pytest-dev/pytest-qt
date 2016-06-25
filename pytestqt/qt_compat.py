@@ -25,12 +25,12 @@ if not on_rtd:  # pragma: no cover
             return False
 
     def _guess_qt_api():
-        if _try_import('PySide'):
+        if _try_import('PyQt5'):
+            return 'pyqt5'
+        elif _try_import('PySide'):
             return 'pyside'
         elif _try_import('PyQt4'):
             return 'pyqt4'
-        elif _try_import('PyQt5'):
-            return 'pyqt5'
         else:
             msg = 'pytest-qt requires either PySide, PyQt4 or PyQt5 to be installed'
             raise RuntimeError(msg)
