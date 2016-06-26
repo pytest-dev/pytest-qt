@@ -219,8 +219,9 @@ defined by ``qt_log_ignore`` make tests fail as usual:
     QtCriticalMsg: QObject: widget destroyed in another thread
 
 
-You can also override ``qt_log_level_fail`` and ``qt_log_ignore`` settings
-from ``pytest.ini`` in some tests by using a mark with the same name:
+You can also override the ``qt_log_level_fail`` setting and extend
+``qt_log_ignore`` patterns from ``pytest.ini`` in some tests by using a mark
+with the same name:
 
 .. code-block:: python
 
@@ -233,11 +234,11 @@ from ``pytest.ini`` in some tests by using a mark with the same name:
     def test_foo(qtlog):
         do_something()
 
-If you would like to extend the list of ignored patterns, pass ``extend=True``
-to the ``qt_log_ignore`` mark:
+If you would like to override the list of ignored patterns instead, pass
+``extend=False`` to the ``qt_log_ignore`` mark:
 
 .. code-block:: python
 
-    @pytest.mark.qt_log_ignore('WM_DESTROY.*sent', extend=True)
+    @pytest.mark.qt_log_ignore('WM_DESTROY.*sent', extend=False)
     def test_foo(qtlog):
         do_something()

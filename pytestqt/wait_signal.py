@@ -16,7 +16,7 @@ class _AbstractSignalBlocker(object):
 
     """
 
-    def __init__(self, timeout=1000, raising=False):
+    def __init__(self, timeout=1000, raising=True):
         self._loop = QtCore.QEventLoop()
         self.timeout = timeout
         self.signal_triggered = False
@@ -35,6 +35,7 @@ class _AbstractSignalBlocker(object):
         :raise ValueError: if no signals are connected and timeout is None; in
             this case it would wait forever.
         """
+        __tracebackhide__ = True
         if self.signal_triggered:
             return
         if self.timeout is None and not self._signals:
@@ -63,6 +64,7 @@ class _AbstractSignalBlocker(object):
         return self
 
     def __exit__(self, type, value, traceback):
+        __tracebackhide__ = True
         if value is None:
             # only wait if no exception happened inside the "with" block
             self.wait()
@@ -99,7 +101,7 @@ class SignalBlocker(_AbstractSignalBlocker):
     .. automethod:: connect
     """
 
-    def __init__(self, timeout=1000, raising=False):
+    def __init__(self, timeout=1000, raising=True):
         super(SignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = []
         self.args = None
@@ -149,7 +151,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     .. automethod:: wait
     """
 
-    def __init__(self, timeout=1000, raising=False):
+    def __init__(self, timeout=1000, raising=True):
         super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = {}
         self._slots = {}

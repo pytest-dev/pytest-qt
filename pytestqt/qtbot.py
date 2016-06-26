@@ -5,6 +5,15 @@ from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeou
 from pytestqt.qt_compat import QtTest, QApplication
 
 
+def _parse_ini_boolean(value):
+    if value in (True, False):
+        return value
+    try:
+        return {'true': True, 'false': False}[value.lower()]
+    except KeyError:
+        raise ValueError('unknown string for bool: %r' % value)
+
+
 def _inject_qtest_methods(cls):
     """
     Injects QTest methods into the given class QtBot, so the user can access
@@ -257,6 +266,8 @@ class QtBot(object):
         :param bool raising:
             If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
             should be raised if a timeout occurred.
+            This defaults to ``True`` unless ``qt_wait_signal_raising = false``
+            is set in the config.
         :returns:
             ``SignalBlocker`` object. Call ``SignalBlocker.wait()`` to wait.
 
@@ -267,7 +278,11 @@ class QtBot(object):
         .. note:: This method is also available as ``wait_signal`` (pep-8 alias)
         """
         if raising is None:
-            raising = self._request.config.getini('qt_wait_signal_raising')
+            raising_val = self._request.config.getini('qt_wait_signal_raising')
+            if not raising_val:
+                raising = True
+            else:
+                raising = _parse_ini_boolean(raising_val)
         blocker = SignalBlocker(timeout=timeout, raising=raising)
         if signal is not None:
             blocker.connect(signal)
@@ -305,6 +320,8 @@ class QtBot(object):
         :param bool raising:
             If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
             should be raised if a timeout occurred.
+            This defaults to ``True`` unless ``qt_wait_signal_raising = false``
+            is set in the config.
         :returns:
             ``MultiSignalBlocker`` object. Call ``MultiSignalBlocker.wait()``
             to wait.
@@ -334,7 +351,7 @@ class QtBot(object):
         While waiting, events will be processed and your test will stay
         responsive to user interface events or network communication.
         """
-        blocker = MultiSignalBlocker(timeout=ms)
+        blocker = MultiSignalBlocker(timeout=ms, raising=False)
         blocker.wait()
 
     @contextlib.contextmanager

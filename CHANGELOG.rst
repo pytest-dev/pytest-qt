@@ -1,10 +1,28 @@
 2.0
 ---
 
+Breaking changes
+================
+
+With pytest-qt 2.0, we changed some defaults to values we think are much better.
+However, this required some backwards-incompatible changes:
+
 - ``pytest-qt`` now defaults to using ``PyQt5`` if ``PYTEST_QT_API`` is not set.
   Before, it preferred ``PySide`` which is using the discontinued Qt4.
 
 - Python 3 versions prior to 3.4 are no longer supported.
+
+- The ``@pytest.mark.qt_log_ignore`` mark now defaults to ``extend=True``, i.e.
+  extends the patterns defined in the config file rather than overriding them.
+  You can pass ``extend=False`` to get the old behaviour of overriding the
+  patterns.
+
+- ``qtbot.waitSignal`` now defaults to ``raising=True`` and raises an exception
+  on timeouts. You can set ``qt_wait_signal_raising = false`` in your config to
+  get back the old behaviour.
+
+Other changes
+=============
 
 - Exceptions caught by ``pytest-qt`` in ``sys.excepthook`` are now also printed
   to ``stderr``, making debugging them easier from within an IDE.
