@@ -1,10 +1,20 @@
 2.0
 ---
 
+New
+===
+
+* From this version onward, ``pytest-qt`` is licensed under the MIT license (`#134`_).
+
+.. _#134: https://github.com/pytest-dev/pytest-qt/issues/134
+
+
 Breaking changes
 ================
 
-With pytest-qt 2.0, we changed some defaults to values we think are much better.
+With ``pytest-qt`` 2.0, we changed some defaults to values we think are much
+better.
+
 However, this required some backwards-incompatible changes:
 
 - ``pytest-qt`` now defaults to using ``PyQt5`` if ``PYTEST_QT_API`` is not set.
@@ -21,7 +31,7 @@ However, this required some backwards-incompatible changes:
   on timeouts. You can set ``qt_wait_signal_raising = false`` in your config to
   get back the old behaviour.
 
-Other changes
+Other Changes
 =============
 
 - Exceptions caught by ``pytest-qt`` in ``sys.excepthook`` are now also printed
