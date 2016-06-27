@@ -71,7 +71,7 @@ activate a new fresh environment and execute::
     pip install pyside # or pyqt4/pyqt5
 
 
-.. _virtualenv: http://virtualenv.readthedocs.org/
+.. _virtualenv: https://virtualenv.readthedocs.io/
 
 Versioning
 ----------
