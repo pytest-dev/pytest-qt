@@ -1,7 +1,17 @@
 import functools
+import contextlib
 import weakref
-from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError
+from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError, SignalEmittedSpy
 from pytestqt.qt_compat import QtTest, QApplication
+
+
+def _parse_ini_boolean(value):
+    if value in (True, False):
+        return value
+    try:
+        return {'true': True, 'false': False}[value.lower()]
+    except KeyError:
+        raise ValueError('unknown string for bool: %r' % value)
 
 
 def _inject_qtest_methods(cls):
@@ -62,11 +72,13 @@ class QtBot(object):
     .. automethod:: addWidget
     .. automethod:: waitForWindowShown
     .. automethod:: stopForInteraction
+    .. automethod:: wait
 
     **Signals**
 
     .. automethod:: waitSignal
     .. automethod:: waitSignals
+    .. automethod:: assertNotEmitted
 
     **Raw QTest API**
 
@@ -78,7 +90,6 @@ class QtBot(object):
 
     Below are methods used to simulate sending key events to widgets:
 
-    .. staticmethod:: keyPress(widget, key[, modifier=Qt.NoModifier[, delay=-1]])
     .. staticmethod:: keyClick (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
     .. staticmethod:: keyClicks (widget, key sequence[, modifier=Qt.NoModifier[, delay=-1]])
     .. staticmethod:: keyEvent (action, widget, key[, modifier=Qt.NoModifier[, delay=-1]])
@@ -116,7 +127,7 @@ class QtBot(object):
         :return type: str
         :returns: the equivalent character string.
 
-        .. note:: this method is not available in PyQt.
+        .. note:: This method is not available in PyQt.
 
     ---
 
@@ -156,19 +167,8 @@ class QtBot(object):
 
     """
 
-    def __init__(self):
-        self._widgets = []  # list of weakref to QWidget instances
-
-    def _close(self):
-        """
-        Clear up method. Called at the end of each test that uses a ``qtbot`` fixture.
-        """
-        for w in self._widgets:
-            w = w()
-            if w is not None:
-                w.close()
-                w.deleteLater()
-        self._widgets[:] = []
+    def __init__(self, request):
+        self._request = request
 
     def addWidget(self, widget):
         """
@@ -177,8 +177,10 @@ class QtBot(object):
 
         :param QWidget widget:
             Widget to keep track of.
+
+        .. note:: This method is also available as ``add_widget`` (pep-8 alias)
         """
-        self._widgets.append(weakref.ref(widget))
+        _add_widget(self._request.node, widget)
 
     add_widget = addWidget  # pep-8 alias
 
@@ -193,6 +195,8 @@ class QtBot(object):
 
         .. note:: In Qt5, the actual method called is qWaitForWindowExposed,
             but this name is kept for backward compatibility
+
+        .. note:: This method is also available as ``wait_for_window_shown`` (pep-8 alias)
         """
         if hasattr(QtTest.QTest, 'qWaitForWindowShown'):  # pragma: no cover
             # PyQt4 and PySide
@@ -216,7 +220,7 @@ class QtBot(object):
         .. note:: As a convenience, it is also aliased as `stop`.
         """
         widget_and_visibility = []
-        for weak_widget in self._widgets:
+        for weak_widget in _iter_widgets(self._request.node):
             widget = weak_widget()
             if widget is not None:
                 widget_and_visibility.append((widget, widget.isVisible()))
@@ -228,7 +232,7 @@ class QtBot(object):
 
     stop = stopForInteraction
 
-    def waitSignal(self, signal=None, timeout=1000, raising=False):
+    def waitSignal(self, signal=None, timeout=1000, raising=None):
         """
         .. versionadded:: 1.2
 
@@ -262,13 +266,23 @@ class QtBot(object):
         :param bool raising:
             If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
             should be raised if a timeout occurred.
+            This defaults to ``True`` unless ``qt_wait_signal_raising = false``
+            is set in the config.
         :returns:
             ``SignalBlocker`` object. Call ``SignalBlocker.wait()`` to wait.
 
         .. note::
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
+
+        .. note:: This method is also available as ``wait_signal`` (pep-8 alias)
         """
+        if raising is None:
+            raising_val = self._request.config.getini('qt_wait_signal_raising')
+            if not raising_val:
+                raising = True
+            else:
+                raising = _parse_ini_boolean(raising_val)
         blocker = SignalBlocker(timeout=timeout, raising=raising)
         if signal is not None:
             blocker.connect(signal)
@@ -276,7 +290,7 @@ class QtBot(object):
 
     wait_signal = waitSignal  # pep-8 alias
 
-    def waitSignals(self, signals=None, timeout=1000, raising=False):
+    def waitSignals(self, signals=None, timeout=1000, raising=None):
         """
         .. versionadded:: 1.4
 
@@ -299,13 +313,15 @@ class QtBot(object):
            blocker.wait()
 
         :param list signals:
-            A list of :class:`Signal`s to wait for. Set to ``None`` to just use
-            timeout.
+            A list of :class:`Signal` objects to wait for. Set to ``None`` to
+            just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
             If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
             should be raised if a timeout occurred.
+            This defaults to ``True`` unless ``qt_wait_signal_raising = false``
+            is set in the config.
         :returns:
             ``MultiSignalBlocker`` object. Call ``MultiSignalBlocker.wait()``
             to wait.
@@ -313,7 +329,11 @@ class QtBot(object):
         .. note::
            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
            else you will block indefinitely. We throw an error if this occurs.
+
+        .. note:: This method is also available as ``wait_signals`` (pep-8 alias)
         """
+        if raising is None:
+            raising = self._request.config.getini('qt_wait_signal_raising')
         blocker = MultiSignalBlocker(timeout=timeout, raising=raising)
         if signals is not None:
             for signal in signals:
@@ -322,6 +342,68 @@ class QtBot(object):
 
     wait_signals = waitSignals  # pep-8 alias
 
+    def wait(self, ms):
+        """
+        .. versionadded:: 1.9
+
+        Waits for ``ms`` milliseconds.
+
+        While waiting, events will be processed and your test will stay
+        responsive to user interface events or network communication.
+        """
+        blocker = MultiSignalBlocker(timeout=ms, raising=False)
+        blocker.wait()
+
+    @contextlib.contextmanager
+    def assertNotEmitted(self, signal):
+        """
+        .. versionadded:: 1.11
+
+        Make sure the given ``signal`` doesn't get emitted.
+
+        This is intended to be used as a context manager.
+
+        .. note:: This method is also available as ``assert_not_emitted``
+                  (pep-8 alias)
+        """
+        spy = SignalEmittedSpy(signal)
+        with spy:
+            yield
+        spy.assert_not_emitted()
+
+    assert_not_emitted = assertNotEmitted  # pep-8 alias
+
+
 
 # provide easy access to SignalTimeoutError to qtbot fixtures
 QtBot.SignalTimeoutError = SignalTimeoutError
+
+
+def _add_widget(item, widget):
+    """
+    Register a widget into the given pytest item for later closing.
+    """
+    qt_widgets = getattr(item, 'qt_widgets', [])
+    qt_widgets.append(weakref.ref(widget))
+    item.qt_widgets = qt_widgets
+
+
+def _close_widgets(item):
+    """
+    Close all widgets registered in the pytest item.
+    """
+    widgets = getattr(item, 'qt_widgets', None)
+    if widgets:
+        for w in item.qt_widgets:
+            w = w()
+            if w is not None:
+                w.close()
+                w.deleteLater()
+        del item.qt_widgets
+
+
+def _iter_widgets(item):
+    """
+    Iterates over widgets registered in the given pytest item.
+    """
+    return iter(getattr(item, 'qt_widgets', []))

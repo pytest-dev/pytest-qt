@@ -25,15 +25,15 @@ if not on_rtd:  # pragma: no cover
             return False
 
     def _guess_qt_api():
-        if _try_import('PySide'):
+        if _try_import('PyQt5'):
+            return 'pyqt5'
+        elif _try_import('PySide'):
             return 'pyside'
         elif _try_import('PyQt4'):
             return 'pyqt4'
-        elif _try_import('PyQt5'):
-            return 'pyqt5'
         else:
             msg = 'pytest-qt requires either PySide, PyQt4 or PyQt5 to be installed'
-            raise ImportError(msg)
+            raise RuntimeError(msg)
 
     # backward compatibility support: PYTEST_QT_FORCE_PYQT
     if os.environ.get('PYTEST_QT_FORCE_PYQT', 'false') == 'true':
@@ -42,7 +42,7 @@ if not on_rtd:  # pragma: no cover
         QT_API = os.environ.get('PYTEST_QT_API')
         if QT_API is not None:
             QT_API = QT_API.lower()
-            if QT_API not in ('pyside', 'pyqt4', 'pyqt5'):
+            if QT_API not in ('pyside', 'pyqt4', 'pyqt4v2', 'pyqt5'):
                 msg = 'Invalid value for $PYTEST_QT_API: %s'
                 raise RuntimeError(msg % QT_API)
         else:
@@ -58,9 +58,22 @@ if not on_rtd:  # pragma: no cover
     _root_modules = {
         'pyside': 'PySide',
         'pyqt4': 'PyQt4',
+        'pyqt4v2': 'PyQt4',
         'pyqt5': 'PyQt5',
     }
     _root_module = _root_modules[QT_API]
+
+    if QT_API == 'pyqt4v2':
+        # the v2 api in PyQt4
+        # http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
+        import sip
+        sip.setapi("QDate", 2)
+        sip.setapi("QDateTime", 2)
+        sip.setapi("QString", 2)
+        sip.setapi("QTextStream", 2)
+        sip.setapi("QTime", 2)
+        sip.setapi("QUrl", 2)
+        sip.setapi("QVariant", 2)
 
     QtCore = _import_module('QtCore')
     QtGui = _import_module('QtGui')
@@ -118,15 +131,13 @@ if not on_rtd:  # pragma: no cover
             return VersionTuple('PySide', PySide.__version__, QtCore.qVersion(),
                                 QtCore.__version__)
 
-    elif QT_API in ('pyqt4', 'pyqt5'):
+    elif QT_API in ('pyqt4', 'pyqt4v2', 'pyqt5'):
         import sip
         Signal = QtCore.pyqtSignal
         Slot = QtCore.pyqtSlot
         Property = QtCore.pyqtProperty
 
         if QT_API == 'pyqt5':
-            qt_api_name = 'PyQt5'
-
             _QtWidgets = _import_module('QtWidgets')
             QApplication = _QtWidgets.QApplication
             QWidget = _QtWidgets.QWidget
@@ -141,9 +152,9 @@ if not on_rtd:  # pragma: no cover
                 if isinstance(variant, QtCore.QVariant):
                     return variant.value()
                 return variant
-        else:
-            qt_api_name = 'PyQt4'
 
+            qt_api_name = 'PyQt5'
+        else:
             QApplication = QtGui.QApplication
             QWidget = QtGui.QWidget
             qInstallMsgHandler = QtCore.qInstallMsgHandler
@@ -157,6 +168,8 @@ if not on_rtd:  # pragma: no cover
                 if isinstance(variant, QtCore.QVariant):
                     return variant.toPyObject()
                 return variant
+
+            qt_api_name = 'PyQt4'
 
         QStandardItem = QtGui.QStandardItem
         QStandardItemModel = QtGui.QStandardItemModel

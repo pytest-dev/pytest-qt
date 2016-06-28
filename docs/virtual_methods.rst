@@ -17,7 +17,7 @@ naturally in your python code::
 
 This works fine, but if python code in Qt virtual methods raise an exception
 ``PyQt4`` and ``PySide`` will just print the exception traceback to standard
-error, since this method is called deep within Qt's even loop handling and
+error, since this method is called deep within Qt's event loop handling and
 exceptions are not allowed at that point. In ``PyQt5.5+``, exceptions in
 virtual methods will by default call ``abort()``, which will crash the
 interpreter.
@@ -47,7 +47,8 @@ are raised inside virtual methods, like this::
     E           RuntimeError: unexpected error
 
 
-**Disabling the automatic exception hook**
+Disabling the automatic exception hook
+--------------------------------------
 
 You can disable the automatic exception hook on individual tests by using a
 ``qt_no_exception_capture`` marker::

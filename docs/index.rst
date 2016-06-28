@@ -10,7 +10,7 @@ pytest-qt
 
 :Repository: `GitHub <https://github.com/pytest-dev/pytest-qt>`_
 :Version: |version|
-:License: `LGPL <http://www.gnu.org/licenses/lgpl-3.0.txt>`_
+:License: `MIT <https://opensource.org/licenses/MIT>`_
 :Author: Bruno Oliveira
 
 .. toctree::
@@ -24,6 +24,7 @@ pytest-qt
     modeltester
     app_exit
     reference
+    changelog
 
 
 

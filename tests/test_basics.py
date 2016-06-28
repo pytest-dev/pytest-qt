@@ -2,6 +2,7 @@ import weakref
 import pytest
 from pytestqt.qt_compat import QtGui, Qt, QEvent, QtCore, QApplication, \
     QWidget, make_variant, extract_from_variant
+import pytestqt.qtbot
 
 
 def test_basics(qtbot):
@@ -186,6 +187,46 @@ def test_qvariant(tmpdir):
     assert extract_from_variant(settings.value('empty')) is None
 
 
+def test_widgets_closed_before_fixtures(testdir):
+    """
+    Ensure widgets added by "qtbot.add_widget" are closed before all other
+    fixtures are teardown. (#106).
+    """
+    testdir.makepyfile('''
+        import pytest
+        from pytestqt.qt_compat import QWidget
+
+        class Widget(QWidget):
+
+            closed = False
+
+            def closeEvent(self, e):
+                e.accept()
+                self.closed = True
+
+        @pytest.yield_fixture
+        def widget(qtbot):
+            w = Widget()
+            qtbot.add_widget(w)
+            yield w
+            assert w.closed
+
+        def test_foo(widget):
+            pass
+    ''')
+    result = testdir.runpytest()
+    result.stdout.fnmatch_lines([
+        '*= 1 passed in *'
+    ])
+
+
+def test_qtbot_wait(qtbot, stop_watch):
+    stop_watch.start()
+    qtbot.wait(250)
+    stop_watch.stop()
+    assert stop_watch.elapsed >= 220
+
+
 class EventRecorder(QWidget):
 
     """
@@ -218,3 +259,20 @@ def event_recorder(qtbot):
     widget = EventRecorder()
     qtbot.addWidget(widget)
     return widget
+
+
+@pytest.mark.parametrize('value, expected', [
+    (True, True),
+    (False, False),
+    ('True', True),
+    ('False', False),
+    ('true', True),
+    ('false', False),
+])
+def test_parse_ini_boolean_valid(value, expected):
+    assert pytestqt.qtbot._parse_ini_boolean(value) == expected
+
+
+def test_parse_ini_boolean_invalid():
+    with pytest.raises(ValueError):
+        pytestqt.qtbot._parse_ini_boolean('foo')

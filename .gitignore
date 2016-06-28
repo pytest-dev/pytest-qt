@@ -9,3 +9,5 @@ __pycache__
 /.tox
 .env*
 .coverage
+/.cache
+/.venv

@@ -31,7 +31,7 @@ To test this widget's basic functionality, create a test function::
         tmpdir.join('video2.srt').ensure()
 
 Here the first parameter indicates that we will be using a ``qtbot`` fixture to control our widget.
-The other parameter is py.test standard's tmpdir_ that we use to create some files that will be
+The other parameter is pytest's standard tmpdir_ that we use to create some files that will be
 used during our test.
 
 .. _tmpdir: http://pytest.org/latest/tmpdir.html

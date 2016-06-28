@@ -1,45 +1,43 @@
 language: python
+sudo: required
+dist: trusty
 
 python:
   - "2.7"
-  - "3.2"
-  
+  - "3.4"
+
 virtualenv:
   system_site_packages: true
 
 matrix:
-  allow_failures:
-    # unfortunately couldn't find a reliable way to test pyqt5 on travis yet
-    - env: PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt5
+  exclude:
+    - env: PYTEST_QT_API=pyqt5
+      python: "2.7"
 
 env:
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt4
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyside
- - PYTEST_VERSION=2.7.2 PYTEST_QT_API=pyqt5
+ - PYTEST_QT_API=pyqt4
+ - PYTEST_QT_API=pyqt4v2
+ - PYTEST_QT_API=pyside
+ - PYTEST_QT_API=pyqt5
 
 install:
- - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
  - sudo apt-get update
- 
+
+ # Xvfb
+ - sudo apt-get install -y xvfb
+
  # Qt
  - python scripts/install-qt.py
 
  # PyTest
- - pip uninstall -y pytest
- - pip install pytest==$PYTEST_VERSION
+ - pip install -U pytest
 
  # others
  - pip install coveralls --use-wheel
 
-before_script:
- - export DISPLAY=:99.0
- - sh -e /etc/init.d/xvfb start
- - sleep 3
-
-
 script:
  - python setup.py develop
- - catchsegv coverage run --source=pytestqt setup.py test
+ - catchsegv xvfb-run coverage run --source=pytestqt setup.py test
 
 after_success:
  - coveralls

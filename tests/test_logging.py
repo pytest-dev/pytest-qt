@@ -237,7 +237,7 @@ def test_logging_fails_tests_mark(testdir):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical, qDebug
+        from pytestqt.qt_compat import qWarning
         import pytest
         @pytest.mark.qt_log_level_fail('WARNING')
         def test_1():
@@ -265,7 +265,7 @@ def test_logging_fails_ignore(testdir):
     )
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical
+        from pytestqt.qt_compat import qCritical
         import pytest
 
         def test1():
@@ -308,10 +308,14 @@ def test_logging_fails_ignore(testdir):
     res.stdout.fnmatch_lines(lines)
 
 
-@pytest.mark.parametrize('mark_regex', ['WM_DESTROY.*sent', 'no-match', None])
-def test_logging_fails_ignore_mark(testdir, mark_regex):
+@pytest.mark.parametrize('message', ['match-global', 'match-mark'])
+@pytest.mark.parametrize('marker_args', [
+    "'match-mark', extend=True",
+    "'match-mark'"
+])
+def test_logging_mark_with_extend(testdir, message, marker_args):
     """
-    Test qt_log_ignore mark overrides config option.
+    Test qt_log_ignore mark with extend=True.
 
     :type testdir: _pytest.pytester.TmpTestdir
     """
@@ -319,24 +323,84 @@ def test_logging_fails_ignore_mark(testdir, mark_regex):
         """
         [pytest]
         qt_log_level_fail = CRITICAL
+        qt_log_ignore = match-global
         """
     )
-    if mark_regex:
-        mark = '@pytest.mark.qt_log_ignore("{0}")'.format(mark_regex)
-    else:
-        mark = ''
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical
+        from pytestqt.qt_compat import qCritical
         import pytest
-        {mark}
+
+        @pytest.mark.qt_log_ignore({marker_args})
         def test1():
-            qCritical('WM_DESTROY was sent')
-        """.format(mark=mark)
+            qCritical('{message}')
+        """.format(message=message, marker_args=marker_args)
     )
     res = testdir.inline_run()
-    passed = 1 if mark_regex == 'WM_DESTROY.*sent' else 0
-    res.assertoutcome(passed=passed, failed=int(not passed))
+    res.assertoutcome(passed=1, failed=0)
+
+
+@pytest.mark.parametrize('message, error_expected', [
+    ('match-global', True),
+    ('match-mark', False),
+])
+def test_logging_mark_without_extend(testdir, message, error_expected):
+    """
+    Test qt_log_ignore mark with extend=False.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = CRITICAL
+        qt_log_ignore = match-global
+        """
+    )
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qCritical
+        import pytest
+
+        @pytest.mark.qt_log_ignore('match-mark', extend=False)
+        def test1():
+            qCritical('{message}')
+        """.format(message=message)
+    )
+    res = testdir.inline_run()
+
+    if error_expected:
+        res.assertoutcome(passed=0, failed=1)
+    else:
+        res.assertoutcome(passed=1, failed=0)
+
+
+def test_logging_mark_with_invalid_argument(testdir):
+    """
+    Test qt_log_ignore mark with invalid keyword argument.
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makepyfile(
+        """
+        import pytest
+
+        @pytest.mark.qt_log_ignore('match-mark', does_not_exist=True)
+        def test1():
+            pass
+        """
+    )
+    res = testdir.runpytest()
+    lines = [
+        '*= ERRORS =*',
+        '*_ ERROR at setup of test1 _*',
+        "*ValueError: Invalid keyword arguments in {'does_not_exist': True} "
+            "for qt_log_ignore mark.",
+
+        # summary
+        '*= 1 error in*',
+    ]
+    res.stdout.fnmatch_lines(lines)
 
 
 @pytest.mark.parametrize('apply_mark', [True, False])
@@ -352,7 +416,7 @@ def test_logging_fails_ignore_mark_multiple(testdir, apply_mark):
         mark = ''
     testdir.makepyfile(
         """
-        from pytestqt.qt_compat import qWarning, qCritical
+        from pytestqt.qt_compat import qCritical
         import pytest
         @pytest.mark.qt_log_level_fail('CRITICAL')
         {mark}
@@ -424,6 +488,35 @@ def test_context_none(testdir):
     )
     res = testdir.runpytest()
     res.stdout.fnmatch_lines([
-        '*Failure*',
         '*None:None:None:*',
+        '* QtWarningMsg: WARNING message*',
+    ])
+
+
+def test_logging_broken_makereport(testdir):
+    """
+    Make sure logging's makereport hookwrapper doesn't hide exceptions.
+
+    See https://github.com/pytest-dev/pytest-qt/issues/98
+
+    :type testdir: _pytest.pytester.TmpTestdir
+    """
+    testdir.makepyfile(conftest="""
+        import pytest
+
+        @pytest.mark.hookwrapper(tryfirst=True)
+        def pytest_runtest_makereport(call):
+            if call.when == 'call':
+                raise Exception("This should not be hidden")
+            yield
+    """)
+    p = testdir.makepyfile(
+        """
+        def test_foo():
+            pass
+        """
+    )
+    res = testdir.runpytest_subprocess(p)
+    res.stdout.fnmatch_lines([
+        '*This should not be hidden*',
     ])

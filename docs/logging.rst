@@ -3,8 +3,8 @@ Qt Logging Capture
 
 .. versionadded:: 1.4
 
-Qt features its own logging mechanism through ``qInstallMsgHandler``
-(``qInstallMessageHandler`` on Qt5) and ``qDebug``, ``qWarning``, ``qCritical``
+Qt features its own logging mechanism through ``qInstallMessageHandler``
+(``qInstallMsgHandler`` on Qt4) and ``qDebug``, ``qWarning``, ``qCritical``
 functions. These are used by Qt to print warning messages when internal errors
 occur.
 
@@ -20,7 +20,7 @@ For example:
     def do_something():
         qWarning('this is a WARNING message')
 
-    def test_foo(qtlog):
+    def test_foo():
         do_something()
         assert 0
 
@@ -43,7 +43,8 @@ For example:
     1 failed in 0.01 seconds
 
 
-**Disabling Logging Capture**
+Disabling Logging Capture
+-------------------------
 
 Qt logging capture can be disabled altogether by passing the ``--no-qt-log``
 to the command line, which will fallback to the default Qt bahavior of printing
@@ -64,6 +65,10 @@ emitted messages directly to ``stderr``:
     test.py:8: AssertionError
     ---------------------------- Captured stderr call -----------------------------
     this is a WARNING message
+
+
+qtlog fixture
+-------------
 
 
 ``pytest-qt`` also provides a ``qtlog`` fixture that can used
@@ -100,7 +105,8 @@ context manager, or with the ``pytest.mark.no_qt_log`` mark:
 Keep in mind that when logging is disabled,
 ``qtlog.records`` will always be an empty list.
 
-**Log Formatting**
+Log Formatting
+--------------
 
 The output format of the messages can also be controlled by using the
 ``--qt-log-format`` command line option, which accepts a string with standard
@@ -213,8 +219,9 @@ defined by ``qt_log_ignore`` make tests fail as usual:
     QtCriticalMsg: QObject: widget destroyed in another thread
 
 
-You can also override ``qt_log_level_fail`` and ``qt_log_ignore`` settins
-from ``pytest.ini`` in some tests by using a mark with the same name:
+You can also override the ``qt_log_level_fail`` setting and extend
+``qt_log_ignore`` patterns from ``pytest.ini`` in some tests by using a mark
+with the same name:
 
 .. code-block:: python
 
@@ -224,5 +231,14 @@ from ``pytest.ini`` in some tests by using a mark with the same name:
 
     @pytest.mark.qt_log_level_fail('CRITICAL')
     @pytest.mark.qt_log_ignore('WM_DESTROY.*sent', 'WM_PAINT failed')
+    def test_foo(qtlog):
+        do_something()
+
+If you would like to override the list of ignored patterns instead, pass
+``extend=False`` to the ``qt_log_ignore`` mark:
+
+.. code-block:: python
+
+    @pytest.mark.qt_log_ignore('WM_DESTROY.*sent', extend=False)
     def test_foo(qtlog):
         do_something()

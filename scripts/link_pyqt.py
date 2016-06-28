@@ -64,7 +64,7 @@ def run_py(executable, *code):
 def get_ignored_files(directory, files):
     """Get the files which should be ignored for link_pyqt() on Windows."""
     needed_exts = ('.py', '.dll', '.pyd', '.so')
-    ignored_dirs = ('examples', 'qml', 'uic', 'doc')
+    ignored_dirs = ('examples', 'doc')
     filtered = []
     for f in files:
         ext = os.path.splitext(f)[1]

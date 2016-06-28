@@ -28,62 +28,76 @@ like key presses and mouse clicks:
 
 This allows you to test and make sure your view layer is behaving the way you expect after each code change.
 
-.. Using PNG badges because PyPI doesn't support SVG
-
-.. |version| image:: http://img.shields.io/pypi/v/pytest-qt.png
+.. |version| image:: http://img.shields.io/pypi/v/pytest-qt.svg
   :target: https://pypi.python.org/pypi/pytest-qt
   
-.. |downloads| image:: http://img.shields.io/pypi/dm/pytest-qt.png
+.. |downloads| image:: http://img.shields.io/pypi/dm/pytest-qt.svg
   :target: https://pypi.python.org/pypi/pytest-qt
   
-.. |ci| image:: http://img.shields.io/travis/pytest-dev/pytest-qt.png
+.. |travis| image:: https://img.shields.io/travis/pytest-dev/pytest-qt/master.svg
   :target: https://travis-ci.org/pytest-dev/pytest-qt
 
-.. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-qt.png
+.. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-qt.svg
   :target: https://coveralls.io/r/pytest-dev/pytest-qt
 
 .. |docs| image:: https://readthedocs.org/projects/pytest-qt/badge/?version=latest
-  :target: https://pytest-qt.readthedocs.org
+  :target: https://pytest-qt.readthedocs.io
 
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/9s5jr17hxcxeo6yx/branch/master?svg=true
+.. |appveyor| image:: https://img.shields.io/appveyor/ci/pytest-dev/pytest-qt/master.svg
   :target: https://ci.appveyor.com/project/nicoddemus/pytest-qt
 
-.. pypip.in seems to be offline
-  .. |python| image:: https://pypip.in/py_versions/pytest-qt/badge.png
+.. |python| image:: https://img.shields.io/pypi/pyversions/pytest-qt.svg
   :target: https://pypi.python.org/pypi/pytest-qt/
   :alt: Supported Python versions
 
-|version| |downloads| |ci| |appveyor| |coverage| |docs|
+|python| |version| |downloads| |travis| |appveyor| |coverage| |docs|
+
+
+Features
+========
+
+- `qtbot`_ fixture to simulate user interaction with ``Qt`` widgets.
+- `Automatic capture`_ of ``qDebug``, ``qWarning`` and ``qCritical`` messages;
+- waitSignal_ and waitSignals_ functions to block test execution until specific
+  signals are emitted.
+- `Exceptions in virtual methods and slots`_ are automatically captured and
+  fail tests accordingly.
+
+.. _qtbot: https://pytest-qt.readthedocs.io/en/latest/reference.html#module-pytestqt.qtbot
+.. _Automatic capture: https://pytest-qt.readthedocs.io/en/latest/logging.html
+.. _waitSignal: https://pytest-qt.readthedocs.io/en/latest/signals.html
+.. _waitSignals: https://pytest-qt.readthedocs.io/en/latest/signals.html
+.. _Exceptions in virtual methods and slots: https://pytest-qt.readthedocs.io/en/latest/virtual_methods.html
 
 Requirements
 ============
 
-Python 2.6 or later, including Python 3+.
-
-Works with either PySide_, PyQt_ (``PyQt4`` and ``PyQt5``) picking whichever
+Works with either PySide_ or PyQt_ (``PyQt5`` and ``PyQt4``) picking whichever
 is available on the system, giving preference to the first one installed in
 this order:
 
+- ``PyQt5``
 - ``PySide``
 - ``PyQt4``
-- ``PyQt5``
 
 To force a particular API, set the environment variable ``PYTEST_QT_API`` to
-``pyside``, ``pyqt4`` or ``pyqt5``.
+``pyqt5``, ``pyside``, ``pyqt4``, or ``pyqt4v2``. ``pyqt4v2`` sets the ``PyQt4``
+API to `version 2 <http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html>`_.
+
 
 Documentation
 =============
 
 Full documentation and tutorial available at `Read the Docs`_.
 
-.. _Read The Docs: https://pytest-qt.readthedocs.org
+.. _Read The Docs: https://pytest-qt.readthedocs.io
 
 Change Log
 ==========
 
 Please consult the `changelog page`_.
 
-.. _changelog page: https://github.com/pytest-dev/pytest-qt/blob/master/CHANGELOG.md
+.. _changelog page: https://pytest-qt.readthedocs.io/en/latest/changelog.html
 
 Bugs/Requests
 =============
@@ -128,12 +142,18 @@ Many thanks to:
 - Datalyze Solutions (`@datalyze-solutions <https://github.com/datalyze-solutions>`_);
 - Florian Bruhin (`@The-Compiler <https://github.com/The-Compiler>`_);
 - Guilherme Quentel Melo (`@gqmelo <https://github.com/gqmelo>`_);
+- Francesco Montesano (`@montefra <https://github.com/montefra>`_);
 
 **Powered by**
 
 .. |pycharm| image:: https://www.jetbrains.com/pycharm/docs/logo_pycharm.png
   :target: https://www.jetbrains.com/pycharm
   
+.. |pydev| image:: http://www.pydev.org/images/pydev_banner3.png
+  :target: https://www.pydev.org
+  
 |pycharm|  
 
-.. _tox: http://tox.readthedocs.org
+|pydev|  
+
+.. _tox: https://tox.readthedocs.io

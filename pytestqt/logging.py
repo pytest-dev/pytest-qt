@@ -24,7 +24,14 @@ class QtLoggingPlugin(object):
             return
         m = item.get_marker('qt_log_ignore')
         if m:
-            ignore_regexes = m.args
+            if not set(m.kwargs).issubset(set(['extend'])):
+                raise ValueError("Invalid keyword arguments in {0!r} for "
+                                 "qt_log_ignore mark.".format(m.kwargs))
+            if m.kwargs.get('extend', True):
+                config_regexes = self.config.getini('qt_log_ignore')
+                ignore_regexes = config_regexes + list(m.args)
+            else:
+                ignore_regexes = m.args
         else:
             ignore_regexes = self.config.getini('qt_log_ignore')
         item.qt_log_capture = _QtMessageCapture(ignore_regexes)
@@ -33,13 +40,12 @@ class QtLoggingPlugin(object):
     @pytest.mark.hookwrapper
     def pytest_runtest_makereport(self, item, call):
         """Add captured Qt messages to test item report if the call failed."""
-
         outcome = yield
         if not hasattr(item, 'qt_log_capture'):
             return
 
         if call.when == 'call':
-            report = outcome.result
+            report = outcome.get_result()
 
             m = item.get_marker('qt_log_level_fail')
             if m:
@@ -247,13 +253,14 @@ class Record(object):
         return cls._log_type_name_map[msg_type]
 
     def matches_level(self, level):
+        assert level in QtLoggingPlugin.LOG_FAIL_OPTIONS
         if level == 'DEBUG':
             return self.log_type_name in ('DEBUG', 'WARNING', 'CRITICAL')
         elif level == 'WARNING':
             return self.log_type_name in ('WARNING', 'CRITICAL')
         elif level == 'CRITICAL':
             return self.log_type_name in ('CRITICAL',)
-        else:
+        else:  # pragma: no cover
             raise ValueError('log_fail_level unknown: {0}'.format(level))
 
 

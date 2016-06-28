@@ -1,10 +1,10 @@
 import functools
-import time
-import sys
+import fnmatch
 
 import pytest
 
 from pytestqt.qt_compat import QtCore, Signal, QT_API
+from pytestqt.wait_signal import SignalEmittedError
 
 
 def test_signal_blocker_exception(qtbot):
@@ -96,6 +96,63 @@ def test_signal_triggered(qtbot, timer, stop_watch, wait_function, delay,
     stop_watch.check(timeout, delay)
 
 
+@pytest.mark.parametrize('configval, raises', [
+    ('false', False),
+    ('true', True),
+    (None, True),
+])
+def test_raising(qtbot, testdir, configval, raises):
+    if configval is not None:
+        testdir.makeini("""
+            [pytest]
+            qt_wait_signal_raising = {}
+        """.format(configval))
+
+    testdir.makepyfile("""
+        import pytest
+        from pytestqt.qt_compat import QtCore, Signal
+
+        class Signaller(QtCore.QObject):
+            signal = Signal()
+
+        def test_foo(qtbot):
+            signaller = Signaller()
+
+            with qtbot.waitSignal(signaller.signal, timeout=10):
+                pass
+    """)
+    res = testdir.runpytest()
+
+    if raises:
+        res.stdout.fnmatch_lines(['*1 failed*'])
+    else:
+        res.stdout.fnmatch_lines(['*1 passed*'])
+
+
+def test_raising_by_default_overridden(qtbot, testdir):
+    testdir.makeini("""
+        [pytest]
+        qt_wait_signal_raising = false
+    """)
+
+    testdir.makepyfile("""
+        import pytest
+        from pytestqt.qt_compat import QtCore, Signal
+
+        class Signaller(QtCore.QObject):
+            signal = Signal()
+
+        def test_foo(qtbot):
+            signaller = Signaller()
+            signal = signaller.signal
+
+            with qtbot.waitSignal(signal, raising=True, timeout=10) as blocker:
+                pass
+    """)
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines(['*1 failed*'])
+
+
 @pytest.mark.parametrize(
     ('delay_1', 'delay_2', 'timeout', 'expected_signal_triggered',
      'wait_function', 'raising'),
@@ -168,6 +225,8 @@ def signaller(timer):
     class Signaller(QtCore.QObject):
         signal = Signal()
         signal_2 = Signal()
+        signal_args = Signal(str, int)
+        signal_args_2 = Signal(str, int)
 
     assert timer
 
@@ -211,37 +270,6 @@ def timer():
     timer.shutdown()
 
 
-@pytest.fixture
-def stop_watch():
-    """
-    Fixture that makes it easier for tests to ensure signals emitted and
-    timeouts are being respected in waitSignal and waitSignals tests.
-    """
-    # time.clock() is more accurate on Windows
-    get_time = time.clock if sys.platform.startswith('win') else time.time
-
-    class StopWatch:
-
-        def __init__(self):
-            self._start_time = None
-
-        def start(self):
-            self._start_time = get_time()
-
-        def check(self, timeout, *delays):
-            """
-            Make sure either timeout (if given) or at most of the given
-            delays used to trigger a signal has passed.
-            """
-            if timeout is None:
-                timeout = max(delays) * 1.35  # 35% tolerance
-            max_wait_ms = max(delays + (timeout,))
-            elapsed_ms = (get_time() - self._start_time) * 1000.0
-            assert elapsed_ms < max_wait_ms
-
-    return StopWatch()
-
-
 @pytest.mark.parametrize('multiple', [True, False])
 @pytest.mark.parametrize('raising', [True, False])
 def test_wait_signals_handles_exceptions(qtbot, multiple, raising, signaller):
@@ -277,9 +305,9 @@ def test_wait_twice(qtbot, timer, multiple, do_timeout, signaller):
         arg = signaller.signal
 
     if do_timeout:
-        with func(arg, timeout=100):
+        with func(arg, timeout=100, raising=False):
             timer.single_shot(signaller.signal, 200)
-        with func(arg, timeout=100):
+        with func(arg, timeout=100, raising=False):
             timer.single_shot(signaller.signal, 200)
     else:
         with func(arg):
@@ -304,3 +332,71 @@ def test_destroyed(qtbot):
         obj.deleteLater()
 
     assert sip.isdeleted(obj)
+
+
+class TestArgs:
+
+    """Try to get the signal arguments from the signal blocker."""
+
+    def test_simple(self, qtbot, signaller):
+        """The blocker should store the signal args in an 'args' attribute."""
+        with qtbot.waitSignal(signaller.signal_args) as blocker:
+            signaller.signal_args.emit('test', 123)
+        assert blocker.args == ['test', 123]
+
+    def test_timeout(self, qtbot):
+        """If there's a timeout, the args attribute is None."""
+        with qtbot.waitSignal(timeout=100, raising=False) as blocker:
+            pass
+        assert blocker.args is None
+
+    def test_without_args(self, qtbot, signaller):
+        """If a signal has no args, the args attribute is an empty list."""
+        with qtbot.waitSignal(signaller.signal) as blocker:
+            signaller.signal.emit()
+        assert blocker.args == []
+
+    def test_multi(self, qtbot, signaller):
+        """A MultiSignalBlocker doesn't have an args attribute."""
+        with qtbot.waitSignals([signaller.signal]) as blocker:
+            signaller.signal.emit()
+        with pytest.raises(AttributeError):
+            blocker.args
+
+    def test_connected_signal(self, qtbot, signaller):
+        """A second signal connected via .connect also works."""
+        with qtbot.waitSignal(signaller.signal_args) as blocker:
+            blocker.connect(signaller.signal_args_2)
+            signaller.signal_args_2.emit('foo', 2342)
+        assert blocker.args == ['foo', 2342]
+
+
+class TestAssertNotEmitted:
+
+    """Tests for qtbot.assertNotEmitted."""
+
+    def test_not_emitted(self, qtbot, signaller):
+        with qtbot.assertNotEmitted(signaller.signal):
+            pass
+
+    def test_emitted(self, qtbot, signaller):
+        with pytest.raises(SignalEmittedError) as excinfo:
+            with qtbot.assertNotEmitted(signaller.signal):
+                signaller.signal.emit()
+
+        fnmatch.fnmatchcase(str(excinfo.value),
+                            "Signal * unexpectedly emitted.")
+
+    def test_emitted_args(self, qtbot, signaller):
+        with pytest.raises(SignalEmittedError) as excinfo:
+            with qtbot.assertNotEmitted(signaller.signal_args):
+                signaller.signal_args.emit('foo', 123)
+
+        fnmatch.fnmatchcase(str(excinfo.value),
+                            "Signal * unexpectedly emitted with arguments "
+                            "['foo', 123]")
+
+    def test_disconnected(self, qtbot, signaller):
+        with qtbot.assertNotEmitted(signaller.signal):
+            pass
+        signaller.signal.emit()
