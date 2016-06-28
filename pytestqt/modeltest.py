@@ -54,7 +54,7 @@ class ModelTester:
         self._fetching_more = None
         self._insert = None
         self._remove = None
-        self._changing = None
+        self._changing = []
         self._verbose = config.getoption('verbose') > 0
         self.data_display_may_return_none = False
 
@@ -533,7 +533,7 @@ class ModelTester:
     def _on_layout_changed(self):
         for p in self._changing:
             assert p == self._model.index(p.row(), p.column(), p.parent())
-        self._changing.clear()
+        self._changing = []
 
     def _on_rows_about_to_be_removed(self, parent, start, end):
         """Store what is about to be removed to make sure it actually happens.
