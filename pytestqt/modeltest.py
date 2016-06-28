@@ -109,6 +109,9 @@ class ModelTester:
 
     def _cleanup(self):
         """Not API intended for users, but called from the fixture function."""
+        if self._model is None:
+            return
+
         self._model.columnsAboutToBeInserted.disconnect(self._run)
         self._model.columnsAboutToBeRemoved.disconnect(self._run)
         self._model.columnsInserted.disconnect(self._run)
