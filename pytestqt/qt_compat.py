@@ -115,10 +115,6 @@ if not on_rtd:  # pragma: no cover
         QAbstractListModel = QtCore.QAbstractListModel
         QAbstractTableModel = QtCore.QAbstractTableModel
 
-        def cast(obj, typ):
-            """no cast operation is available in PySide"""
-            return obj
-
         def extract_from_variant(variant):
             """PySide does not expose QVariant API"""
             return variant
@@ -132,7 +128,6 @@ if not on_rtd:  # pragma: no cover
                                 QtCore.__version__)
 
     elif QT_API in ('pyqt4', 'pyqt4v2', 'pyqt5'):
-        import sip
         Signal = QtCore.pyqtSignal
         Slot = QtCore.pyqtSlot
         Property = QtCore.pyqtProperty
@@ -179,10 +174,6 @@ if not on_rtd:  # pragma: no cover
         def get_versions():
             return VersionTuple(qt_api_name, QtCore.PYQT_VERSION_STR,
                                 QtCore.qVersion(), QtCore.QT_VERSION_STR)
-
-        def cast(obj, typ):
-            """casts from a subclass to a parent class"""
-            return sip.cast(obj, typ)
 
         def make_variant(value=None):
             """Return a QVariant object from the given Python builtin"""
@@ -235,5 +226,4 @@ else:  # pragma: no cover
     QtCriticalMsg = Mock()
     QtFatalMsg = Mock()
     QT_API = '<none>'
-    cast = Mock()
     extract_from_variant = Mock()

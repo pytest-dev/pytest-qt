@@ -34,8 +34,8 @@
 from __future__ import print_function
 import collections
 
-from pytestqt.qt_compat import QtCore, QtGui, cast, extract_from_variant, \
-    QAbstractListModel, QAbstractTableModel, USING_PYSIDE
+from pytestqt.qt_compat import QtCore, QtGui, extract_from_variant, \
+    QAbstractListModel, QAbstractTableModel
 
 
 _Changing = collections.namedtuple('_Changing', 'parent, oldSize, last, next')
@@ -51,7 +51,6 @@ class ModelTester:
 
     def __init__(self, config):
         self._model = None
-        self._orig_model = None
         self._fetching_more = None
         self._insert = None
         self._remove = None
@@ -71,8 +70,7 @@ class ModelTester:
         Whenever anything happens recheck everything.
         """
         assert model is not None
-        self._model = cast(model, QtCore.QAbstractItemModel)
-        self._orig_model = model
+        self._model = model
         self._fetching_more = False
         self._insert = []
         self._remove = []
@@ -139,7 +137,6 @@ class ModelTester:
         self._model.headerDataChanged.disconnect(self._on_header_data_changed)
 
         self._model = None
-        self._orig_model = None
 
     def _run(self, verbose=False):
         self._verbose = verbose
@@ -388,7 +385,7 @@ class ModelTester:
                 assert index == sibling
 
                 # Some basic checking on the index that is returned
-                assert index.model() == self._orig_model
+                assert index.model() == self._model
                 assert index.row() == r
                 assert index.column() == c
 
@@ -581,11 +578,9 @@ class ModelTester:
     def _column_count(self, parent=QtCore.QModelIndex()):
         """
         Workaround for the fact that ``columnCount`` is a private method in
-        QAbstractListModel/QAbstractTableModel subclasses and PySide does not
-        provide any way to work around that limitation. PyQt lets us "cast"
-        back to the super class to access these private methods.
+        QAbstractListModel/QAbstractTableModel subclasses.
         """
-        if isinstance(self._orig_model, QAbstractListModel) and USING_PYSIDE:
+        if isinstance(self._model, QAbstractListModel):
             return 1 if parent == QtCore.QModelIndex() else 0
         else:
             return self._model.columnCount(parent)
@@ -595,7 +590,7 @@ class ModelTester:
         .. see:: ``_column_count``
         """
         model_types = (QAbstractListModel, QAbstractTableModel)
-        if isinstance(self._orig_model, model_types) and USING_PYSIDE:
+        if isinstance(self._model, model_types):
             return QtCore.QModelIndex()
         else:
             return self._model.parent(index)
@@ -605,7 +600,7 @@ class ModelTester:
         .. see:: ``_column_count``
         """
         model_types = (QAbstractListModel, QAbstractTableModel)
-        if isinstance(self._orig_model, model_types) and USING_PYSIDE:
+        if isinstance(self._model, model_types):
             return parent == QtCore.QModelIndex() and self._model.rowCount() > 0
         else:
             return self._model.hasChildren(parent)
