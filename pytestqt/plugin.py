@@ -52,7 +52,6 @@ def qtbot(qapp, request):
 
 @pytest.fixture
 def qtlog(request):
-    from pytestqt.logging import _QtMessageCapture
     """Fixture that can access messages captured during testing"""
     if hasattr(request._pyfuncitem, 'qt_log_capture'):
         return request._pyfuncitem.qt_log_capture
@@ -72,7 +71,6 @@ def qtmodeltester(request):
 
 
 def pytest_addoption(parser):
-    from pytestqt.qt_compat import QT_API
     parser.addini('qt_no_exception_capture',
                   'disable automatic exception capture')
     parser.addini('qt_wait_signal_raising',
@@ -150,7 +148,6 @@ def _process_events():
     """Calls app.processEvents() while taking care of capturing exceptions
     or not based on the given item's configuration.
     """
-    from pytestqt.qt_compat import QApplication
     app = QApplication.instance()
     if app is not None:
         app.processEvents()
