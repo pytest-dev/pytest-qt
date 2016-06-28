@@ -247,20 +247,16 @@ def test_overridden_methods(qtmodeltester):
 
 
 def test_fetch_more(qtmodeltester):
-    class Model(BasicModel):
-
-        def rowCount(self, parent=None):
-            if parent is None:
-                1/0
-                return 1
-            else:
-                return 0
+    class Model(QStandardItemModel):
 
         def canFetchMore(self, parent):
             return True
 
         def fetchMore(self, parent):
-            pass
+            """Force a re-check while fetching more."""
+            self.setData(self.index(0, 0), 'bar')
 
     model = Model()
+    item = QStandardItem('foo')
+    model.setItem(0, 0, item)
     qtmodeltester.check(model)
