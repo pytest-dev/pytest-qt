@@ -38,7 +38,7 @@ from pytestqt.qt_compat import QtCore, QtGui, extract_from_variant, \
     QAbstractListModel, QAbstractTableModel
 
 
-_Changing = collections.namedtuple('_Changing', 'parent, oldSize, last, next')
+_Changing = collections.namedtuple('_Changing', 'parent, old_size, last, next')
 
 
 class ModelTester:
@@ -211,19 +211,19 @@ class ModelTester:
         Models that are dynamically populated are not as fully tested here.
         """
         # check top row
-        topIndex = self._model.index(0, 0, QtCore.QModelIndex())
-        rows = self._model.rowCount(topIndex)
+        top_index = self._model.index(0, 0, QtCore.QModelIndex())
+        rows = self._model.rowCount(top_index)
         assert rows >= 0
         if rows > 0:
-            assert self._has_children(topIndex)
+            assert self._has_children(top_index)
 
-        secondLevelIndex = self._model.index(0, 0, topIndex)
-        if secondLevelIndex.isValid():  # not the top level
+        second_level_index = self._model.index(0, 0, top_index)
+        if second_level_index.isValid():  # not the top level
             # check a row count where parent is valid
-            rows = self._model.rowCount(secondLevelIndex)
+            rows = self._model.rowCount(second_level_index)
             assert rows >= 0
             if rows > 0:
-                assert self._has_children(secondLevelIndex)
+                assert self._has_children(second_level_index)
 
         # The models rowCount() is tested more extensively in
         # _check_children(), but this catches the big mistakes
@@ -232,13 +232,13 @@ class ModelTester:
         """Test model's implementation of columnCount() and hasChildren()."""
 
         # check top row
-        topIndex = self._model.index(0, 0, QtCore.QModelIndex())
-        assert self._column_count(topIndex) >= 0
+        top_index = self._model.index(0, 0, QtCore.QModelIndex())
+        assert self._column_count(top_index) >= 0
 
         # check a column count where parent is valid
-        childIndex = self._model.index(0, 0, topIndex)
-        if childIndex.isValid():
-            assert self._column_count(childIndex) >= 0
+        child_index = self._model.index(0, 0, top_index)
+        if child_index.isValid():
+            assert self._column_count(child_index) >= 0
 
         # columnCount() is tested more extensively in _check_children(),
         # but this catches the big mistakes
@@ -297,36 +297,36 @@ class ModelTester:
         if self._model.rowCount() == 0:
             return
 
-        # Column 0                | Column 1    |
-        # QModelIndex()           |             |
-        #    \- topIndex          | topIndex1   |
-        #         \- childIndex   | childIndex1 |
+        # Column 0                | Column 1      |
+        # QModelIndex()           |               |
+        #    \- top_index         | top_index_1   |
+        #         \- child_index  | child_index_1 |
 
         # Common error test #1, make sure that a top level index has a parent
         # that is a invalid QModelIndex.
-        topIndex = self._model.index(0, 0, QtCore.QModelIndex())
-        assert self._parent(topIndex) == QtCore.QModelIndex()
+        top_index = self._model.index(0, 0, QtCore.QModelIndex())
+        assert self._parent(top_index) == QtCore.QModelIndex()
 
         # Common error test #2, make sure that a second level index has a
         # parent that is the first level index.
-        if self._model.rowCount(topIndex) > 0:
-            childIndex = self._model.index(0, 0, topIndex)
-            assert self._parent(childIndex) == topIndex
+        if self._model.rowCount(top_index) > 0:
+            child_index = self._model.index(0, 0, top_index)
+            assert self._parent(child_index) == top_index
 
         # Common error test #3, the second column should NOT have the same
         # children as the first column in a row.
         # Usually the second column shouldn't have children.
-        topIndex1 = self._model.index(0, 1, QtCore.QModelIndex())
-        if self._model.rowCount(topIndex1) > 0:
-            childIndex = self._model.index(0, 0, topIndex)
-            childIndex1 = self._model.index(0, 0, topIndex1)
-            assert childIndex != childIndex1
+        top_index_1 = self._model.index(0, 1, QtCore.QModelIndex())
+        if self._model.rowCount(top_index_1) > 0:
+            child_index = self._model.index(0, 0, top_index)
+            child_index_1 = self._model.index(0, 0, top_index_1)
+            assert child_index != child_index_1
 
         # Full test, walk n levels deep through the model making sure that all
         # parent's children correctly specify their parent.
         self._check_children(QtCore.QModelIndex())
 
-    def _check_children(self, parent, currentDepth=0):
+    def _check_children(self, parent, current_depth=0):
         """Check parent/children relationships.
 
         Called from the parent() test.
@@ -367,10 +367,10 @@ class ModelTester:
             assert self._has_children(parent)
         self._debug("Checking children of {} with depth {} "
                     "({} rows, {} columns)".format(
-                        self._modelindex_debug(parent), currentDepth,
+                        self._modelindex_debug(parent), current_depth,
                         rows, columns))
 
-        topLeftChild = self._model.index(0, 0, parent)
+        top_left_child = self._model.index(0, 0, parent)
 
         assert not self._model.hasIndex(rows + 1, 0, parent)
         for r in range(rows):
@@ -391,8 +391,8 @@ class ModelTester:
 
                 # index() should always return the same index when called twice
                 # in a row
-                modifiedIndex = self._model.index(r, c, parent)
-                assert index == modifiedIndex
+                modified_index = self._model.index(r, c, parent)
+                assert index == modified_index
 
                 # Make sure we get the same index if we request it twice in a
                 # row
@@ -400,10 +400,10 @@ class ModelTester:
                 b = self._model.index(r, c, parent)
                 assert a == b
 
-                sibling = self._model.sibling(r, c, topLeftChild)
+                sibling = self._model.sibling(r, c, top_left_child)
                 assert index == sibling
 
-                sibling = topLeftChild.sibling(r, c)
+                sibling = top_left_child.sibling(r, c)
                 assert index == sibling
 
                 # Some basic checking on the index that is returned
@@ -436,20 +436,20 @@ class ModelTester:
                 assert self._parent(index) == parent
 
                 # recursively go down the children
-                if self._has_children(index) and currentDepth < 10:
+                if self._has_children(index) and current_depth < 10:
                     self._debug("{} has {} children".format(
                         self._modelindex_debug(index),
                         self._model.rowCount(index)
                     ))
-                    self._check_children(index, currentDepth + 1)
-                # elif currentDepth >= 10:
+                    self._check_children(index, current_depth + 1)
+                # elif current_depth >= 10:
                 #     print("checked 10 deep")
                 # FIXME
 
                 # make sure that after testing the children that the index
                 # doesn't change.
-                newerIndex = self._model.index(r, c, parent)
-                assert index == newerIndex
+                newer_index = self._model.index(r, c, parent)
+                assert index == newer_index
         self._debug("Children check for {} done".format(self._modelindex_debug(parent)))
 
     def _test_data(self):
@@ -524,7 +524,7 @@ class ModelTester:
 
         last_data = self._model.data(last_index)
         next_data = self._model.data(next_index)
-        c = _Changing(parent=parent, oldSize=parent_rowcount,
+        c = _Changing(parent=parent, old_size=parent_rowcount,
                       last=last_data, next=next_data)
         self._insert.append(c)
 
@@ -533,7 +533,7 @@ class ModelTester:
         c = self._insert.pop()
         last_data = self._model.data(self._model.index(start - 1, 0, parent))
         next_data = self._model.data(self._model.index(end + 1, 0, c.parent))
-        expected_size = c.oldSize + (end - start + 1)
+        expected_size = c.old_size + (end - start + 1)
         current_size = self._model.rowCount(parent)
 
         self._debug("rows inserted: start {}, end {}".format(start, end))
@@ -541,7 +541,7 @@ class ModelTester:
                     "size {} (-> {} expected), "
                     "next data {!r}, last data {!r}".format(
                         self._modelindex_debug(c.parent),
-                        c.oldSize, expected_size,
+                        c.old_size, expected_size,
                         extract_from_variant(c.next),
                         extract_from_variant(c.last)
                     )
@@ -608,7 +608,7 @@ class ModelTester:
 
         last_data = self._model.data(last_index)
         next_data = self._model.data(next_index)
-        c = _Changing(parent=parent, oldSize=parent_rowcount,
+        c = _Changing(parent=parent, old_size=parent_rowcount,
                       last=last_data, next=next_data)
         self._remove.append(c)
 
@@ -618,14 +618,14 @@ class ModelTester:
         last_data = self._model.data(self._model.index(start - 1, 0, c.parent))
         next_data = self._model.data(self._model.index(start, 0, c.parent))
         current_size = self._model.rowCount(parent)
-        expected_size = c.oldSize - (end - start + 1)
+        expected_size = c.old_size - (end - start + 1)
 
         self._debug("rows removed: start {}, end {}".format(start, end))
         self._debug("  from rowsAboutToBeRemoved: parent {}, "
                     "size {} (-> {} expected), "
                     "next data {!r}, last data {!r}".format(
                         self._modelindex_debug(c.parent),
-                        c.oldSize, expected_size,
+                        c.old_size, expected_size,
                         extract_from_variant(c.next),
                         extract_from_variant(c.last)
                     )
@@ -649,17 +649,17 @@ class ModelTester:
         assert c.last == last_data
         assert c.next == next_data
 
-    def _on_data_changed(self, topLeft, bottomRight):
-        assert topLeft.isValid()
-        assert bottomRight.isValid()
-        commonParent = bottomRight.parent()
-        assert topLeft.parent() == commonParent
-        assert topLeft.row() <= bottomRight.row()
-        assert topLeft.column() <= bottomRight.column()
-        rowCount = self._model.rowCount(commonParent)
-        columnCount = self._column_count(commonParent)
-        assert bottomRight.row() < rowCount
-        assert bottomRight.column() < columnCount
+    def _on_data_changed(self, top_left, bottom_right):
+        assert top_left.isValid()
+        assert bottom_right.isValid()
+        common_parent = bottom_right.parent()
+        assert top_left.parent() == common_parent
+        assert top_left.row() <= bottom_right.row()
+        assert top_left.column() <= bottom_right.column()
+        row_count = self._model.rowCount(common_parent)
+        column_count = self._column_count(common_parent)
+        assert bottom_right.row() < row_count
+        assert bottom_right.column() < column_count
 
     def _on_header_data_changed(self, orientation, start, end):
         assert orientation in [QtCore.Qt.Horizontal, QtCore.Qt.Vertical]
@@ -667,11 +667,11 @@ class ModelTester:
         assert end >= 0
         assert start <= end
         if orientation == QtCore.Qt.Vertical:
-            itemCount = self._model.rowCount()
+            item_count = self._model.rowCount()
         else:
-            itemCount = self._column_count()
-        assert start < itemCount
-        assert end < itemCount
+            item_count = self._column_count()
+        assert start < item_count
+        assert end < item_count
 
     def _column_count(self, parent=QtCore.QModelIndex()):
         """
