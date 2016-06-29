@@ -43,7 +43,7 @@ _Changing = collections.namedtuple('_Changing', 'parent, oldSize, last, next')
 
 class ModelTester:
 
-    """A tester for Qt's QAbstractItemModel's.
+    """A tester for Qt's QAbstractItemModels.
 
     :ivar bool data_display_may_return_none: if the model implementation is
         allowed to return None from data() for DisplayRole.
