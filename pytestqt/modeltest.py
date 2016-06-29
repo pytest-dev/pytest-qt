@@ -88,6 +88,11 @@ class ModelTester:
         if verbose is not None:
             self._verbose = verbose
 
+        if not self._verbose:
+            print("model check running non-verbose, run pytest with -v or use "
+                  "qtmodeltester.check(model, verbose=True) for more "
+                  "information")
+
         self._model.columnsAboutToBeInserted.connect(self._run)
         self._model.columnsAboutToBeRemoved.connect(self._run)
         self._model.columnsInserted.connect(self._run)
