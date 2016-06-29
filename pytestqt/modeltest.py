@@ -159,6 +159,7 @@ class ModelTester:
 
     def _run(self):
         assert self._model is not None
+        assert self._fetching_more is not None
         if self._fetching_more:
             return
         self._test_basic()
@@ -182,9 +183,7 @@ class ModelTester:
                                         QtCore.Qt.DisplayRole)
 
         assert extract_from_variant(display_data) is None
-        self._fetching_more = True
-        self._model.fetchMore(QtCore.QModelIndex())
-        self._fetching_more = False
+        self._fetch_more(QtCore.QModelIndex())
         flags = self._model.flags(QtCore.QModelIndex())
         assert flags == QtCore.Qt.ItemIsDropEnabled or not flags
         self._has_children(QtCore.QModelIndex())
@@ -350,9 +349,7 @@ class ModelTester:
 
         # For models that are dynamically populated
         if self._model.canFetchMore(parent):
-            self._fetching_more = True
-            self._model.fetchMore(parent)
-            self._fetching_more = False
+            self._fetch_more(parent)
 
         rows = self._model.rowCount(parent)
         columns = self._column_count(parent)
@@ -375,9 +372,7 @@ class ModelTester:
         assert not self._model.hasIndex(rows + 1, 0, parent)
         for r in range(rows):
             if self._model.canFetchMore(parent):
-                self._fetching_more = True
-                self._model.fetchMore(parent)
-                self._fetching_more = False
+                self._fetch_more(parent)
             assert not self._model.hasIndex(r, columns + 1, parent)
             for c in range(columns):
                 assert self._model.hasIndex(r, c, parent)
@@ -691,3 +686,9 @@ class ModelTester:
             return parent == QtCore.QModelIndex() and self._model.rowCount() > 0
         else:
             return self._model.hasChildren(parent)
+
+    def _fetch_more(self, parent):
+        """Call ``fetchMore`` on the model and set ``self._fetching_more``."""
+        self._fetching_more = True
+        self._model.fetchMore(parent)
+        self._fetching_more = False
