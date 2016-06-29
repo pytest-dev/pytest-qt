@@ -493,16 +493,10 @@ class ModelTester:
     def _on_rows_inserted(self, parent, start, end):
         """Confirm that what was said was going to happen actually did."""
         c = self._insert.pop()
+        assert c.parent == parent
         self._debug("rowsInserted", "start=", start, "end=", end, "oldsize=",
                     c.oldSize, "parent=", self._model.data(parent),
                     "current rowcount of parent=", self._model.rowCount(parent))
-
-        if c.parent.isValid():
-            assert parent.isValid()
-            assert c.parent == parent
-        else:
-            assert not parent.isValid()
-
         for ii in range(start, end):
             self._debug("itemWasInserted:", ii,
                         self._model.data(self._model.index(ii, 0, parent)))
@@ -552,12 +546,7 @@ class ModelTester:
         last_data = self._model.data(self._model.index(start - 1, 0, c.parent))
         next_data = self._model.data(self._model.index(start, 0, c.parent))
 
-        if c.parent.isValid():
-            assert parent.isValid()
-            assert c.parent == parent
-        else:
-            assert not parent.isValid()
-
+        assert c.parent == parent
         assert c.oldSize - (end - start + 1) == self._model.rowCount(parent)
         assert c.last == last_data
         assert c.next == next_data
