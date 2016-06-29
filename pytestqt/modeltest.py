@@ -70,7 +70,7 @@ class ModelTester:
             data = self._model.data(index, QtCore.Qt.DisplayRole)
             return '{}/{} {!r} (0x{:x})'.format(
                 index.row(), index.column(),
-                qt_compat.extract_from_variant(data),
+                extract_from_variant(data),
                 id(index))
 
     def check(self, model, verbose=None):
@@ -543,8 +543,8 @@ class ModelTester:
                     "next data {!r}, last data {!r}".format(
                         self._modelindex_debug(c.parent),
                         c.oldSize, expected_size,
-                        qt_compat.extract_from_variant(c.next),
-                        qt_compat.extract_from_variant(c.last)
+                        extract_from_variant(c.next),
+                        extract_from_variant(c.last)
                     )
         )
 
@@ -552,8 +552,8 @@ class ModelTester:
                     "next data {!r}, last data {!r}".format(
                         self._modelindex_debug(parent),
                         current_size,
-                        qt_compat.extract_from_variant(next_data),
-                        qt_compat.extract_from_variant(last_data)
+                        extract_from_variant(next_data),
+                        extract_from_variant(last_data)
                     )
         )
 
