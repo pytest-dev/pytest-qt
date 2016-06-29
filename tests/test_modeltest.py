@@ -266,6 +266,28 @@ def test_fetch_more(qtmodeltester):
     qtmodeltester.check(model, verbose=True)
 
 
+def test_invalid_parent(qtmodeltester):
+
+    class Model(QStandardItemModel):
+
+        def parent(self, index):
+            if index == self.index(0, 0, parent=self.index(0, 0)):
+                return self.index(0, 0)
+            else:
+                return QtCore.QModelIndex()
+
+    model = Model()
+    item = QStandardItem('foo')
+    item2 = QStandardItem('bar')
+    item3 = QStandardItem('bar')
+    model.setItem(0, 0, item)
+    item.setChild(0, item2)
+    item2.setChild(0, item3)
+
+    with pytest.raises(AssertionError):
+        qtmodeltester.check(model, verbose=True)
+
+
 @pytest.mark.parametrize('verbose', [True, False])
 def test_verbosity(testdir, verbose):
     testdir.makepyfile("""

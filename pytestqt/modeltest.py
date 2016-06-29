@@ -418,7 +418,7 @@ class ModelTester:
                 # If the next test fails here is some somewhat useful debug you
                 # play with.
 
-                if self._parent(index) != parent:  # pragma: no cover
+                if self._parent(index) != parent:
                     self._debug(
                         "parent-check failed for index {}:\n"
                         "  parent {} != expected {}".format(
