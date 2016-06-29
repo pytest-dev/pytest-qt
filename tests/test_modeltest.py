@@ -306,4 +306,4 @@ def test_verbosity(testdir, verbose):
         res = testdir.runpytest()
         res.stdout.fnmatch_lines([
             'model check running non-verbose, *'
-           ])
+        ])
