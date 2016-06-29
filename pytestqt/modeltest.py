@@ -553,7 +553,11 @@ class ModelTester:
                     )
         )
 
-        assert c.parent == parent
+        if c.parent.isValid():
+            assert parent.isValid()
+            assert c.parent == parent
+        else:
+            assert not parent.isValid()
 
         for ii in range(start, end):
             idx = self._model.index(ii, 0, parent)
@@ -592,7 +596,12 @@ class ModelTester:
         last_data = self._model.data(self._model.index(start - 1, 0, c.parent))
         next_data = self._model.data(self._model.index(start, 0, c.parent))
 
-        assert c.parent == parent
+        if c.parent.isValid():
+            assert parent.isValid()
+            assert c.parent == parent
+        else:
+            assert not parent.isValid()
+
         assert c.oldSize - (end - start + 1) == self._model.rowCount(parent)
         assert c.last == last_data
         assert c.next == next_data
