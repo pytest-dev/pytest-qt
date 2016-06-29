@@ -557,7 +557,7 @@ class ModelTester:
                     )
         )
 
-        if QtCore.QT_VERSION >= 0x050000:
+        if not QtCore.qVersion().startswith('4.')
             # Skipping this on Qt4 as the parent changes for some reason:
             # modeltest: rows about to be inserted: [...]
             #            parent <invalid> (0x7f8f540eacf8), [...]
@@ -605,7 +605,7 @@ class ModelTester:
         last_data = self._model.data(self._model.index(start - 1, 0, c.parent))
         next_data = self._model.data(self._model.index(start, 0, c.parent))
 
-        if QtCore.QT_VERSION >= 0x050000:
+        if not QtCore.qVersion().startswith('4.')
             # Skipping this on Qt4 as the parent changes for some reason
             # see _on_rows_inserted for details
             assert c.parent == parent
