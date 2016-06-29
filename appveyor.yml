@@ -18,6 +18,9 @@ install:
   - C:\Python27\python -u scripts\install-qt.py
   - C:\Python27\python -m pip install tox
 
+cache:
+  - C:\Installers -> appveyor.yml, scripts\install-qt.py
+
 build: false  # Not a C# project
 
 test_script:
