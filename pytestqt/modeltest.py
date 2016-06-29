@@ -170,11 +170,10 @@ class ModelTester:
         self._test_data()
 
     def _test_basic(self):
-        """
-        Try to call a number of the basic functions (not all).
+        """Try to call a number of the basic functions (not all).
 
         Make sure the model doesn't outright segfault, testing the functions
-        that makes sense.
+        which make sense.
         """
         assert self._model.buddy(QtCore.QModelIndex()) == QtCore.QModelIndex()
         self._model.canFetchMore(QtCore.QModelIndex())
@@ -209,6 +208,9 @@ class ModelTester:
         """Test model's implementation of rowCount() and hasChildren().
 
         Models that are dynamically populated are not as fully tested here.
+
+        The models rowCount() is tested more extensively in _check_children(),
+        but this catches the big mistakes.
         """
         # check top row
         top_index = self._model.index(0, 0, QtCore.QModelIndex())
@@ -225,12 +227,12 @@ class ModelTester:
             if rows > 0:
                 assert self._has_children(second_level_index)
 
-        # The models rowCount() is tested more extensively in
-        # _check_children(), but this catches the big mistakes
-
     def _test_column_count(self):
-        """Test model's implementation of columnCount() and hasChildren()."""
+        """Test model's implementation of columnCount() and hasChildren().
 
+        columnCount() is tested more extensively in _check_children(),
+        but this catches the big mistakes.
+        """
         # check top row
         top_index = self._model.index(0, 0, QtCore.QModelIndex())
         assert self._column_count(top_index) >= 0
@@ -240,12 +242,13 @@ class ModelTester:
         if child_index.isValid():
             assert self._column_count(child_index) >= 0
 
-        # columnCount() is tested more extensively in _check_children(),
-        # but this catches the big mistakes
-
     def _test_has_index(self):
-        """Test model's implementation of hasIndex()."""
-        # Make sure that invalid values returns an invalid index
+        """Test model's implementation of hasIndex().
+
+        hasIndex() is tested more extensively in _check_children(),
+        but this catches the big mistakes.
+        """
+        # Make sure that invalid values return an invalid index
         assert not self._model.hasIndex(-2, -2)
         assert not self._model.hasIndex(-2, 0)
         assert not self._model.hasIndex(0, -2)
@@ -260,12 +263,13 @@ class ModelTester:
         if rows > 0:
             assert self._model.hasIndex(0, 0)
 
-        # hasIndex() is tested more extensively in _check_children(),
-        # but this catches the big mistakes
-
     def _test_index(self):
-        """Test model's implementation of index()"""
-        # Make sure that invalid values returns an invalid index
+        """Test model's implementation of index().
+
+        index() is tested more extensively in _check_children(),
+        but this catches the big mistakes.
+        """
+        # Make sure that invalid values return an invalid index
         assert self._model.index(-2, -2) == QtCore.QModelIndex()
         assert self._model.index(-2, 0) == QtCore.QModelIndex()
         assert self._model.index(0, -2) == QtCore.QModelIndex()
@@ -285,11 +289,8 @@ class ModelTester:
         b = self._model.index(0, 0)
         assert a == b
 
-        # index() is tested more extensively in _check_children(),
-        # but this catches the big mistakes
-
     def _test_parent(self):
-        """Tests model's implementation of QAbstractItemModel::parent()"""
+        """Tests model's implementation of QAbstractItemModel::parent()."""
         # Make sure the model won't crash and will return an invalid
         # QModelIndex when asked for the parent of an invalid index.
         assert self._parent(QtCore.QModelIndex()) == QtCore.QModelIndex()
@@ -342,7 +343,6 @@ class ModelTester:
         tests should have already found the basic bugs because it is easier to
         figure out the problem in those tests then this one.
         """
-
         # First just try walking back up the tree.
         p = parent
         while p.isValid():
@@ -384,10 +384,6 @@ class ModelTester:
                 index = self._model.index(r, c, parent)
                 # rowCount() and columnCount() said that it existed...
                 assert index.isValid()
-
-                # sanity checks
-                assert index.column() == c
-                assert index.row() == r
 
                 # index() should always return the same index when called twice
                 # in a row
@@ -472,7 +468,7 @@ class ModelTester:
             (QtCore.Qt.TextColorRole, QtGui.QColor),
         ]
 
-        # General Purpose roles that should return a QString
+        # General purpose roles with a fixed expected type
         for role, typ in types:
             data = self._model.data(self._model.index(0, 0), role)
             assert data == None or isinstance(data, typ), role
