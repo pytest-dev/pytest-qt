@@ -32,12 +32,14 @@ def test_standard_item_model(qtmodeltester):
     Basic test which uses qtmodeltester with a QStandardItemModel.
     """
     model = QStandardItemModel()
-    items = [QStandardItem(str(i)) for i in range(5)]
-    items[0].setChild(0, items[4])
+    items = [QStandardItem(str(i)) for i in range(6)]
     model.setItem(0, 0, items[0])
     model.setItem(0, 1, items[1])
     model.setItem(1, 0, items[2])
     model.setItem(1, 1, items[3])
+
+    items[0].setChild(0, items[4])
+    items[4].setChild(0, items[5])
 
     qtmodeltester.check(model, verbose=True)
 
@@ -260,3 +262,24 @@ def test_fetch_more(qtmodeltester):
     item = QStandardItem('foo')
     model.setItem(0, 0, item)
     qtmodeltester.check(model, verbose=True)
+
+
+@pytest.mark.parametrize('verbose', [True, False])
+def test_verbosity(testdir, verbose):
+    testdir.makepyfile("""
+        from pytestqt.qt_compat import QStandardItemModel
+
+        def test_foo(qtmodeltester):
+            model = QStandardItemModel()
+            qtmodeltester.check(model)
+            assert False
+    """)
+
+    if verbose:
+        res = testdir.runpytest('-v')
+        assert 'model check running non-verbose' not in res.stdout.str()
+    else:
+        res = testdir.runpytest()
+        res.stdout.fnmatch_lines([
+            'model check running non-verbose, *'
+           ])
