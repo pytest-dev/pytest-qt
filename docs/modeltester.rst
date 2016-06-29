@@ -1,7 +1,7 @@
 Model Tester
 ============
 
-.. versionadded:: 1.6
+.. versionadded:: 2.0
 
 ``pytest-qt`` includes a fixture that helps testing
 `QAbstractItemModel`_ implementations. The implementation is copied
