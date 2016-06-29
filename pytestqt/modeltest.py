@@ -530,12 +530,11 @@ class ModelTester:
 
     def _on_rows_inserted(self, parent, start, end):
         """Confirm that what was said was going to happen actually did."""
-        current_size = self._model.rowCount(parent)
         c = self._insert.pop()
-
         last_data = self._model.data(self._model.index(start - 1, 0, parent))
         next_data = self._model.data(self._model.index(end + 1, 0, c.parent))
         expected_size = c.oldSize + (end - start + 1)
+        current_size = self._model.rowCount(parent)
 
         self._debug("rows inserted: start {}, end {}".format(start, end))
         self._debug("  from rowsAboutToBeInserted: parent {}, "
@@ -593,9 +592,23 @@ class ModelTester:
 
         This gets stored to make sure it actually happens in rowsRemoved.
         """
-        last_data = self._model.data(self._model.index(start - 1, 0, parent))
-        next_data = self._model.data(self._model.index(end + 1, 0, parent))
-        c = _Changing(parent=parent, oldSize=self._model.rowCount(parent),
+        last_index = self._model.index(start - 1, 0, parent)
+        next_index = self._model.index(end + 1, 0, parent)
+        parent_rowcount = self._model.rowCount(parent)
+
+        self._debug("rows about to be removed: start {}, end {}, parent {}, "
+                    "parent row count {}, last item {}, next item {}".format(
+                        start, end,
+                        self._modelindex_debug(parent),
+                        parent_rowcount,
+                        self._modelindex_debug(last_index),
+                        self._modelindex_debug(next_index),
+                    )
+        )
+
+        last_data = self._model.data(last_index)
+        next_data = self._model.data(next_index)
+        c = _Changing(parent=parent, oldSize=parent_rowcount,
                       last=last_data, next=next_data)
         self._remove.append(c)
 
@@ -604,13 +617,35 @@ class ModelTester:
         c = self._remove.pop()
         last_data = self._model.data(self._model.index(start - 1, 0, c.parent))
         next_data = self._model.data(self._model.index(start, 0, c.parent))
+        current_size = self._model.rowCount(parent)
+        expected_size = c.oldSize - (end - start + 1)
+
+        self._debug("rows removed: start {}, end {}".format(start, end))
+        self._debug("  from rowsAboutToBeRemoved: parent {}, "
+                    "size {} (-> {} expected), "
+                    "next data {!r}, last data {!r}".format(
+                        self._modelindex_debug(c.parent),
+                        c.oldSize, expected_size,
+                        extract_from_variant(c.next),
+                        extract_from_variant(c.last)
+                    )
+        )
+
+        self._debug("  now in rowsRemoved:        parent {}, size {}, "
+                    "next data {!r}, last data {!r}".format(
+                        self._modelindex_debug(parent),
+                        current_size,
+                        extract_from_variant(next_data),
+                        extract_from_variant(last_data)
+                    )
+        )
 
         if not QtCore.qVersion().startswith('4.'):
             # Skipping this on Qt4 as the parent changes for some reason
             # see _on_rows_inserted for details
             assert c.parent == parent
 
-        assert c.oldSize - (end - start + 1) == self._model.rowCount(parent)
+        assert current_size == expected_size
         assert c.last == last_data
         assert c.next == next_data
 
