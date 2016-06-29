@@ -36,15 +36,24 @@ if 'APPVEYOR' in os.environ:
         fix_registry('35')
         fix_registry('27')
         caption = os.environ['INSTALL_QT']
-        url = downloads[caption]
-        print("Downloading %s..." % caption)
-        installer = r'C:\install-%s.exe' % caption
-        urllib.urlretrieve(base_url + url, installer)
+        installers_dir = r'C:\Installers'
+        if not os.path.isdir(installers_dir):
+            os.makedirs(installers_dir)
+        installer = os.path.join(installers_dir, 'install-%s.exe' % caption)
+        if not os.path.isfile(installer):
+            # download all files because the cache is for all builds
+            for cap, url in sorted(downloads.items()):
+                print("Downloading %s..." % cap)
+                filename = os.path.join(installers_dir, 'install-%s.exe' % cap)
+                urllib.urlretrieve(base_url + url, filename)
+        else:
+            print('Using cached installers')
         print('Installing %s...' % caption)
         subprocess.check_call([installer, '/S'])
         python = caption.split('-')[0]
         assert python[:2] == 'py'
         executable = r'C:\Python%s\python.exe' % python[2:]
+        url = downloads[caption]
         module = url.split('/')[0]
         cmdline = [executable, '-c', 'import %s;print(%s)' % (module, module)]
         print('Checking: %r' % cmdline)
