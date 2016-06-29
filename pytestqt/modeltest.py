@@ -55,12 +55,10 @@ class ModelTester:
         self._insert = None
         self._remove = None
         self._changing = []
-        self._verbose = config.getoption('verbose') > 0
         self.data_display_may_return_none = False
 
     def _debug(self, text):
-        if self._verbose:
-            print('modeltest: ' + text)
+        print('modeltest: ' + text)
 
     def _modelindex_debug(self, index):
         """Get a string for debug output for a QModelIndex."""
@@ -73,7 +71,7 @@ class ModelTester:
                 extract_from_variant(data),
                 id(index))
 
-    def check(self, model, verbose=None):
+    def check(self, model):
         """Runs a series of checks in the given model.
 
         Connect to all of the models signals.
@@ -86,14 +84,6 @@ class ModelTester:
         self._insert = []
         self._remove = []
         self._changing = []
-
-        if verbose is not None:
-            self._verbose = verbose
-
-        if not self._verbose:
-            print("model check running non-verbose, run pytest with -v or use "
-                  "qtmodeltester.check(model, verbose=True) for more "
-                  "information")
 
         self._model.columnsAboutToBeInserted.connect(self._run)
         self._model.columnsAboutToBeRemoved.connect(self._run)

@@ -41,7 +41,7 @@ def test_standard_item_model(qtmodeltester):
     items[0].setChild(0, items[4])
     items[4].setChild(0, items[5])
 
-    qtmodeltester.check(model, verbose=True)
+    qtmodeltester.check(model)
 
 
 @pytest.mark.xfail(run=False, reason='Makes pytest hang')
@@ -51,15 +51,15 @@ def test_file_system_model(qtmodeltester, tmpdir):
     tmpdir.ensure('file2.py')
     model = QFileSystemModel()
     model.setRootPath(str(tmpdir))
-    qtmodeltester.check(model, verbose=True)
+    qtmodeltester.check(model)
     tmpdir.ensure('file3.py')
-    qtmodeltester.check(model, verbose=True)
+    qtmodeltester.check(model)
 
 
 def test_string_list_model(qtmodeltester):
     model = QStringListModel()
     model.setStringList(['hello', 'world'])
-    qtmodeltester.check(model, verbose=True)
+    qtmodeltester.check(model)
 
 
 def test_sort_filter_proxy_model(qtmodeltester):
@@ -67,7 +67,7 @@ def test_sort_filter_proxy_model(qtmodeltester):
     model.setStringList(['hello', 'world'])
     proxy = QSortFilterProxyModel()
     proxy.setSourceModel(model)
-    qtmodeltester.check(proxy, verbose=True)
+    qtmodeltester.check(proxy)
 
 
 @pytest.mark.parametrize('broken_role', [
@@ -162,10 +162,10 @@ def check_model(qtmodeltester):
     """
     def check(model, should_pass=True):
         if should_pass:
-            qtmodeltester.check(model, verbose=True)
+            qtmodeltester.check(model)
         else:
             with pytest.raises(AssertionError):
-                qtmodeltester.check(model, verbose=True)
+                qtmodeltester.check(model)
     return check
 
 
@@ -178,13 +178,13 @@ def test_invalid_column_count(qtmodeltester):
     model = Model()
 
     with pytest.raises(AssertionError):
-        qtmodeltester.check(model, verbose=True)
+        qtmodeltester.check(model)
 
 
 def test_changing_model_insert(qtmodeltester):
     model = QStandardItemModel()
     item = QStandardItem('foo')
-    qtmodeltester.check(model, verbose=True)
+    qtmodeltester.check(model)
     model.insertRow(0, item)
 
 
@@ -192,7 +192,7 @@ def test_changing_model_remove(qtmodeltester):
     model = QStandardItemModel()
     item = QStandardItem('foo')
     model.setItem(0, 0, item)
-    qtmodeltester.check(model, verbose=True)
+    qtmodeltester.check(model)
     model.removeRow(0)
 
 
@@ -200,7 +200,7 @@ def test_changing_model_data(qtmodeltester):
     model = QStandardItemModel()
     item = QStandardItem('foo')
     model.setItem(0, 0, item)
-    qtmodeltester.check(model, verbose=True)
+    qtmodeltester.check(model)
     model.setData(model.index(0, 0), 'hello world')
 
 
@@ -210,7 +210,7 @@ def test_changing_model_header_data(qtmodeltester, orientation):
     model = QStandardItemModel()
     item = QStandardItem('foo')
     model.setItem(0, 0, item)
-    qtmodeltester.check(model, verbose=True)
+    qtmodeltester.check(model)
     model.setHeaderData(0, orientation, 'blah')
 
 
@@ -219,7 +219,7 @@ def test_changing_model_sort(qtmodeltester):
     model = QStandardItemModel()
     item = QStandardItem('foo')
     model.setItem(0, 0, item)
-    qtmodeltester.check(model, verbose=True)
+    qtmodeltester.check(model)
     model.sort(0)
 
 
@@ -246,7 +246,7 @@ def test_overridden_methods(qtmodeltester):
 
     model = Model()
     assert not model.row_count_did_run
-    qtmodeltester.check(model, verbose=True)
+    qtmodeltester.check(model)
     assert model.row_count_did_run
 
 
@@ -263,7 +263,7 @@ def test_fetch_more(qtmodeltester):
     model = Model()
     item = QStandardItem('foo')
     model.setItem(0, 0, item)
-    qtmodeltester.check(model, verbose=True)
+    qtmodeltester.check(model)
 
 
 def test_invalid_parent(qtmodeltester):
@@ -285,25 +285,4 @@ def test_invalid_parent(qtmodeltester):
     item2.setChild(0, item3)
 
     with pytest.raises(AssertionError):
-        qtmodeltester.check(model, verbose=True)
-
-
-@pytest.mark.parametrize('verbose', [True, False])
-def test_verbosity(testdir, verbose):
-    testdir.makepyfile("""
-        from pytestqt.qt_compat import QStandardItemModel
-
-        def test_foo(qtmodeltester):
-            model = QStandardItemModel()
-            qtmodeltester.check(model)
-            assert False
-    """)
-
-    if verbose:
-        res = testdir.runpytest('-v')
-        assert 'model check running non-verbose' not in res.stdout.str()
-    else:
-        res = testdir.runpytest()
-        res.stdout.fnmatch_lines([
-            'model check running non-verbose, *'
-        ])
+        qtmodeltester.check(model)
