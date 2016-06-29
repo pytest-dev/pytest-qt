@@ -104,6 +104,8 @@ def test_broken_types(check_model, broken_role):
     (QtCore.Qt.AlignLeft, True),
     (QtCore.Qt.AlignRight, True),
     (0xFFFFFF, False),
+    ('foo', False),
+    (object(), False),
 ])
 def test_data_alignment(role_value, should_pass, check_model):
     """Test a custom model which returns a good and alignments from data().
