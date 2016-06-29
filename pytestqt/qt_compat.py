@@ -177,12 +177,9 @@ if not on_rtd:  # pragma: no cover
 
         def make_variant(value=None):
             """Return a QVariant object from the given Python builtin"""
-            import sys
-            # PyQt4 on py3 doesn't allow one to instantiate any QVariant at
-            # all:
+            # PyQt4 doesn't allow one to instantiate any QVariant at all:
             # QVariant represents a mapped type and cannot be instantiated
-            # --'
-            if QT_API in ['pyqt4', 'pyqt4v2'] and sys.version_info[0] == 3:
+            if QT_API in ['pyqt4', 'pyqt4v2']:
                 return value
             return QtCore.QVariant(value)
 
