@@ -567,7 +567,7 @@ class ModelTester:
             #            parent <invalid> (0x7f8f60a96cf8) [...]
             assert c.parent == parent
 
-        for ii in range(start, end):
+        for ii in range(start, end + 1):
             idx = self._model.index(ii, 0, parent)
             self._debug(" item {} inserted: {}".format(ii,
                                                        self._modelindex_debug(idx)))
