@@ -427,10 +427,6 @@ class ModelTester:
                             self._modelindex_debug(parent)
                         )
                     )
-                    # And a view that you can even use to show the model.
-                    # QTreeView view
-                    # view.setModel(self._model)
-                    # view.show()
 
                 # Check that we can get back our real parent.
                 assert self._parent(index) == parent
@@ -442,9 +438,6 @@ class ModelTester:
                         self._model.rowCount(index)
                     ))
                     self._check_children(index, current_depth + 1)
-                # elif current_depth >= 10:
-                #     print("checked 10 deep")
-                # FIXME
 
                 # make sure that after testing the children that the index
                 # doesn't change.
