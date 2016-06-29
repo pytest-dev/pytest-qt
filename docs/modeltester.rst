@@ -19,7 +19,7 @@ Some of the conditions caught include:
 * ``hasChildren()`` returns true if ``rowCount()`` is greater then zero.
 * and many more...
 
-To use it, create a instance of your model implementation, fill it with some
+To use it, create an instance of your model implementation, fill it with some
 items and call ``qtmodeltester.check``:
 
 .. code-block:: python
@@ -36,7 +36,7 @@ items and call ``qtmodeltester.check``:
 If the tester finds a problem the test will fail with an assert pinpointing
 the issue.
 
-The following attribute that may influence the outcome of the check depending
+The following attribute may influence the outcome of the check depending
 on your model implementation:
 
 * ``data_display_may_return_none`` (default: ``False``): While you can
