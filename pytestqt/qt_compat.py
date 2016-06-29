@@ -107,6 +107,21 @@ if not on_rtd:  # pragma: no cover
         QWidget = QtGui.QWidget
         qInstallMsgHandler = QtCore.qInstallMsgHandler
 
+        QStandardItem = QtGui.QStandardItem
+        QStandardItemModel = QtGui.QStandardItemModel
+        QStringListModel = QtGui.QStringListModel
+        QSortFilterProxyModel = QtGui.QSortFilterProxyModel
+        QAbstractListModel = QtCore.QAbstractListModel
+        QAbstractTableModel = QtCore.QAbstractTableModel
+
+        def extract_from_variant(variant):
+            """PySide does not expose QVariant API"""
+            return variant
+
+        def make_variant(value=None):
+            """PySide does not expose QVariant API"""
+            return value
+
         def get_versions():
             return VersionTuple('PySide', PySide.__version__, QtCore.qVersion(),
                                 QtCore.__version__)
@@ -121,16 +136,49 @@ if not on_rtd:  # pragma: no cover
             QApplication = _QtWidgets.QApplication
             QWidget = _QtWidgets.QWidget
             qInstallMessageHandler = QtCore.qInstallMessageHandler
+
+            QStringListModel = QtCore.QStringListModel
+            QSortFilterProxyModel = QtCore.QSortFilterProxyModel
+
+            def extract_from_variant(variant):
+                """returns python object from the given QVariant"""
+                if isinstance(variant, QtCore.QVariant):
+                    return variant.value()
+                return variant
+
             qt_api_name = 'PyQt5'
         else:
             QApplication = QtGui.QApplication
             QWidget = QtGui.QWidget
             qInstallMsgHandler = QtCore.qInstallMsgHandler
+
+            QStringListModel = QtGui.QStringListModel
+            QSortFilterProxyModel = QtGui.QSortFilterProxyModel
+
+            def extract_from_variant(variant):
+                """returns python object from the given QVariant"""
+                if isinstance(variant, QtCore.QVariant):
+                    return variant.toPyObject()
+                return variant
+
             qt_api_name = 'PyQt4'
+
+        QStandardItem = QtGui.QStandardItem
+        QStandardItemModel = QtGui.QStandardItemModel
+        QAbstractListModel = QtCore.QAbstractListModel
+        QAbstractTableModel = QtCore.QAbstractTableModel
 
         def get_versions():
             return VersionTuple(qt_api_name, QtCore.PYQT_VERSION_STR,
                                 QtCore.qVersion(), QtCore.QT_VERSION_STR)
+
+        def make_variant(value=None):
+            """Return a QVariant object from the given Python builtin"""
+            # PyQt4 doesn't allow one to instantiate any QVariant at all:
+            # QVariant represents a mapped type and cannot be instantiated
+            if QT_API in ['pyqt4', 'pyqt4v2']:
+                return value
+            return QtCore.QVariant(value)
 
 else:  # pragma: no cover
     USING_PYSIDE = True
@@ -172,3 +220,4 @@ else:  # pragma: no cover
     QtCriticalMsg = Mock()
     QtFatalMsg = Mock()
     QT_API = '<none>'
+    extract_from_variant = Mock()

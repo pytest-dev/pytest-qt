@@ -9,6 +9,7 @@ from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeou
 
 # classes/functions imported here just for backward compatibility before we
 # split the implementation of this file in several modules
+assert QtBot
 assert SignalBlocker
 assert MultiSignalBlocker
 assert SignalTimeoutError
@@ -23,6 +24,7 @@ def qapp():
     fixture that instantiates the QApplication instance that will be used by
     the tests.
     """
+    from pytestqt.qt_compat import QApplication
     app = QApplication.instance()
     if app is None:
         global _qapp_instance
@@ -55,6 +57,17 @@ def qtlog(request):
         return request._pyfuncitem.qt_log_capture
     else:
         return _QtMessageCapture([])  # pragma: no cover
+
+
+@pytest.yield_fixture
+def qtmodeltester(request):
+    """
+    Fixture used to create a ModelTester instance to test models.
+    """
+    from pytestqt.modeltest import ModelTester
+    tester = ModelTester(request.config)
+    yield tester
+    tester._cleanup()
 
 
 def pytest_addoption(parser):

@@ -21,6 +21,7 @@ pytest-qt
     logging
     signals
     virtual_methods
+    modeltester
     app_exit
     reference
     changelog

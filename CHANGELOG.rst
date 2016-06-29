@@ -6,7 +6,12 @@ New
 
 * From this version onward, ``pytest-qt`` is licensed under the MIT license (`#134`_).
 
+* New ``qtmodeltester`` fixture to test ``QAbstractItemModel`` subclasses.
+  Thanks `@The-Compiler`_ for the initiative and port of the original C++ code
+  for ModelTester (`#63`_).
+
 .. _#134: https://github.com/pytest-dev/pytest-qt/issues/134
+.. _#63: https://github.com/pytest-dev/pytest-qt/pull/63
 
 
 Breaking changes
