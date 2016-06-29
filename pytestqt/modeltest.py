@@ -62,7 +62,7 @@ class ModelTester:
         if self._verbose:
             print(*args)
 
-    def check(self, model, verbose=False):
+    def check(self, model, verbose=None):
         """Runs a series of checks in the given model.
 
         Connect to all of the models signals.
@@ -75,6 +75,9 @@ class ModelTester:
         self._insert = []
         self._remove = []
         self._changing = []
+
+        if verbose is not None:
+            self._verbose = verbose
 
         self._model.columnsAboutToBeInserted.connect(self._run)
         self._model.columnsAboutToBeRemoved.connect(self._run)
@@ -103,7 +106,7 @@ class ModelTester:
         self._model.dataChanged.connect(self._on_data_changed)
         self._model.headerDataChanged.connect(self._on_header_data_changed)
 
-        self._run(verbose=verbose)
+        self._run()
 
     def _cleanup(self):
         """Not API intended for users, but called from the fixture function."""
@@ -138,8 +141,7 @@ class ModelTester:
 
         self._model = None
 
-    def _run(self, verbose=False):
-        self._verbose = verbose
+    def _run(self):
         assert self._model is not None
         if self._fetching_more:
             return
