@@ -58,9 +58,18 @@ class ModelTester:
         self._verbose = config.getoption('verbose') > 0
         self.data_display_may_return_none = False
 
-    def _debug(self, *args):
+    def _debug(self, text):
         if self._verbose:
-            print(*args)
+            print('modeltest: ' + text)
+
+    def _modelindex_debug(self, index):
+        """Get a string for debug output for a QModelIndex."""
+        if not index.isValid():
+            return '<invalid> (0x{:x})'.format(id(index))
+        else:
+            data = self._model.data(index, QtCore.Qt.DisplayRole)
+            return '{}/{} {!r} (0x{:x})'.format(
+                index.row(), index.column(), data, id(index))
 
     def check(self, model, verbose=None):
         """Runs a series of checks in the given model.
@@ -349,10 +358,10 @@ class ModelTester:
         assert columns >= 0
         if rows > 0:
             assert self._has_children(parent)
-
-        self._debug("parent:", self._model.data(parent, QtCore.Qt.DisplayRole),
-                    "rows:", rows, "columns:", columns, "parent column:",
-                    parent.column())
+        self._debug("Checking children of {} with depth {} "
+                    "({} rows, {} columns)".format(
+                        self._modelindex_debug(parent), currentDepth,
+                        rows, columns))
 
         topLeftChild = self._model.index(0, 0, parent)
 
@@ -368,6 +377,10 @@ class ModelTester:
                 index = self._model.index(r, c, parent)
                 # rowCount() and columnCount() said that it existed...
                 assert index.isValid()
+
+                # sanity checks
+                assert index.column() == c
+                assert index.row() == r
 
                 # index() should always return the same index when called twice
                 # in a row
@@ -399,9 +412,14 @@ class ModelTester:
                 # play with.
 
                 if self._parent(index) != parent:  # pragma: no cover
-                    self._debug(r, c, currentDepth, self._model.data(index),
-                                self._model.data(parent))
-                    self._debug(index, parent, self._parent(index))
+                    self._debug(
+                        "parent-check failed for index {}:\n"
+                        "  parent {} != expected {}".format(
+                            self._modelindex_debug(index),
+                            self._modelindex_debug(self._parent(index)),
+                            self._modelindex_debug(parent)
+                        )
+                    )
                     # And a view that you can even use to show the model.
                     # QTreeView view
                     # view.setModel(self._model)
@@ -412,8 +430,10 @@ class ModelTester:
 
                 # recursively go down the children
                 if self._has_children(index) and currentDepth < 10:
-                    self._debug(r, c, "has children",
-                                self._model.rowCount(index))
+                    self._debug("{} has {} children".format(
+                        self._modelindex_debug(index),
+                        self._model.rowCount(index)
+                    ))
                     self._check_children(index, currentDepth + 1)
                 # elif currentDepth >= 10:
                 #     print("checked 10 deep")
@@ -423,6 +443,7 @@ class ModelTester:
                 # doesn't change.
                 newerIndex = self._model.index(r, c, parent)
                 assert index == newerIndex
+        self._debug("Children check for {} done".format(self._modelindex_debug(parent)))
 
     def _test_data(self):
         """Test model's implementation of data()"""
@@ -480,46 +501,64 @@ class ModelTester:
 
         This gets stored to make sure it actually happens in rowsInserted.
         """
-        self._debug("rowsAboutToBeInserted", "start=", start, "end=", end, "parent=",
-                    self._model.data(parent), "current count of parent=",
-                    self._model.rowCount(parent), "display of last=",
-                    self._model.data(self._model.index(start-1, 0, parent)))
-        self._debug(self._model.index(start-1, 0, parent), self._model.data(self._model.index(start-1, 0, parent)))
+        last_index = self._model.index(start - 1, 0, parent)
+        next_index = self._model.index(start, 0, parent)
+        parent_rowcount = self._model.rowCount(parent)
 
-        last_data = self._model.data(self._model.index(start - 1, 0, parent))
-        next_data = self._model.data(self._model.index(start, 0, parent))
-        c = _Changing(parent=parent, oldSize=self._model.rowCount(parent),
+        self._debug("rows about to be inserted: start {}, end {}, parent {}, "
+                    "parent row count {}, last item {}, next item {}".format(
+                        start, end,
+                        self._modelindex_debug(parent),
+                        parent_rowcount,
+                        self._modelindex_debug(last_index),
+                        self._modelindex_debug(next_index),
+                    )
+        )
+
+        last_data = self._model.data(last_index)
+        next_data = self._model.data(next_index)
+        c = _Changing(parent=parent, oldSize=parent_rowcount,
                       last=last_data, next=next_data)
         self._insert.append(c)
 
     def _on_rows_inserted(self, parent, start, end):
         """Confirm that what was said was going to happen actually did."""
+        current_size = self._model.rowCount(parent)
         c = self._insert.pop()
-        assert c.parent == parent
-        self._debug("rowsInserted", "start=", start, "end=", end, "oldsize=",
-                    c.oldSize, "parent=", self._model.data(parent),
-                    "current rowcount of parent=", self._model.rowCount(parent))
-        for ii in range(start, end):
-            self._debug("itemWasInserted:", ii,
-                        self._model.data(self._model.index(ii, 0, parent)))
-        self._debug()
 
         last_data = self._model.data(self._model.index(start - 1, 0, parent))
+        next_data = self._model.data(self._model.index(end + 1, 0, c.parent))
+        expected_size = c.oldSize + (end - start + 1)
 
-        assert c.oldSize + (end - start + 1) == self._model.rowCount(parent)
+        self._debug("rows inserted: start {}, end {}".format(start, end))
+        self._debug("  from rowsAboutToBeInserted: parent {}, "
+                    "size {} (-> {} expected), "
+                    "next data {!r}, last data {!r}".format(
+                        self._modelindex_debug(c.parent),
+                        c.oldSize, expected_size,
+                        c.next, c.last
+                    )
+        )
+
+        self._debug("  now in rowsInserted:        parent {}, size {}, "
+                    "next data {!r}, last data {!r}".format(
+                        self._modelindex_debug(parent),
+                        current_size,
+                        next_data, last_data
+                    )
+        )
+
+        assert c.parent == parent
+
+        for ii in range(start, end):
+            idx = self._model.index(ii, 0, parent)
+            self._debug(" item {} inserted: {}".format(ii,
+                                                       self._modelindex_debug(idx)))
+        self._debug('')
+
+        assert current_size == expected_size
         assert c.last == last_data
-
-        expected = self._model.data(self._model.index(end + 1, 0, c.parent))
-
-        if c.next != expected:  # pragma: no cover
-            # FIXME
-            self._debug(start, end)
-            for i in xrange(self._model.rowCount()):
-                self._debug(self._model.index(i, 0).data())
-            data = self._model.data(self._model.index(end + 1, 0, c.parent))
-            self._debug(c.next, data)
-
-        assert c.next == expected
+        assert c.next == next_data
 
     def _on_layout_about_to_be_changed(self):
         for i in range(max(self._model.rowCount(), 100)):
