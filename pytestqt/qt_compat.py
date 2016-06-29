@@ -109,7 +109,6 @@ if not on_rtd:  # pragma: no cover
 
         QStandardItem = QtGui.QStandardItem
         QStandardItemModel = QtGui.QStandardItemModel
-        QFileSystemModel = QtGui.QFileSystemModel
         QStringListModel = QtGui.QStringListModel
         QSortFilterProxyModel = QtGui.QSortFilterProxyModel
         QAbstractListModel = QtCore.QAbstractListModel
@@ -138,7 +137,6 @@ if not on_rtd:  # pragma: no cover
             QWidget = _QtWidgets.QWidget
             qInstallMessageHandler = QtCore.qInstallMessageHandler
 
-            QFileSystemModel = _QtWidgets.QFileSystemModel
             QStringListModel = QtCore.QStringListModel
             QSortFilterProxyModel = QtCore.QSortFilterProxyModel
 
@@ -154,7 +152,6 @@ if not on_rtd:  # pragma: no cover
             QWidget = QtGui.QWidget
             qInstallMsgHandler = QtCore.qInstallMsgHandler
 
-            QFileSystemModel = QtGui.QFileSystemModel
             QStringListModel = QtGui.QStringListModel
             QSortFilterProxyModel = QtGui.QSortFilterProxyModel
 

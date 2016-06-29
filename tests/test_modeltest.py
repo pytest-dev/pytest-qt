@@ -3,8 +3,8 @@ import os
 import pytest
 
 from pytestqt.qt_compat import QStandardItemModel, QStandardItem, \
-    QFileSystemModel, QStringListModel, QSortFilterProxyModel, QT_API, \
-    QAbstractListModel, QtCore
+    QStringListModel, QSortFilterProxyModel, QT_API, QAbstractListModel, \
+    QtCore
 
 pytestmark = pytest.mark.usefixtures('qtbot')
 
@@ -41,18 +41,6 @@ def test_standard_item_model(qtmodeltester):
     items[0].setChild(0, items[4])
     items[4].setChild(0, items[5])
 
-    qtmodeltester.check(model)
-
-
-@pytest.mark.xfail(run=False, reason='Makes pytest hang')
-def test_file_system_model(qtmodeltester, tmpdir):
-    tmpdir.ensure('directory', dir=1)
-    tmpdir.ensure('file1.txt')
-    tmpdir.ensure('file2.py')
-    model = QFileSystemModel()
-    model.setRootPath(str(tmpdir))
-    qtmodeltester.check(model)
-    tmpdir.ensure('file3.py')
     qtmodeltester.check(model)
 
 
