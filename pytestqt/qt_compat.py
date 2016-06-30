@@ -16,12 +16,13 @@ import os
 
 VersionTuple = namedtuple('VersionTuple', 'qt_api, qt_api_version, runtime, compiled')
 
+
 class _QtApi:
     """
     Interface to the underlying Qt API currently configured for pytest-qt.
 
-    This object lazily loads all class references and other objects upon the ``set_qt_api`` method,
-    providing a uniform way to access the Qt classes.
+    This object lazily loads all class references and other objects when the ``set_qt_api`` method
+    gets called, providing a uniform way to access the Qt classes.
     """
 
     def _get_qt_api_from_env(self):
