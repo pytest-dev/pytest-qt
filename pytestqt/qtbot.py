@@ -1,7 +1,8 @@
 import functools
 import contextlib
 import weakref
-from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError, SignalEmittedSpy
+from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError, \
+    SignalEmittedSpy
 from pytestqt.qt_compat import QtTest, QApplication
 
 
@@ -74,11 +75,12 @@ class QtBot(object):
     .. automethod:: stopForInteraction
     .. automethod:: wait
 
-    **Signals**
+    **Signals and Events**
 
     .. automethod:: waitSignal
     .. automethod:: waitSignals
     .. automethod:: assertNotEmitted
+    .. automethod:: waitUntil
 
     **Raw QTest API**
 
@@ -373,6 +375,73 @@ class QtBot(object):
 
     assert_not_emitted = assertNotEmitted  # pep-8 alias
 
+    def waitUntil(self, callback, timeout=1000):
+        """
+        .. versionadded:: 2.0
+
+        Wait in a busy loop, calling the given callback periodically until timeout is reached.
+
+        ``callback()`` should raise ``AssertionError`` to indicate that the desired condition
+        has not yet been reached, or just return ``None`` when it does. Useful to ``assert`` until
+        some condition is satisfied:
+
+        .. code-block:: python
+
+            def view_updated():
+                assert view_model.count() > 10
+            qtbot.waitUntil(view_updated)
+
+        Another possibility is for ``callback()`` to return ``True`` when the desired condition
+        is met, ``False`` otherwise. Useful specially with ``lambda`` for terser code, but keep
+        in mind that the error message in those cases is usually not very useful because it is
+        not using an ``assert`` expression.
+
+        .. code-block:: python
+
+            qtbot.waitUntil(lambda: view_model.count() > 10)
+
+        Note that this usage only accepts returning actual ``True`` and ``False`` values,
+        so returning an empty list to express "falseness" raises an ``ValueError``.
+
+        :param callback: callable that will be called periodically.
+        :param timeout: timeout value in ms.
+        :raises ValueError: if the return value from the callback is anything other than ``None``,
+            ``True`` or ``False``.
+
+        .. note:: This method is also available as ``wait_until`` (pep-8 alias)
+        """
+        __tracebackhide__ = True
+        import time
+        start = time.time()
+
+        def timed_out():
+            elapsed = time.time() - start
+            elapsed_ms = elapsed * 1000
+            return elapsed_ms > timeout
+
+        while True:
+            try:
+                result = callback()
+            except AssertionError:
+                if timed_out():
+                    raise
+            else:
+                if result not in (None, True, False):
+                    msg = 'waitUntil() callback must return None, True or False, returned %r'
+                    raise ValueError(msg % result)
+
+                # 'assert' form
+                if result is None:
+                    return
+
+                # 'True/False' form
+                if result:
+                    return
+                else:
+                    assert not timed_out(), 'waitUntil timed out in %s miliseconds' % timeout
+            self.wait(10)
+
+    wait_until = waitUntil  # pep-8 alias
 
 
 # provide easy access to SignalTimeoutError to qtbot fixtures

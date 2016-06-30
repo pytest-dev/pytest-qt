@@ -1,21 +1,8 @@
 2.0
 ---
 
-New
-===
-
-* From this version onward, ``pytest-qt`` is licensed under the MIT license (`#134`_).
-
-* New ``qtmodeltester`` fixture to test ``QAbstractItemModel`` subclasses.
-  Thanks `@The-Compiler`_ for the initiative and port of the original C++ code
-  for ModelTester (`#63`_).
-
-.. _#134: https://github.com/pytest-dev/pytest-qt/issues/134
-.. _#63: https://github.com/pytest-dev/pytest-qt/pull/63
-
-
 Breaking changes
-================
+~~~~~~~~~~~~~~~~
 
 With ``pytest-qt`` 2.0, we changed some defaults to values we think are much
 better.
@@ -36,8 +23,26 @@ However, this required some backwards-incompatible changes:
   on timeouts. You can set ``qt_wait_signal_raising = false`` in your config to
   get back the old behaviour.
 
+
+New Features
+~~~~~~~~~~~~
+
+* From this version onward, ``pytest-qt`` is licensed under the MIT license (`#134`_).
+
+* New ``qtmodeltester`` fixture to test ``QAbstractItemModel`` subclasses.
+  Thanks `@The-Compiler`_ for the initiative and port of the original C++ code
+  for ModelTester (`#63`_).
+
+* New ``qtbot.waitUntil`` method, which continuously calls a callback until a condition
+  is met or a timeout is reached. Useful for testing some features in X window environments
+  due to its asynchronous nature.
+
+.. _#134: https://github.com/pytest-dev/pytest-qt/issues/134
+.. _#63: https://github.com/pytest-dev/pytest-qt/pull/63
+
+
 Other Changes
-=============
+~~~~~~~~~~~~~
 
 - Exceptions caught by ``pytest-qt`` in ``sys.excepthook`` are now also printed
   to ``stderr``, making debugging them easier from within an IDE.

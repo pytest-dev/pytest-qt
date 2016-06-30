@@ -20,6 +20,7 @@ pytest-qt
     tutorial
     logging
     signals
+    wait_until
     virtual_methods
     modeltester
     app_exit
