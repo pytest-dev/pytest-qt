@@ -23,6 +23,9 @@ However, this required some backwards-incompatible changes:
   on timeouts. You can set ``qt_wait_signal_raising = false`` in your config to
   get back the old behaviour.
 
+- ``PYTEST_QT_FORCE_PYQT`` environment variable is no longer supported. Set ``PYTEST_QT_API``
+  to the appropriate value instead.
+
 
 New Features
 ~~~~~~~~~~~~
@@ -39,8 +42,6 @@ New Features
 
 * Now which Qt binding ``pytest-qt`` should use can be configured by the ``qt_api`` config option.
   Thanks `@The-Compiler`_ for the request (`#129`_).
-
-- ``PYTEST_QT_FORCE_PYQT`` environment variable is no longer supported.
 
 - While ``pytestqt.qt_compat`` is an internal module and shouldn't be imported directly,
   it is known that some test suites did import it. This module now uses a lazy-load mechanism
