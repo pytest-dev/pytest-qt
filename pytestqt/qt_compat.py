@@ -68,7 +68,7 @@ class _QtApi:
             m = __import__(_root_module, globals(), locals(), [module_name], 0)
             return getattr(m, module_name)
 
-        if self.pytest_qt_api == 'pyqt4v2':
+        if self.pytest_qt_api == 'pyqt4v2':  # pragma: no cover
             # the v2 api in PyQt4
             # http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
             import sip
