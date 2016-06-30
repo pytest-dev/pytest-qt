@@ -649,7 +649,7 @@ class ModelTester:
     def _column_count(self, parent=qt_api.QtCore.QModelIndex()):
         """
         Workaround for the fact that ``columnCount`` is a private method in
-        qt_api.QAbstractListModel/qt_api.QAbstractTableModel subclasses.
+        QAbstractListModel/QAbstractTableModel subclasses.
         """
         if isinstance(self._model, qt_api.QAbstractListModel):
             return 1 if parent == qt_api.QtCore.QModelIndex() else 0
