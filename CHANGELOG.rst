@@ -1,7 +1,7 @@
 2.0
 ---
 
-Breaking changes
+Breaking Changes
 ~~~~~~~~~~~~~~~~
 
 With ``pytest-qt`` 2.0, we changed some defaults to values we think are much
@@ -34,8 +34,8 @@ New Features
   for ModelTester (`#63`_).
 
 * New ``qtbot.waitUntil`` method, which continuously calls a callback until a condition
-  is met or a timeout is reached. Useful for testing some features in X window environments
-  due to its asynchronous nature.
+  is met or a timeout is reached. Useful for testing asynchronous features 
+  (like in X window environments for example).
 
 .. _#134: https://github.com/pytest-dev/pytest-qt/issues/134
 .. _#63: https://github.com/pytest-dev/pytest-qt/pull/63
