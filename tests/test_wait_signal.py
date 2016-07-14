@@ -222,6 +222,7 @@ def signaller(timer):
     with "timer" are disconnected before the Signaller() object is destroyed.
     This was the reason for some random crashes experienced on Windows (#80).
     """
+
     class Signaller(QtCore.QObject):
         signal = Signal()
         signal_2 = Signal()
@@ -243,7 +244,6 @@ def timer():
     """
 
     class Timer(QtCore.QObject):
-
         def __init__(self):
             QtCore.QObject.__init__(self)
             self.timers_and_slots = []
@@ -276,6 +276,7 @@ def test_wait_signals_handles_exceptions(qtbot, multiple, raising, signaller):
     """
     Make sure waitSignal handles exceptions correctly.
     """
+
     class TestException(Exception):
         pass
 
@@ -335,7 +336,6 @@ def test_destroyed(qtbot):
 
 
 class TestArgs:
-
     """Try to get the signal arguments from the signal blocker."""
 
     def test_simple(self, qtbot, signaller):
@@ -371,8 +371,269 @@ class TestArgs:
         assert blocker.args == ['foo', 2342]
 
 
-class TestAssertNotEmitted:
+def test_signal_identity(signaller):
+    """
+    Tests that the identity of signals can be determined correctly, using str(signal).
 
+    Some Qt frameworks, such as PyQt4 or PyQt5, have the following issue:
+    x = signaller.signal
+    y = signaller.signal
+    x == y  # is False
+
+    id(signaller.signal) == id(signaller.signal) # only True because of garbage collection
+    between first and second id() call
+
+    id(x) == id(y)  # is False
+    str(x) == str(y)  # is True (for all Qt frameworks)
+    """
+    assert str(signaller.signal) == str(signaller.signal)
+    x = signaller.signal
+    y = signaller.signal
+    assert str(x) == str(y)
+
+    # different signals should also be recognized as different ones
+    z = signaller.signal_2
+    assert str(x) != str(z)
+
+
+def get_waitsignals_cases_all(force_order):
+    """
+    Returns the list of tuples (emitted-signal-list, expected-signal-list, expect_signal_triggered) for the
+    given force_order parameter of waitSignals().
+    """
+    cases = get_waitsignals_cases(force_order, working=True)
+    cases.extend(get_waitsignals_cases(force_order, working=False))
+    return cases
+
+
+def get_waitsignals_cases(force_order, working):
+    """
+    Builds combinations for signals to be emitted and expected for working cases (i.e. blocker.signal_triggered == True)
+    and non-working cases, depending on the force_order.
+
+    Note:
+    The force_order ("none", "simple", "strict") becomes stricter from left to right.
+    Working cases of stricter cases also work in less stricter cases.
+    Non-working cases in less stricter cases also are non-working in stricter cases.
+    """
+    if force_order == "none":
+        if working:
+            cases = get_waitsignals_cases(force_order="simple", working=True)
+            cases.extend([
+                # allow even out-of-order signals
+                (('A1', 'A2'), ('A2', 'A1'), True),
+                (('A1', 'A2'), ('A2', 'Ax'), True),
+                (('A1', 'B1'), ('B1', 'A1'), True),
+                (('A1', 'B1'), ('B1', 'Ax'), True),
+                (('A1', 'B1', 'B1'), ('B1', 'A1', 'B1'), True),
+            ])
+            return cases
+        else:
+            return [
+                (('A2',), ('A1',), False),
+                (('A1',), ('B1',), False),
+                (('A1',), ('Bx',), False),
+                (('A1', 'A1'), ('A1', 'B1'), False),
+                (('A1', 'A1'), ('A1', 'Bx'), False),
+                (('A1', 'A1'), ('B1', 'A1'), False),
+                (('A1', 'B1'), ('A1', 'A1'), False),
+                (('A1', 'B1'), ('B1', 'B1'), False),
+                (('A1', 'B1', 'B1'), ('A1', 'A1', 'B1'), False),
+            ]
+    elif force_order == "simple":
+        if working:
+            cases = get_waitsignals_cases(force_order="strict", working=True)
+            cases.extend([
+                # allow signals that occur in-between, before or after the expected signals
+                (('B1', 'A1', 'A1', 'B1', 'A1'), ('A1', 'B1'), True),
+                (('A1', 'A1', 'A1'), ('A1', 'A1'), True),
+                (('A1', 'A1', 'A1'), ('A1', 'Ax'), True),
+                (('A1', 'A2', 'A1'), ('A1', 'A1'), True),
+            ])
+            return cases
+        else:
+            cases = get_waitsignals_cases(force_order="none", working=False)
+            cases.extend([
+                # don't allow out-of-order signals
+                (('A1', 'B1'), ('B1', 'A1'), False),
+                (('A1', 'B1'), ('B1', 'Ax'), False),
+                (('A1', 'B1', 'B1'), ('B1', 'A1', 'B1'), False),
+                (('A1', 'B1', 'B1'), ('B1', 'B1', 'A1'), False),
+            ])
+            return cases
+    elif force_order == "strict":
+        if working:
+            return [
+                # only allow exactly the same signals to be emitted that were also expected
+                (('A1',), ('A1',), True),
+                (('A1',), ('Ax',), True),
+                (('A1', 'A1'), ('A1', 'A1'), True),
+                (('A1', 'A1'), ('A1', 'Ax'), True),
+                (('A1', 'A1'), ('Ax', 'Ax'), True),
+                (('A1', 'A2'), ('A1', 'A2'), True),
+                (('A2', 'A1'), ('A2', 'A1'), True),
+                (('A1', 'B1'), ('A1', 'B1'), True),
+                (('A1', 'A1', 'B1'), ('A1', 'A1', 'B1'), True),
+                (('A1', 'A2', 'B1'), ('A1', 'A2', 'B1'), True),
+                (('A1', 'B1', 'A1'), ('A1', 'A1'), True),  # blocker doesn't know about signal B1 -> test passes
+                (('A1', 'B1', 'A1'), ('Ax', 'A1'), True),
+            ]
+        else:
+            cases = get_waitsignals_cases(force_order="simple", working=False)
+            cases.extend([
+                # don't allow in-between signals
+                (('A1', 'A1', 'A2', 'B1'), ('A1', 'A2', 'B1'), False),
+            ])
+            return cases
+
+
+class TestCallback:
+    """
+    Tests the callback parameter for waitSignal (callbacks in case of waitSignals).
+    Uses so-called "signal codes" such as "A1", "B1" or "Ax" which are converted to signals and callback functions.
+    The first letter ("A" or "B" is allowed) specifies the signal (signaller.signal_args or signaller.signal_args_2
+    respectively), the second letter specifies the parameter to expect or emit ('x' stands for "don't care", i.e. allow
+    any value - only applicable for expected signals (not for emitted signals)).
+    """
+
+    @staticmethod
+    def get_signal_from_code(signaller, code):
+        """Converts a code such as 'A1' to a signal (signaller.signal_args for example)."""
+        assert type(code) == str and len(code) == 2
+        signal = signaller.signal_args if code[0] == 'A' else signaller.signal_args_2
+        return signal
+
+    @staticmethod
+    def emit_parametrized_signals(signaller, emitted_signal_codes):
+        """Emits the signals as specified in the list of emitted_signal_codes using the signaller."""
+        for code in emitted_signal_codes:
+            signal = TestCallback.get_signal_from_code(signaller, code)
+            param_str = code[1]
+            assert param_str != "x", "x is not allowed in emitted_signal_codes, only in expected_signal_codes"
+            param_int = int(param_str)
+            signal.emit(param_str, param_int)
+
+    @staticmethod
+    def parameter_evaluation_callback(param_str, param_int, expected_param_str, expected_param_int):
+        """
+        This generic callback method evaluates that the two provided parameters match the expected ones (which are bound
+        using functools.partial).
+        """
+        return param_str == expected_param_str and param_int == expected_param_int
+
+    @staticmethod
+    def parameter_evaluation_callback_accept_any(param_str, param_int):
+        return True
+
+    @staticmethod
+    def get_signals_and_callbacks(signaller, expected_signal_codes):
+        """
+        Converts an iterable of strings, such as ('A1', 'A2') to a tuple of the form
+        (list of Qt signals, matching parameter-evaluation callbacks)
+        Example: ('A1', 'A2') is converted to
+        ([signaller.signal_args, signaller.signal_args], [callback(str,int), callback(str,int)]) where the
+        first callback expects the values to be '1' and 1, and the second one '2' and 2 respectively.
+        I.e. the first character of each signal-code determines the Qt signal, the second one the parameter values.
+        """
+        signals_to_expect = []
+        callbacks = []
+
+        for code in expected_signal_codes:
+            # e.g. "A2" means to use signaller.signal_args with parameters "2", 2
+            signal = TestCallback.get_signal_from_code(signaller, code)
+            signals_to_expect.append(signal)
+            param_value_as_string = code[1]
+            if param_value_as_string == "x":
+                callback = TestCallback.parameter_evaluation_callback_accept_any
+            else:
+                param_value_as_int = int(param_value_as_string)
+                callback = functools.partial(TestCallback.parameter_evaluation_callback,
+                                             expected_param_str=param_value_as_string,
+                                             expected_param_int=param_value_as_int)
+            callbacks.append(callback)
+
+        return signals_to_expect, callbacks
+
+    @pytest.mark.parametrize(
+        ('emitted_signal_codes', 'expected_signal_codes', 'expected_signal_triggered'),
+        [
+            # working cases
+            (('A1',), ('A1',), True),
+            (('A1',), ('Ax',), True),
+            (('A1', 'A1'), ('A1',), True),
+            (('A1', 'A2'), ('A1',), True),
+            (('A2', 'A1'), ('A1',), True),
+            # non working cases
+            (('A2',), ('A1',), False),
+            (('B1',), ('A1',), False),
+            (('A1',), ('Bx',), False),
+        ]
+    )
+    def test_wait_signal(self, qtbot, signaller, emitted_signal_codes, expected_signal_codes,
+                         expected_signal_triggered):
+        """Tests that waitSignal() correctly checks the signal parameters using the provided callback"""
+        signals_to_expect, callbacks = TestCallback.get_signals_and_callbacks(signaller, expected_signal_codes)
+        with qtbot.waitSignal(signal=signals_to_expect[0], callback=callbacks[0], timeout=200,
+                              raising=False) as blocker:
+            TestCallback.emit_parametrized_signals(signaller, emitted_signal_codes)
+
+        assert blocker.signal_triggered == expected_signal_triggered
+
+    @pytest.mark.parametrize(
+        ('emitted_signal_codes', 'expected_signal_codes', 'expected_signal_triggered'),
+        get_waitsignals_cases_all(force_order="none")
+    )
+    def test_wait_signals_none_order(self, qtbot, signaller, emitted_signal_codes, expected_signal_codes,
+                                     expected_signal_triggered):
+        """Tests waitSignals() with force_order="none"."""
+        self._test_wait_signals(qtbot, signaller, emitted_signal_codes, expected_signal_codes,
+                                expected_signal_triggered, force_order="none")
+
+    @pytest.mark.parametrize(
+        ('emitted_signal_codes', 'expected_signal_codes', 'expected_signal_triggered'),
+        get_waitsignals_cases_all(force_order="simple")
+    )
+    def test_wait_signals_simple_order(self, qtbot, signaller, emitted_signal_codes, expected_signal_codes,
+                                       expected_signal_triggered):
+        """Tests waitSignals() with force_order="simple"."""
+        self._test_wait_signals(qtbot, signaller, emitted_signal_codes, expected_signal_codes,
+                                expected_signal_triggered, force_order="simple")
+
+    @pytest.mark.parametrize(
+        ('emitted_signal_codes', 'expected_signal_codes', 'expected_signal_triggered'),
+        get_waitsignals_cases_all(force_order="strict")
+    )
+    def test_wait_signals_strict_order(self, qtbot, signaller, emitted_signal_codes, expected_signal_codes,
+                                       expected_signal_triggered):
+        """Tests waitSignals() with force_order="strict"."""
+        self._test_wait_signals(qtbot, signaller, emitted_signal_codes, expected_signal_codes,
+                                expected_signal_triggered, force_order="strict")
+
+    @staticmethod
+    def _test_wait_signals(qtbot, signaller, emitted_signal_codes, expected_signal_codes,
+                           expected_signal_triggered, force_order):
+        signals_to_expect, callbacks = TestCallback.get_signals_and_callbacks(signaller, expected_signal_codes)
+        with qtbot.waitSignals(signals=signals_to_expect, force_order=force_order, callbacks=callbacks,
+                               timeout=200, raising=False) as blocker:
+            TestCallback.emit_parametrized_signals(signaller, emitted_signal_codes)
+
+        assert blocker.signal_triggered == expected_signal_triggered
+
+    def test_signals_and_callbacks_length_mismatch(self, qtbot, signaller):
+        """
+        Tests that a ValueError is raised if the number of expected signals doesn't match the number of provided
+        callbacks.
+        """
+        expected_signal_codes = ('A1', 'A2')
+        signals_to_expect, callbacks = TestCallback.get_signals_and_callbacks(signaller, expected_signal_codes)
+        callbacks.append(None)
+        with pytest.raises(ValueError):
+            with qtbot.waitSignals(signals=signals_to_expect, force_order="none", callbacks=callbacks,
+                                   raising=False):
+                pass
+
+
+class TestAssertNotEmitted:
     """Tests for qtbot.assertNotEmitted."""
 
     def test_not_emitted(self, qtbot, signaller):

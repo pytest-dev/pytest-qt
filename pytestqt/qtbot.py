@@ -234,7 +234,7 @@ class QtBot(object):
 
     stop = stopForInteraction
 
-    def waitSignal(self, signal=None, timeout=1000, raising=None):
+    def waitSignal(self, signal=None, timeout=1000, callback=None, raising=None):
         """
         .. versionadded:: 1.2
 
@@ -265,6 +265,8 @@ class QtBot(object):
             A signal to wait for. Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
+        :param Callable callback:
+            Optional callable(*args) that returns True if the parameters are as expected, or False otherwise.
         :param bool raising:
             If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
             should be raised if a timeout occurred.
@@ -285,14 +287,14 @@ class QtBot(object):
                 raising = True
             else:
                 raising = _parse_ini_boolean(raising_val)
-        blocker = SignalBlocker(timeout=timeout, raising=raising)
+        blocker = SignalBlocker(timeout=timeout, raising=raising, callback=callback)
         if signal is not None:
             blocker.connect(signal)
         return blocker
 
     wait_signal = waitSignal  # pep-8 alias
 
-    def waitSignals(self, signals=None, timeout=1000, raising=None):
+    def waitSignals(self, signals=None, timeout=1000, force_order = "none", callbacks = None, raising=None):
         """
         .. versionadded:: 1.4
 
@@ -315,10 +317,19 @@ class QtBot(object):
            blocker.wait()
 
         :param list signals:
-            A list of :class:`Signal` objects to wait for. Set to ``None`` to
-            just use timeout.
+            A list of :class:`Signal`s objects to wait for. Set to ``None`` to just use
+            timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
+        :param str force_order:
+            "none": no order is enforced
+            "strict": the signals have to be emitted in the provided order (and no intermediate signals may be emitted)
+            "simple": like "strict", but signals may be emitted inbetween the provided ones, e.g. suppose
+            signals=[a, b, c] and the tested object emits the signals a, a, b, a, c, the test will pass with "simple"
+            but not with "strict"
+        :param list callbacks:
+            optional list of Callable functions that evaluate the parameters of the signal. Each element of the list
+            can be a callable or None. Make sure that the number of callbacks matches the number of signals.
         :param bool raising:
             If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
             should be raised if a timeout occurred.
@@ -334,12 +345,18 @@ class QtBot(object):
 
         .. note:: This method is also available as ``wait_signals`` (pep-8 alias)
         """
+        assert force_order in ["none", "simple", "strict"], "force_order has to be set to 'none', 'simple' or 'strict'"
+
         if raising is None:
             raising = self._request.config.getini('qt_wait_signal_raising')
-        blocker = MultiSignalBlocker(timeout=timeout, raising=raising)
+
+        if callbacks:
+            if len(callbacks) != len(signals):
+                raise ValueError("Number of callbacks ({}) does not "
+                                 "match number of signals ({})!".format(len(callbacks), len(signals)))
+        blocker = MultiSignalBlocker(timeout=timeout, raising=raising, force_order=force_order, callbacks=callbacks)
         if signals is not None:
-            for signal in signals:
-                blocker._add_signal(signal)
+            blocker.add_signals(signals)
         return blocker
 
     wait_signals = waitSignals  # pep-8 alias
