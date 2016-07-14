@@ -261,9 +261,9 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
             signal = self._signals[i]
             slot = self._slots[i]
             _silent_disconnect(signal, slot)
-        self._signals_emitted.clear()
+        del self._signals_emitted[:]
         self._signals_map.clear()
-        self._slots.clear()
+        del self._slots[:]
 
 
 class SignalEmittedSpy(object):
