@@ -33,11 +33,11 @@ install:
  - pip install -U pytest
 
  # others
- - pip install coveralls --use-wheel
+ - pip install coveralls pytest-xvfb --use-wheel
 
 script:
  - python setup.py develop
- - catchsegv xvfb-run coverage run --source=pytestqt setup.py test
+ - catchsegv coverage run --source=pytestqt setup.py test
 
 after_success:
  - coveralls
