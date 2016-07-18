@@ -99,11 +99,11 @@ class SignalBlocker(_AbstractSignalBlocker):
     .. automethod:: connect
     """
 
-    def __init__(self, timeout=1000, raising=True, callback=None):
+    def __init__(self, timeout=1000, raising=True, check_params_cb=None):
         super(SignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = []
         self.args = None
-        self.callback = callback
+        self.check_params_callback = check_params_cb
 
     def connect(self, signal):
         """
@@ -122,8 +122,8 @@ class SignalBlocker(_AbstractSignalBlocker):
         """
         quits the event loop and marks that we finished because of a signal.
         """
-        if self.callback:
-            if not self.callback(*args):
+        if self.check_params_callback:
+            if not self.check_params_callback(*args):
                 return  # parameter check did not pass
         try:
             self.signal_triggered = True
@@ -152,10 +152,10 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     .. automethod:: wait
     """
 
-    def __init__(self, timeout=1000, force_order="none", callbacks=None, raising=True):
+    def __init__(self, timeout=1000, raising=True, check_params_cbs=None, order="none"):
         super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
-        self.force_order = force_order
-        self.callbacks = callbacks
+        self.order = order
+        self.check_params_callbacks = check_params_cbs
         self._signals_emitted = []  # list of booleans, indicates whether the signal was already emitted
         self._signals_map = {}  # maps from a unique Signal to a list of indices where to expect signal instance emits
         self._signals = []  # list of all Signals (for compatibility with _AbstractSignalBlocker)
@@ -171,7 +171,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         :param list signals: list of QtCore.Signal`s
         """
         # determine uniqueness of signals, creating a map that maps from a unique signal to a list of indices
-        # (positions) where this signal is expected (in case force_order matters)
+        # (positions) where this signal is expected (in case order matters)
         signals_as_str = [str(signal) for signal in signals]
         signal_str_to_signal = {}  # maps from a signal-string to one of the signal instances (the first one found)
         for index, signal_str in enumerate(signals_as_str):
@@ -200,7 +200,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         If all expected signals have been emitted, quits the event loop and
         marks that we finished because signals.
         """
-        if self.force_order == "none":
+        if self.order == "none":
             # perform the test for every matching index (stop after the first one that matches)
             successfully_emitted = False
             successful_index = -1
@@ -213,14 +213,14 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
 
             if successfully_emitted:
                 self._signals_emitted[successful_index] = True
-        elif self.force_order == "simple":
+        elif self.order == "simple":
             potential_indices = self._get_unemitted_signal_indices(signal)
             if potential_indices:
                 if self._signal_expected_index == potential_indices[0]:
                     if self._check_callback(self._signal_expected_index, *args):
                         self._signals_emitted[self._signal_expected_index] = True
                         self._signal_expected_index += 1
-        else:  # self.force_order == "strict"
+        else:  # self.order == "strict"
             if not self._strict_order_violated:
                 # only do the check if the strict order has not been violated yet
                 self._strict_order_violated = True  # assume the order has been violated this time
@@ -244,8 +244,8 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         Checks if there's a callback that evaluates the validity of the parameters. Returns False if there is one
         and its evaluation revealed that the parameters were invalid. Returns True otherwise.
         """
-        if self.callbacks:
-            callback_func = self.callbacks[index]
+        if self.check_params_callbacks:
+            callback_func = self.check_params_callbacks[index]
             if callback_func:
                 if not callback_func(*args):
                     return False

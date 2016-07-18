@@ -396,29 +396,29 @@ def test_signal_identity(signaller):
     assert str(x) != str(z)
 
 
-def get_waitsignals_cases_all(force_order):
+def get_waitsignals_cases_all(order):
     """
     Returns the list of tuples (emitted-signal-list, expected-signal-list, expect_signal_triggered) for the
-    given force_order parameter of waitSignals().
+    given order parameter of waitSignals().
     """
-    cases = get_waitsignals_cases(force_order, working=True)
-    cases.extend(get_waitsignals_cases(force_order, working=False))
+    cases = get_waitsignals_cases(order, working=True)
+    cases.extend(get_waitsignals_cases(order, working=False))
     return cases
 
 
-def get_waitsignals_cases(force_order, working):
+def get_waitsignals_cases(order, working):
     """
     Builds combinations for signals to be emitted and expected for working cases (i.e. blocker.signal_triggered == True)
-    and non-working cases, depending on the force_order.
+    and non-working cases, depending on the order.
 
     Note:
-    The force_order ("none", "simple", "strict") becomes stricter from left to right.
+    The order ("none", "simple", "strict") becomes stricter from left to right.
     Working cases of stricter cases also work in less stricter cases.
     Non-working cases in less stricter cases also are non-working in stricter cases.
     """
-    if force_order == "none":
+    if order == "none":
         if working:
-            cases = get_waitsignals_cases(force_order="simple", working=True)
+            cases = get_waitsignals_cases(order="simple", working=True)
             cases.extend([
                 # allow even out-of-order signals
                 (('A1', 'A2'), ('A2', 'A1'), True),
@@ -440,9 +440,9 @@ def get_waitsignals_cases(force_order, working):
                 (('A1', 'B1'), ('B1', 'B1'), False),
                 (('A1', 'B1', 'B1'), ('A1', 'A1', 'B1'), False),
             ]
-    elif force_order == "simple":
+    elif order == "simple":
         if working:
-            cases = get_waitsignals_cases(force_order="strict", working=True)
+            cases = get_waitsignals_cases(order="strict", working=True)
             cases.extend([
                 # allow signals that occur in-between, before or after the expected signals
                 (('B1', 'A1', 'A1', 'B1', 'A1'), ('A1', 'B1'), True),
@@ -452,7 +452,7 @@ def get_waitsignals_cases(force_order, working):
             ])
             return cases
         else:
-            cases = get_waitsignals_cases(force_order="none", working=False)
+            cases = get_waitsignals_cases(order="none", working=False)
             cases.extend([
                 # don't allow out-of-order signals
                 (('A1', 'B1'), ('B1', 'A1'), False),
@@ -461,7 +461,7 @@ def get_waitsignals_cases(force_order, working):
                 (('A1', 'B1', 'B1'), ('B1', 'B1', 'A1'), False),
             ])
             return cases
-    elif force_order == "strict":
+    elif order == "strict":
         if working:
             return [
                 # only allow exactly the same signals to be emitted that were also expected
@@ -479,7 +479,7 @@ def get_waitsignals_cases(force_order, working):
                 (('A1', 'B1', 'A1'), ('Ax', 'A1'), True),
             ]
         else:
-            cases = get_waitsignals_cases(force_order="simple", working=False)
+            cases = get_waitsignals_cases(order="simple", working=False)
             cases.extend([
                 # don't allow in-between signals
                 (('A1', 'A1', 'A2', 'B1'), ('A1', 'A2', 'B1'), False),
@@ -573,7 +573,7 @@ class TestCallback:
                          expected_signal_triggered):
         """Tests that waitSignal() correctly checks the signal parameters using the provided callback"""
         signals_to_expect, callbacks = TestCallback.get_signals_and_callbacks(signaller, expected_signal_codes)
-        with qtbot.waitSignal(signal=signals_to_expect[0], callback=callbacks[0], timeout=200,
+        with qtbot.waitSignal(signal=signals_to_expect[0], check_params_cb=callbacks[0], timeout=200,
                               raising=False) as blocker:
             TestCallback.emit_parametrized_signals(signaller, emitted_signal_codes)
 
@@ -581,39 +581,39 @@ class TestCallback:
 
     @pytest.mark.parametrize(
         ('emitted_signal_codes', 'expected_signal_codes', 'expected_signal_triggered'),
-        get_waitsignals_cases_all(force_order="none")
+        get_waitsignals_cases_all(order="none")
     )
     def test_wait_signals_none_order(self, qtbot, signaller, emitted_signal_codes, expected_signal_codes,
                                      expected_signal_triggered):
-        """Tests waitSignals() with force_order="none"."""
+        """Tests waitSignals() with order="none"."""
         self._test_wait_signals(qtbot, signaller, emitted_signal_codes, expected_signal_codes,
-                                expected_signal_triggered, force_order="none")
+                                expected_signal_triggered, order="none")
 
     @pytest.mark.parametrize(
         ('emitted_signal_codes', 'expected_signal_codes', 'expected_signal_triggered'),
-        get_waitsignals_cases_all(force_order="simple")
+        get_waitsignals_cases_all(order="simple")
     )
     def test_wait_signals_simple_order(self, qtbot, signaller, emitted_signal_codes, expected_signal_codes,
                                        expected_signal_triggered):
-        """Tests waitSignals() with force_order="simple"."""
+        """Tests waitSignals() with order="simple"."""
         self._test_wait_signals(qtbot, signaller, emitted_signal_codes, expected_signal_codes,
-                                expected_signal_triggered, force_order="simple")
+                                expected_signal_triggered, order="simple")
 
     @pytest.mark.parametrize(
         ('emitted_signal_codes', 'expected_signal_codes', 'expected_signal_triggered'),
-        get_waitsignals_cases_all(force_order="strict")
+        get_waitsignals_cases_all(order="strict")
     )
     def test_wait_signals_strict_order(self, qtbot, signaller, emitted_signal_codes, expected_signal_codes,
                                        expected_signal_triggered):
-        """Tests waitSignals() with force_order="strict"."""
+        """Tests waitSignals() with order="strict"."""
         self._test_wait_signals(qtbot, signaller, emitted_signal_codes, expected_signal_codes,
-                                expected_signal_triggered, force_order="strict")
+                                expected_signal_triggered, order="strict")
 
     @staticmethod
     def _test_wait_signals(qtbot, signaller, emitted_signal_codes, expected_signal_codes,
-                           expected_signal_triggered, force_order):
+                           expected_signal_triggered, order):
         signals_to_expect, callbacks = TestCallback.get_signals_and_callbacks(signaller, expected_signal_codes)
-        with qtbot.waitSignals(signals=signals_to_expect, force_order=force_order, callbacks=callbacks,
+        with qtbot.waitSignals(signals=signals_to_expect, order=order, check_params_cbs=callbacks,
                                timeout=200, raising=False) as blocker:
             TestCallback.emit_parametrized_signals(signaller, emitted_signal_codes)
 
@@ -628,7 +628,7 @@ class TestCallback:
         signals_to_expect, callbacks = TestCallback.get_signals_and_callbacks(signaller, expected_signal_codes)
         callbacks.append(None)
         with pytest.raises(ValueError):
-            with qtbot.waitSignals(signals=signals_to_expect, force_order="none", callbacks=callbacks,
+            with qtbot.waitSignals(signals=signals_to_expect, order="none", check_params_cbs=callbacks,
                                    raising=False):
                 pass
 

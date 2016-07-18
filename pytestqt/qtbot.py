@@ -234,7 +234,7 @@ class QtBot(object):
 
     stop = stopForInteraction
 
-    def waitSignal(self, signal=None, timeout=1000, callback=None, raising=None):
+    def waitSignal(self, signal=None, timeout=1000, raising=None, check_params_cb=None):
         """
         .. versionadded:: 1.2
 
@@ -265,13 +265,15 @@ class QtBot(object):
             A signal to wait for. Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
-        :param Callable callback:
-            Optional callable(*args) that returns True if the parameters are as expected, or False otherwise.
         :param bool raising:
             If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_wait_signal_raising = false``
             is set in the config.
+        :param Callable check_params_cb:
+            Optional callable(*parameters) that compares the provided signal parameters to some expected parameters.
+            It has to match the signature of ``signal`` (just like a slot function would) and return ``True`` if
+            parameters match, ``False`` otherwise.
         :returns:
             ``SignalBlocker`` object. Call ``SignalBlocker.wait()`` to wait.
 
@@ -287,14 +289,14 @@ class QtBot(object):
                 raising = True
             else:
                 raising = _parse_ini_boolean(raising_val)
-        blocker = SignalBlocker(timeout=timeout, raising=raising, callback=callback)
+        blocker = SignalBlocker(timeout=timeout, raising=raising, check_params_cb=check_params_cb)
         if signal is not None:
             blocker.connect(signal)
         return blocker
 
     wait_signal = waitSignal  # pep-8 alias
 
-    def waitSignals(self, signals=None, timeout=1000, force_order = "none", callbacks = None, raising=None):
+    def waitSignals(self, signals=None, timeout=1000, raising=None, check_params_cbs=None, order="none"):
         """
         .. versionadded:: 1.4
 
@@ -317,24 +319,28 @@ class QtBot(object):
            blocker.wait()
 
         :param list signals:
-            A list of :class:`Signal`s objects to wait for. Set to ``None`` to just use
+            A list of :class:`Signal` objects to wait for. Set to ``None`` to just use
             timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
-        :param str force_order:
-            "none": no order is enforced
-            "strict": the signals have to be emitted in the provided order (and no intermediate signals may be emitted)
-            "simple": like "strict", but signals may be emitted inbetween the provided ones, e.g. suppose
-            signals=[a, b, c] and the tested object emits the signals a, a, b, a, c, the test will pass with "simple"
-            but not with "strict"
-        :param list callbacks:
-            optional list of Callable functions that evaluate the parameters of the signal. Each element of the list
-            can be a callable or None. Make sure that the number of callbacks matches the number of signals.
         :param bool raising:
             If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_wait_signal_raising = false``
             is set in the config.
+        :param list check_params_cbs:
+            optional list of callables that compare the provided signal parameters to some expected parameters.
+            Each callable has to match the signature of the corresponding signal in ``signals`` (just like a slot
+            function would) and return ``True`` if parameters match, ``False`` otherwise.
+            Instead of a specific callable, ``None`` can be provided, to disable parameter checking for the
+            corresponding signal.
+            If the number of callbacks doesn't match the number of signals ``ValueError`` will be raised.
+        :param str order: determines the order in which to expect signals
+            * ``"none"``: no order is enforced
+            * ``"strict"``: signals have to be emitted strictly in the provided order
+                (e.g. fails when expecting signals [a, b] and [a, a, b] is emitted)
+            * ``"simple"``: like "strict", but signals may be emitted in-between the provided ones, e.g. expected
+                ``signals`` == [a, b, c] and actually emitted signals = [a, a, b, a, c] works (would fail with "strict")
         :returns:
             ``MultiSignalBlocker`` object. Call ``MultiSignalBlocker.wait()``
             to wait.
@@ -345,16 +351,17 @@ class QtBot(object):
 
         .. note:: This method is also available as ``wait_signals`` (pep-8 alias)
         """
-        assert force_order in ["none", "simple", "strict"], "force_order has to be set to 'none', 'simple' or 'strict'"
+        if order not in ["none", "simple", "strict"]:
+            raise ValueError("order has to be set to 'none', 'simple' or 'strict'")
 
         if raising is None:
             raising = self._request.config.getini('qt_wait_signal_raising')
 
-        if callbacks:
-            if len(callbacks) != len(signals):
+        if check_params_cbs:
+            if len(check_params_cbs) != len(signals):
                 raise ValueError("Number of callbacks ({}) does not "
-                                 "match number of signals ({})!".format(len(callbacks), len(signals)))
-        blocker = MultiSignalBlocker(timeout=timeout, raising=raising, force_order=force_order, callbacks=callbacks)
+                                 "match number of signals ({})!".format(len(check_params_cbs), len(signals)))
+        blocker = MultiSignalBlocker(timeout=timeout, raising=raising, order=order, check_params_cbs=check_params_cbs)
         if signals is not None:
             blocker.add_signals(signals)
         return blocker
