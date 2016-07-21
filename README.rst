@@ -17,9 +17,9 @@ like key presses and mouse clicks:
         qtbot.addWidget(widget)
     
         # click in the Greet button and make sure it updates the appropriate label
-        qtbot.mouseClick(window.button_greet, QtCore.Qt.LeftButton)
+        qtbot.mouseClick(widget.button_greet, QtCore.Qt.LeftButton)
     
-        assert window.greet_label.text() == 'Hello!'
+        assert widget.greet_label.text() == 'Hello!'
 
 
 .. _PySide: https://pypi.python.org/pypi/PySide

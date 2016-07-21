@@ -32,9 +32,7 @@ if 'APPVEYOR' in os.environ:
         'py27-pyqt4': 'PyQt4/PyQt-4.11.4/PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe',
     }
     if 'INSTALL_QT' in os.environ:
-        fix_registry('34')
         fix_registry('35')
-        fix_registry('27')
         caption = os.environ['INSTALL_QT']
         installers_dir = r'C:\Installers'
         if not os.path.isdir(installers_dir):
