@@ -142,9 +142,7 @@ class _QtApi:
                 self.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
 
                 def extract_from_variant(variant):
-                    """returns python object from the given QVariant"""
-                    if isinstance(variant, QtCore.QVariant):
-                        return variant.value()
+                    """not needed in PyQt5: Qt API always returns pure python objects"""
                     return variant
 
                 def make_variant(value=None):
