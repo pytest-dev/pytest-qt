@@ -37,7 +37,12 @@ New Features
   is met or a timeout is reached. Useful for testing asynchronous features 
   (like in X window environments for example).
 
+* ``waitSignal`` and ``waitSignals`` can receive an optional callback that can
+  evaluate if the arguments of emitted signals should resume execution or not.
+  Thanks `@MShekow`_ for the PR (`#141`_).
+
 .. _#134: https://github.com/pytest-dev/pytest-qt/issues/134
+.. _#141: https://github.com/pytest-dev/pytest-qt/pull/141
 .. _#63: https://github.com/pytest-dev/pytest-qt/pull/63
 
 
@@ -357,13 +362,14 @@ Small bug fix release.
 First working version.
 
 
-.. _@The-Compiler: https://github.com/The-Compiler
-.. _@montefra: https://github.com/montefra
-.. _@gqmelo: https://github.com/gqmelo
-.. _@jdreaver: https://github.com/jdreaver
+.. _@baudren: https://github.com/baudren
+.. _@billyshambrook: https://github.com/billyshambrook
 .. _@datalyze-solutions: https://github.com/datalyze-solutions
 .. _@fabioz: https://github.com/fabioz
-.. _@baudren: https://github.com/baudren
+.. _@gqmelo: https://github.com/gqmelo
 .. _@itghisi: https://github.com/itghisi
+.. _@jdreaver: https://github.com/jdreaver
+.. _@montefra: https://github.com/montefra
+.. _@MShekow: https://github.com/MShekow
 .. _@Sheeo: https://github.com/Sheeo
-.. _@billyshambrook: https://github.com/billyshambrook
+.. _@The-Compiler: https://github.com/The-Compiler
