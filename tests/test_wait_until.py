@@ -41,13 +41,13 @@ def tick_counter():
     """
     Returns an object which counts timer "ticks" periodically.
     """
-    from pytestqt.qt_compat import QtCore
+    from pytestqt.qt_compat import qt_api
 
     class Counter:
 
         def __init__(self):
             self._ticks = 0
-            self.timer = QtCore.QTimer()
+            self.timer = qt_api.QtCore.QTimer()
             self.timer.timeout.connect(self._tick)
 
         def start(self, ms):

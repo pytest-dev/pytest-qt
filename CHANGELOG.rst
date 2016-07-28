@@ -23,6 +23,9 @@ However, this required some backwards-incompatible changes:
   on timeouts. You can set ``qt_wait_signal_raising = false`` in your config to
   get back the old behaviour.
 
+- ``PYTEST_QT_FORCE_PYQT`` environment variable is no longer supported. Set ``PYTEST_QT_API``
+  to the appropriate value instead.
+
 
 New Features
 ~~~~~~~~~~~~
@@ -41,9 +44,18 @@ New Features
   evaluate if the arguments of emitted signals should resume execution or not.
   Thanks `@MShekow`_ for the PR (`#141`_).
 
+* Now which Qt binding ``pytest-qt`` will use can be configured by the ``qt_api`` config option.
+  Thanks `@The-Compiler`_ for the request (`#129`_).
+
+* While ``pytestqt.qt_compat`` is an internal module and shouldn't be imported directly,
+  it is known that some test suites did import it. This module now uses a lazy-load mechanism
+  to load Qt classes and objects, so the old symbols (``QtCore``, ``QApplication``, etc.) are
+  no longer available from it.
+
 .. _#134: https://github.com/pytest-dev/pytest-qt/issues/134
 .. _#141: https://github.com/pytest-dev/pytest-qt/pull/141
 .. _#63: https://github.com/pytest-dev/pytest-qt/pull/63
+.. _#129: https://github.com/pytest-dev/pytest-qt/issues/129
 
 
 Other Changes

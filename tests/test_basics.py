@@ -1,8 +1,6 @@
 import weakref
 import pytest
-from pytestqt.qt_compat import QtGui, Qt, QEvent, QtCore, QApplication, \
-    QWidget, make_variant, extract_from_variant
-import pytestqt.qtbot
+from pytestqt.qt_compat import qt_api
 
 
 def test_basics(qtbot):
@@ -10,8 +8,8 @@ def test_basics(qtbot):
     Basic test that works more like a sanity check to ensure we are setting up a QApplication
     properly and are able to display a simple event_recorder.
     """
-    assert QApplication.instance() is not None
-    widget = QWidget()
+    assert qt_api.QApplication.instance() is not None
+    widget = qt_api.QWidget()
     qtbot.addWidget(widget)
     widget.setWindowTitle('W1')
     widget.show()
@@ -31,13 +29,13 @@ def test_key_events(qtbot, event_recorder):
             key_event.text(),
         )
 
-    event_recorder.registerEvent(QtGui.QKeyEvent, extract)
+    event_recorder.registerEvent(qt_api.QtGui.QKeyEvent, extract)
 
     qtbot.keyPress(event_recorder, 'a')
-    assert event_recorder.event_data == (QEvent.KeyPress, int(Qt.Key_A), 'a')
+    assert event_recorder.event_data == (qt_api.QEvent.KeyPress, int(qt_api.Qt.Key_A), 'a')
 
     qtbot.keyRelease(event_recorder, 'a')
-    assert event_recorder.event_data == (QEvent.KeyRelease, int(Qt.Key_A), 'a')
+    assert event_recorder.event_data == (qt_api.QEvent.KeyRelease, int(qt_api.Qt.Key_A), 'a')
 
 
 def test_mouse_events(qtbot, event_recorder):
@@ -51,23 +49,23 @@ def test_mouse_events(qtbot, event_recorder):
             mouse_event.modifiers(),
         )
 
-    event_recorder.registerEvent(QtGui.QMouseEvent, extract)
+    event_recorder.registerEvent(qt_api.QtGui.QMouseEvent, extract)
 
-    qtbot.mousePress(event_recorder, Qt.LeftButton)
-    assert event_recorder.event_data == (QEvent.MouseButtonPress, Qt.LeftButton, Qt.NoModifier)
+    qtbot.mousePress(event_recorder, qt_api.Qt.LeftButton)
+    assert event_recorder.event_data == (qt_api.QEvent.MouseButtonPress, qt_api.Qt.LeftButton, qt_api.Qt.NoModifier)
 
-    qtbot.mousePress(event_recorder, Qt.RightButton, Qt.AltModifier)
-    assert event_recorder.event_data == (QEvent.MouseButtonPress, Qt.RightButton, Qt.AltModifier)
+    qtbot.mousePress(event_recorder, qt_api.Qt.RightButton, qt_api.Qt.AltModifier)
+    assert event_recorder.event_data == (qt_api.QEvent.MouseButtonPress, qt_api.Qt.RightButton, qt_api.Qt.AltModifier)
 
 
 def test_stop_for_interaction(qtbot):
     """
     Test qtbot.stopForInteraction()
     """
-    widget = QWidget()
+    widget = qt_api.QWidget()
     qtbot.addWidget(widget)
     qtbot.waitForWindowShown(widget)
-    QtCore.QTimer.singleShot(0, widget.close)
+    qt_api.QtCore.QTimer.singleShot(0, widget.close)
     qtbot.stopForInteraction()
 
 
@@ -75,7 +73,7 @@ def test_widget_kept_as_weakref(qtbot):
     """
     Test if the widget is kept as a weak reference in QtBot
     """
-    widget = QWidget()
+    widget = qt_api.QWidget()
     qtbot.add_widget(widget)
     widget = weakref.ref(widget)
     assert widget() is None
@@ -94,24 +92,24 @@ def test_event_processing_before_and_after_teardown(testdir):
     """
     testdir.makepyfile(
         '''
-        from pytestqt.qt_compat import QtCore, QEvent
+        from pytestqt.qt_compat import qt_api
         import pytest
 
         @pytest.fixture(scope='session')
         def events_queue(qapp):
-            class EventsQueue(QtCore.QObject):
+            class EventsQueue(qt_api.QtCore.QObject):
 
                 def __init__(self):
-                    QtCore.QObject.__init__(self)
+                    qt_api.QtCore.QObject.__init__(self)
                     self.events = []
 
                 def pop_later(self):
-                    qapp.postEvent(self, QEvent(QEvent.User))
+                    qapp.postEvent(self, qt_api.QEvent(qt_api.QEvent.User))
 
                 def event(self, ev):
-                    if ev.type() == QEvent.User:
+                    if ev.type() == qt_api.QEvent.User:
                         self.events.pop(-1)
-                    return QtCore.QObject.event(self, ev)
+                    return qt_api.QtCore.QObject.event(self, ev)
 
             return EventsQueue()
 
@@ -140,12 +138,13 @@ def test_header(testdir):
     testdir.makeconftest(
         '''
         from pytestqt import qt_compat
+        from pytestqt.qt_compat import qt_api
 
         def mock_get_versions():
             return qt_compat.VersionTuple('PyQtAPI', '1.0', '2.5', '3.5')
 
-        assert hasattr(qt_compat, 'get_versions')
-        qt_compat.get_versions = mock_get_versions
+        assert hasattr(qt_api, 'get_versions')
+        qt_api.get_versions = mock_get_versions
         '''
     )
     res = testdir.runpytest()
@@ -176,15 +175,15 @@ def test_qvariant(tmpdir):
     """Test that make_variant and extract_from_variant work in the same way
     across all supported Qt bindings.
     """
-    settings = QtCore.QSettings(str(tmpdir / 'foo.ini'),
-                                QtCore.QSettings.IniFormat)
-    settings.setValue('int', make_variant(42))
-    settings.setValue('str', make_variant('Hello'))
-    settings.setValue('empty', make_variant())
+    settings = qt_api.QtCore.QSettings(str(tmpdir / 'foo.ini'),
+                                       qt_api.QtCore.QSettings.IniFormat)
+    settings.setValue('int', qt_api.make_variant(42))
+    settings.setValue('str', qt_api.make_variant('Hello'))
+    settings.setValue('empty', qt_api.make_variant())
 
-    assert extract_from_variant(settings.value('int')) == 42
-    assert extract_from_variant(settings.value('str')) == 'Hello'
-    assert extract_from_variant(settings.value('empty')) is None
+    assert qt_api.extract_from_variant(settings.value('int')) == 42
+    assert qt_api.extract_from_variant(settings.value('str')) == 'Hello'
+    assert qt_api.extract_from_variant(settings.value('empty')) is None
 
 
 def test_widgets_closed_before_fixtures(testdir):
@@ -194,9 +193,9 @@ def test_widgets_closed_before_fixtures(testdir):
     """
     testdir.makepyfile('''
         import pytest
-        from pytestqt.qt_compat import QWidget
+        from pytestqt.qt_compat import qt_api
 
-        class Widget(QWidget):
+        class Widget(qt_api.QWidget):
 
             closed = False
 
@@ -227,35 +226,35 @@ def test_qtbot_wait(qtbot, stop_watch):
     assert stop_watch.elapsed >= 220
 
 
-class EventRecorder(QWidget):
-
-    """
-    Widget that records some kind of events sent to it.
-
-    When this event_recorder receives a registered event (by calling `registerEvent`), it will call
-    the associated *extract* function and hold the return value from the function in the
-    `event_data` member.
-    """
-
-    def __init__(self):
-        QWidget.__init__(self)
-        self._event_types = {}
-        self.event_data = None
-
-    def registerEvent(self, event_type, extract_func):
-        self._event_types[event_type] = extract_func
-
-    def event(self, ev):
-        for event_type, extract_func in self._event_types.items():
-            if isinstance(ev, event_type):
-                self.event_data = extract_func(ev)
-                return True
-
-        return False
-
-
 @pytest.fixture
 def event_recorder(qtbot):
+
+    class EventRecorder(qt_api.QWidget):
+
+        """
+        Widget that records some kind of events sent to it.
+
+        When this event_recorder receives a registered event (by calling `registerEvent`), it will call
+        the associated *extract* function and hold the return value from the function in the
+        `event_data` member.
+        """
+
+        def __init__(self):
+            qt_api.QWidget.__init__(self)
+            self._event_types = {}
+            self.event_data = None
+
+        def registerEvent(self, event_type, extract_func):
+            self._event_types[event_type] = extract_func
+
+        def event(self, ev):
+            for event_type, extract_func in self._event_types.items():
+                if isinstance(ev, event_type):
+                    self.event_data = extract_func(ev)
+                    return True
+
+            return False
+
     widget = EventRecorder()
     qtbot.addWidget(widget)
     return widget
@@ -270,9 +269,42 @@ def event_recorder(qtbot):
     ('false', False),
 ])
 def test_parse_ini_boolean_valid(value, expected):
+    import pytestqt.qtbot
     assert pytestqt.qtbot._parse_ini_boolean(value) == expected
 
 
 def test_parse_ini_boolean_invalid():
+    import pytestqt.qtbot
     with pytest.raises(ValueError):
         pytestqt.qtbot._parse_ini_boolean('foo')
+
+
+@pytest.mark.parametrize('option_api', ['pyqt4', 'pyqt5', 'pyside'])
+def test_qt_api_ini_config(testdir, option_api):
+    """
+    Test qt_api ini option handling.
+    """
+    from pytestqt.qt_compat import qt_api
+
+    testdir.makeini("""
+        [pytest]
+        qt_api={option_api}
+    """.format(option_api=option_api))
+
+    testdir.makepyfile('''
+        import pytest
+
+        def test_foo(qtbot):
+            pass
+    ''')
+
+    result = testdir.runpytest_subprocess()
+    if qt_api.pytest_qt_api.startswith(option_api):  # handle pyqt4v2
+        result.stdout.fnmatch_lines([
+            '* 1 passed in *'
+        ])
+    else:
+        result.stderr.fnmatch_lines([
+            '*ImportError:*'
+        ])
+

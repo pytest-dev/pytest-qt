@@ -38,9 +38,19 @@ this order:
 - ``PySide``
 - ``PyQt4``
 
-To force a particular API, set the environment variable ``PYTEST_QT_API`` to
+To force a particular API, set the configuration variable ``qt_api`` in your ``pytest.ini`` file to
 ``pyqt5``, ``pyside``, ``pyqt4`` or ``pyqt4v2``. ``pyqt4v2`` sets the ``PyQt4``
-API to `version 2 <version2>`_
+API to `version 2 <version2>`_.
+
+.. code-block:: ini
+
+    [pytest]
+    qt_api=pyqt5
+
+
+Alternatively, you can set the ``PYTEST_QT_API`` environment
+variable to the same values described above (the environment variable wins over the configuration
+if both are set).
 
 .. _version2: http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
 

@@ -1,5 +1,5 @@
 import functools
-from pytestqt.qt_compat import QtCore
+from pytestqt.qt_compat import qt_api
 
 
 class _AbstractSignalBlocker(object):
@@ -16,14 +16,14 @@ class _AbstractSignalBlocker(object):
     """
 
     def __init__(self, timeout=1000, raising=True):
-        self._loop = QtCore.QEventLoop()
+        self._loop = qt_api.QtCore.QEventLoop()
         self.timeout = timeout
         self.signal_triggered = False
         self.raising = raising
         if timeout is None:
             self._timer = None
         else:
-            self._timer = QtCore.QTimer(self._loop)
+            self._timer = qt_api.QtCore.QTimer(self._loop)
             self._timer.setSingleShot(True)
             self._timer.setInterval(timeout)
 

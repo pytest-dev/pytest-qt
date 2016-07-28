@@ -12,21 +12,21 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
     :type testdir: _pytest.pytester.TmpTestdir
     """
     testdir.makepyfile('''
-        from pytestqt.qt_compat import QtCore, QApplication
+        from pytestqt.qt_compat import qt_api
 
-        class Receiver(QtCore.QObject):
+        class Receiver(qt_api.QtCore.QObject):
 
             def event(self, ev):
                 if {raise_error}:
                     raise ValueError('mistakes were made')
-                return QtCore.QObject.event(self, ev)
+                return qt_api.QtCore.QObject.event(self, ev)
 
 
         def test_exceptions(qtbot):
             v = Receiver()
-            app = QApplication.instance()
-            app.sendEvent(v, QtCore.QEvent(QtCore.QEvent.User))
-            app.sendEvent(v, QtCore.QEvent(QtCore.QEvent.User))
+            app = qt_api.QApplication.instance()
+            app.sendEvent(v, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.User))
+            app.sendEvent(v, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.User))
             app.processEvents()
 
     '''.format(raise_error=raise_error))
@@ -74,7 +74,9 @@ def test_no_capture(testdir, no_capture_by_marker):
     testdir.makepyfile('''
         import pytest
         import sys
-        from pytestqt.qt_compat import QWidget, QtCore
+        from pytestqt.qt_compat import qt_api
+        QWidget = qt_api.QWidget
+        QtCore = qt_api.QtCore
 
         # PyQt 5.5+ will crash if there's no custom exception handler installed
         sys.excepthook = lambda *args: None
@@ -103,7 +105,9 @@ def test_no_capture_preserves_custom_excepthook(testdir):
     testdir.makepyfile('''
         import pytest
         import sys
-        from pytestqt.qt_compat import QWidget, QtCore
+        from pytestqt.qt_compat import qt_api
+        QWidget = qt_api.QWidget
+        QtCore = qt_api.QtCore
 
         def custom_excepthook(*args):
             sys.__excepthook__(*args)
@@ -129,7 +133,10 @@ def test_exception_capture_on_call(testdir):
     """
     testdir.makepyfile('''
         import pytest
-        from pytestqt.qt_compat import QWidget, QtCore, QEvent
+        from pytestqt.qt_compat import qt_api
+        QWidget = qt_api.QWidget
+        QtCore = qt_api.QtCore
+        QEvent = qt_api.QtCore.QEvent
 
         class MyWidget(QWidget):
 
@@ -156,7 +163,10 @@ def test_exception_capture_on_widget_close(testdir):
     """
     testdir.makepyfile('''
         import pytest
-        from pytestqt.qt_compat import QWidget, QtCore, QEvent
+        from pytestqt.qt_compat import qt_api
+        QWidget = qt_api.QWidget
+        QtCore = qt_api.QtCore
+        QEvent = qt_api.QtCore.QEvent
 
         class MyWidget(QWidget):
 
@@ -192,7 +202,11 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
 
     testdir.makepyfile('''
         import pytest
-        from pytestqt.qt_compat import QWidget, QtCore, QEvent, QApplication
+        from pytestqt.qt_compat import qt_api
+        QWidget = qt_api.QWidget
+        QtCore = qt_api.QtCore
+        QEvent = qt_api.QtCore.QEvent
+        QApplication = qt_api.QApplication
 
         class MyWidget(QWidget):
 
@@ -230,17 +244,17 @@ def test_capture_exceptions_context_manager(qapp):
     While not used internally anymore, it is still part of the API and therefore
     should be properly tested.
     """
-    from pytestqt.qt_compat import QtCore
+    from pytestqt.qt_compat import qt_api
     from pytestqt.plugin import capture_exceptions
 
-    class Receiver(QtCore.QObject):
+    class Receiver(qt_api.QtCore.QObject):
 
         def event(self, ev):
             raise ValueError('mistakes were made')
 
     r = Receiver()
     with capture_exceptions() as exceptions:
-        qapp.sendEvent(r, QtCore.QEvent(QtCore.QEvent.User))
+        qapp.sendEvent(r, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.User))
         qapp.processEvents()
 
     assert [str(e) for (t, e, tb) in exceptions] == ['mistakes were made']
@@ -251,9 +265,9 @@ def test_exceptions_to_stderr(qapp, capsys):
     Exceptions should still be reported to stderr.
     """
     called = []
-    from pytestqt.qt_compat import QWidget, QEvent
+    from pytestqt.qt_compat import qt_api
 
-    class MyWidget(QWidget):
+    class MyWidget(qt_api.QWidget):
 
         def event(self, ev):
             called.append(1)
@@ -261,7 +275,7 @@ def test_exceptions_to_stderr(qapp, capsys):
 
     w = MyWidget()
     with capture_exceptions() as exceptions:
-        qapp.postEvent(w, QEvent(QEvent.User))
+        qapp.postEvent(w, qt_api.QEvent(qt_api.QEvent.User))
         qapp.processEvents()
     assert called
     del exceptions[:]
