@@ -317,6 +317,11 @@ def test_wait_twice(qtbot, timer, multiple, do_timeout, signaller):
             signaller.signal.emit()
 
 
+def test_wait_signals_invalid_strict_parameter(qtbot, signaller):
+    with pytest.raises(ValueError):
+        qtbot.waitSignals([signaller.signal], order='invalid')
+
+
 def test_destroyed(qtbot):
     """Test that waitSignal works with the destroyed signal (#82).
 
