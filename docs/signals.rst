@@ -102,7 +102,7 @@ the ``raising`` parameter::
 
     def test_workers(qtbot):
         workers = spawn_workers()
-        with qtbot.waitSignal([w.finished for w in workers]):
+        with qtbot.waitSignals([w.finished for w in workers]):
             for w in workers:
                 w.start()
 
