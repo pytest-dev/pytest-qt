@@ -225,17 +225,18 @@ class QtBot(object):
             This defaults to ``True`` unless ``qt_wait_signal_raising = false``
             is set in the config.
         :param Callable check_params_cb:
-            Optional callable(*parameters) that compares the provided signal parameters to some expected parameters.
+            Optional ``callable(*parameters)`` that compares the provided signal parameters to some expected parameters.
             It has to match the signature of ``signal`` (just like a slot function would) and return ``True`` if
             parameters match, ``False`` otherwise.
         :returns:
             ``SignalBlocker`` object. Call ``SignalBlocker.wait()`` to wait.
 
         .. note::
-           Cannot have both ``signals`` and ``timeout`` equal ``None``, or
-           else you will block indefinitely. We throw an error if this occurs.
+            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
+            else you will block indefinitely. We throw an error if this occurs.
 
-        .. note:: This method is also available as ``wait_signal`` (pep-8 alias)
+        .. note::
+            This method is also available as ``wait_signal`` (pep-8 alias)
         """
         if raising is None:
             raising_val = self._request.config.getini('qt_wait_signal_raising')
@@ -289,12 +290,16 @@ class QtBot(object):
             Instead of a specific callable, ``None`` can be provided, to disable parameter checking for the
             corresponding signal.
             If the number of callbacks doesn't match the number of signals ``ValueError`` will be raised.
-        :param str order: determines the order in which to expect signals
-            * ``"none"``: no order is enforced
-            * ``"strict"``: signals have to be emitted strictly in the provided order
-                (e.g. fails when expecting signals [a, b] and [a, a, b] is emitted)
-            * ``"simple"``: like "strict", but signals may be emitted in-between the provided ones, e.g. expected
-                ``signals`` == [a, b, c] and actually emitted signals = [a, a, b, a, c] works (would fail with "strict")
+        :param str order:
+            Determines the order in which to expect signals:
+
+            - ``"none"``: no order is enforced
+            - ``"strict"``: signals have to be emitted strictly in the provided order
+              (e.g. fails when expecting signals [a, b] and [a, a, b] is emitted)
+            - ``"simple"``: like "strict", but signals may be emitted in-between the provided ones, e.g. expected
+              ``signals == [a, b, c]`` and actually emitted ``signals = [a, a, b, a, c]`` works
+              (would fail with ``"strict"``).
+
         :returns:
             ``MultiSignalBlocker`` object. Call ``MultiSignalBlocker.wait()``
             to wait.
