@@ -12,7 +12,7 @@ environment:
     - INSTALL_QT: "py27-pyqt4"
       TESTENVS: "py27-pyqt4"
 
-    - TESTENVS: "py27-pyside,py34-pyside,docs"
+    - TESTENVS: "py27-pyside,py34-pyside,lint"
 
 install:
   - C:\Python27\python -u scripts\install-qt.py

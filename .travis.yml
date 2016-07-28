@@ -32,12 +32,16 @@ install:
  # PyTest
  - pip install -U pytest
 
+ # Tox
+ - pip install -U tox
+
  # others
  - pip install coveralls --use-wheel
 
 script:
  - python setup.py develop
  - catchsegv xvfb-run coverage run --source=pytestqt setup.py test
+ - tox -e lint
 
 after_success:
  - coveralls
