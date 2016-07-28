@@ -3,7 +3,6 @@ from pytestqt.qt_compat import QtCore
 
 
 class _AbstractSignalBlocker(object):
-
     """
     Base class for :class:`SignalBlocker` and :class:`MultiSignalBlocker`.
 
@@ -71,7 +70,6 @@ class _AbstractSignalBlocker(object):
 
 
 class SignalBlocker(_AbstractSignalBlocker):
-
     """
     Returned by :meth:`pytestqt.qtbot.QtBot.waitSignal` method.
 
@@ -101,10 +99,11 @@ class SignalBlocker(_AbstractSignalBlocker):
     .. automethod:: connect
     """
 
-    def __init__(self, timeout=1000, raising=True):
+    def __init__(self, timeout=1000, raising=True, check_params_cb=None):
         super(SignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = []
         self.args = None
+        self.check_params_callback = check_params_cb
 
     def connect(self, signal):
         """
@@ -123,6 +122,9 @@ class SignalBlocker(_AbstractSignalBlocker):
         """
         quits the event loop and marks that we finished because of a signal.
         """
+        if self.check_params_callback:
+            if not self.check_params_callback(*args):
+                return  # parameter check did not pass
         try:
             self.signal_triggered = True
             self.args = list(args)
@@ -138,7 +140,6 @@ class SignalBlocker(_AbstractSignalBlocker):
 
 
 class MultiSignalBlocker(_AbstractSignalBlocker):
-
     """
     Returned by :meth:`pytestqt.qtbot.QtBot.waitSignals` method, blocks until
     all signals connected to it are triggered or the timeout is reached.
@@ -151,48 +152,121 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     .. automethod:: wait
     """
 
-    def __init__(self, timeout=1000, raising=True):
+    def __init__(self, timeout=1000, raising=True, check_params_cbs=None, order="none"):
         super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
-        self._signals = {}
-        self._slots = {}
+        self.order = order
+        self.check_params_callbacks = check_params_cbs
+        self._signals_emitted = []  # list of booleans, indicates whether the signal was already emitted
+        self._signals_map = {}  # maps from a unique Signal to a list of indices where to expect signal instance emits
+        self._signals = []  # list of all Signals (for compatibility with _AbstractSignalBlocker)
+        self._slots = []  # list of slot functions
+        self._signal_expected_index = 0  # only used when forcing order
+        self._strict_order_violated = False
 
-    def _add_signal(self, signal):
+    def add_signals(self, signals):
         """
         Adds the given signal to the list of signals which :meth:`wait()` waits
         for.
 
-        :param signal: QtCore.Signal
+        :param list signals: list of QtCore.Signal`s
         """
-        self._signals[signal] = False
-        slot = functools.partial(self._signal_emitted, signal)
-        self._slots[signal] = slot
-        signal.connect(slot)
+        # determine uniqueness of signals, creating a map that maps from a unique signal to a list of indices
+        # (positions) where this signal is expected (in case order matters)
+        signals_as_str = [str(signal) for signal in signals]
+        signal_str_to_signal = {}  # maps from a signal-string to one of the signal instances (the first one found)
+        for index, signal_str in enumerate(signals_as_str):
+            signal = signals[index]
+            if signal_str not in signal_str_to_signal:
+                signal_str_to_signal[signal_str] = signal
+                self._signals_map[signal] = [index]  # create a new list
+            else:
+                # append to existing list
+                first_signal_that_occurred = signal_str_to_signal[signal_str]
+                self._signals_map[first_signal_that_occurred].append(index)
 
-    def _signal_emitted(self, signal):
+        for signal in signals:
+            self._signals_emitted.append(False)
+
+        for unique_signal in self._signals_map:
+            slot = functools.partial(self._signal_emitted, unique_signal)
+            self._slots.append(slot)
+            unique_signal.connect(slot)
+            self._signals.append(unique_signal)
+
+    def _signal_emitted(self, signal, *args):
         """
         Called when a given signal is emitted.
 
         If all expected signals have been emitted, quits the event loop and
         marks that we finished because signals.
         """
-        self._signals[signal] = True
-        if all(self._signals.values()):
+        if self.order == "none":
+            # perform the test for every matching index (stop after the first one that matches)
+            successfully_emitted = False
+            successful_index = -1
+            potential_indices = self._get_unemitted_signal_indices(signal)
+            for potential_index in potential_indices:
+                if self._check_callback(potential_index, *args):
+                    successful_index = potential_index
+                    successfully_emitted = True
+                    break
+
+            if successfully_emitted:
+                self._signals_emitted[successful_index] = True
+        elif self.order == "simple":
+            potential_indices = self._get_unemitted_signal_indices(signal)
+            if potential_indices:
+                if self._signal_expected_index == potential_indices[0]:
+                    if self._check_callback(self._signal_expected_index, *args):
+                        self._signals_emitted[self._signal_expected_index] = True
+                        self._signal_expected_index += 1
+        else:  # self.order == "strict"
+            if not self._strict_order_violated:
+                # only do the check if the strict order has not been violated yet
+                self._strict_order_violated = True  # assume the order has been violated this time
+                potential_indices = self._get_unemitted_signal_indices(signal)
+                if potential_indices:
+                    if self._signal_expected_index == potential_indices[0]:
+                        if self._check_callback(self._signal_expected_index, *args):
+                            self._signals_emitted[self._signal_expected_index] = True
+                            self._signal_expected_index += 1
+                            self._strict_order_violated = False  # order has not been violated after all!
+
+        if not self._strict_order_violated and all(self._signals_emitted):
             try:
                 self.signal_triggered = True
                 self._cleanup()
             finally:
                 self._loop.quit()
 
+    def _check_callback(self, index, *args):
+        """
+        Checks if there's a callback that evaluates the validity of the parameters. Returns False if there is one
+        and its evaluation revealed that the parameters were invalid. Returns True otherwise.
+        """
+        if self.check_params_callbacks:
+            callback_func = self.check_params_callbacks[index]
+            if callback_func:
+                if not callback_func(*args):
+                    return False
+        return True
+
+    def _get_unemitted_signal_indices(self, signal):
+        """Returns the indices for the provided signal for which NO signal instance has been emitted yet."""
+        return [index for index in self._signals_map[signal] if self._signals_emitted[index] == False]
+
     def _cleanup(self):
         super(MultiSignalBlocker, self)._cleanup()
-        for signal, slot in self._slots.items():
+        for i in range(len(self._signals)):
+            signal = self._signals[i]
+            slot = self._slots[i]
             _silent_disconnect(signal, slot)
-        self._signals.clear()
-        self._slots.clear()
+        del self._signals_emitted[:]
+        self._signals_map.clear()
+        del self._slots[:]
 
 
 class SignalEmittedSpy(object):
-
     """
     .. versionadded:: 1.11
 
