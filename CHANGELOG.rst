@@ -5,9 +5,7 @@ Breaking Changes
 ~~~~~~~~~~~~~~~~
 
 With ``pytest-qt`` 2.0, we changed some defaults to values we think are much
-better.
-
-However, this required some backwards-incompatible changes:
+better, however this required some backwards-incompatible changes:
 
 - ``pytest-qt`` now defaults to using ``PyQt5`` if ``PYTEST_QT_API`` is not set.
   Before, it preferred ``PySide`` which is using the discontinued Qt4.
@@ -24,7 +22,8 @@ However, this required some backwards-incompatible changes:
   get back the old behaviour.
 
 - ``PYTEST_QT_FORCE_PYQT`` environment variable is no longer supported. Set ``PYTEST_QT_API``
-  to the appropriate value instead.
+  to the appropriate value instead or the new ``qt_api`` configuration option in your
+  ``pytest.ini`` file.
 
 
 New Features
