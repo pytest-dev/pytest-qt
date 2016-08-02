@@ -74,7 +74,7 @@ check_params_cb parameter
 .. versionadded:: 2.0
 
 If the signal has parameters you want to compare with expected values, you can pass 
-``check_params_cb=some_callable(*parameters)`` that compares the provided signal parameters to some expected parameters.
+``check_params_cb=some_callable`` that compares the provided signal parameters to some expected parameters.
 It has to match the signature of ``signal`` (just like a slot function would) and return ``True`` if
 parameters match, ``False`` otherwise.
 
@@ -142,7 +142,7 @@ check_params_cbs parameter
 
 Corresponding to the ``check_params_cb`` parameter of ``waitSignal`` you can use the ``check_params_cbs``
 parameter to check whether one or more of the provided signals are emitted with expected parameters.
-Provide a ``list`` of callables, each matching the signature of the corresponding signal 
+Provide a list of callables, each matching the signature of the corresponding signal
 in ``signals`` (just like a slot function would). Like for ``waitSignal``, each callable has to
 return ``True`` if parameters match, ``False`` otherwise.
 Instead of a specific callable, ``None`` can be provided, to disable parameter checking for the
