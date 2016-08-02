@@ -39,8 +39,10 @@ New Features
   is met or a timeout is reached. Useful for testing asynchronous features 
   (like in X window environments for example).
 
-* ``waitSignal`` and ``waitSignals`` can receive an optional callback that can
-  evaluate if the arguments of emitted signals should resume execution or not.
+* ``waitSignal`` and ``waitSignals`` can receive an optional callback (or list of callbacks)
+  that can evaluate if the arguments of emitted signals should resume execution or not.
+  Additionally ``waitSignals`` has a new ``order`` parameter that allows to expect signals
+  and their arguments in a strict, semi-strict or no specific order.
   Thanks `@MShekow`_ for the PR (`#141`_).
 
 * Now which Qt binding ``pytest-qt`` will use can be configured by the ``qt_api`` config option.
