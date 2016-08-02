@@ -68,6 +68,31 @@ value of the ``raising`` parameter of the ``qtbot.waitSignal`` and
 Calls which explicitly pass the ``raising`` parameter are not affected.
 
 
+check_params_cb parameter
+---------------------------------
+
+.. versionadded:: 2.0
+
+If the signal has parameters you want to compare with expected values, you can pass 
+``check_params_cb=some_callable(*parameters)`` that compares the provided signal parameters to some expected parameters.
+It has to match the signature of ``signal`` (just like a slot function would) and return ``True`` if
+parameters match, ``False`` otherwise.
+
+.. code-block:: python
+
+    def test_status_100(status):
+        """Return true if status has reached 100%."""
+        return status == 100
+
+    def test_status_complete(qtbot):
+        app = Application()
+        
+        # the following raises if the worker's status signal (which has an int parameter) wasn't raised 
+        # with value=100 within the default timeout
+        with qtbot.waitSignal(app.worker.status, raising=True, check_params_cb=test_status_100) as blocker:
+            app.worker.start()
+
+
 Getting arguments of the emitted signal
 ---------------------------------------
 
@@ -109,6 +134,65 @@ the ``raising`` parameter::
         # this will be reached after all workers emit their "finished"
         # signal or a qtbot.SignalTimeoutError will be raised
         assert_application_results(app)
+
+check_params_cbs parameter
+^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 2.0
+
+Corresponding to the ``check_params_cb`` parameter of ``waitSignal`` you can use the ``check_params_cbs``
+parameter to check whether one or more of the provided signals are emitted with expected parameters.
+Provide a ``list`` of callables, each matching the signature of the corresponding signal 
+in ``signals`` (just like a slot function would). Like for ``waitSignal``, each callable has to
+return ``True`` if parameters match, ``False`` otherwise.
+Instead of a specific callable, ``None`` can be provided, to disable parameter checking for the
+corresponding signal.
+If the number of callbacks doesn't match the number of signals ``ValueError`` will be raised.
+
+The following example shows that the ``app.worker.status`` signal has to be emitted with values 50 and
+100, and the ``app.worker.finished`` signal has to be emitted too (for which no signal parameter
+evaluation takes place).
+
+
+.. code-block:: python
+
+    def test_status_100(status):
+        """Return true if status has reached 100%."""
+        return status == 100
+
+    def test_status_50(status):
+        """Return true if status has reached 50%."""
+        return status == 50
+
+    def test_status_complete(qtbot):
+        app = Application()
+        
+        signals = [app.worker.status, app.worker.status, app.worker.finished]
+        callbacks = [test_status_50, test_status_100, None]
+        with qtbot.waitSignals(signals, raising=True, check_params_cbs=callbacks) as blocker:
+            app.worker.start()
+
+
+order parameter
+^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 2.0
+
+By default a test using ``qtbot.waitSignals`` completes successfully if *all* signals in ``signals`` 
+are emitted, irrespective of their exact order. The ``order`` parameter can be set to ``"strict"``
+to enforce strict signal order.
+Exemplary, this means that ``blocker.signal_triggered`` will be ``False`` if ``waitSignals`` expects 
+the signals ``[a, b]`` but the sender emitted signals ``[a, a, b]``.
+
+.. note::
+
+    The tested component can still emit signals unknown to the blocker. E.g.
+    ``blocker.waitSignals([a, b], raising=True, order="strict")`` won't raise if the signal-sender
+    emits signals ``[a, c, b]``, as ``c`` is not part of the observed signals.
+
+A third option is to set ``order="simple"`` which is like "strict", but signals may be emitted
+in-between the provided ones, e.g. if the expected signals are ``[a, b, c]`` and the sender 
+actually emits ``[a, a, b, a, c]``, the test completes successfully (it would fail with ``order="strict"``).
 
 Making sure a given signal is not emitted
 -----------------------------------------
