@@ -69,7 +69,7 @@ Calls which explicitly pass the ``raising`` parameter are not affected.
 
 
 check_params_cb parameter
----------------------------------
+-------------------------
 
 .. versionadded:: 2.0
 
@@ -136,7 +136,7 @@ the ``raising`` parameter::
         assert_application_results(app)
 
 check_params_cbs parameter
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. versionadded:: 2.0
 
