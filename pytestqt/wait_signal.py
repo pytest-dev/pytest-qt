@@ -20,6 +20,7 @@ class _AbstractSignalBlocker(object):
         self.timeout = timeout
         self.signal_triggered = False
         self.raising = raising
+        self._signals = None  # will be initialized by inheriting implementations
         if timeout is None:
             self._timer = None
         else:
@@ -44,8 +45,8 @@ class _AbstractSignalBlocker(object):
             self._timer.start()
         self._loop.exec_()
         if not self.signal_triggered and self.raising:
-            raise SignalTimeoutError("Didn't get signal after %sms." %
-                                     self.timeout)
+            # raise SignalTimeoutError("Didn't get signal after %sms." % self.timeout)
+            raise SignalTimeoutError(self.get_timeout_error_message())
 
     def _quit_loop_by_timeout(self):
         try:
@@ -58,6 +59,64 @@ class _AbstractSignalBlocker(object):
             _silent_disconnect(self._timer.timeout, self._quit_loop_by_timeout)
             self._timer.stop()
             self._timer = None
+
+    def get_timeout_error_message(self):
+        pass
+
+    def _extract_pyqt_signal_name(self, potential_pyqt_signal):
+        signal_name = potential_pyqt_signal.signal  # type: str
+        if type(signal_name) != str:
+            raise TypeError("Invalid 'signal' attribute in {}. "
+                            "Expected str but got {}".format(signal_name, type(signal_name)))
+        # strip magic number "2" that PyQt prepends to the signal names
+        if signal_name.startswith("2"):
+            signal_name = signal_name.lstrip('2')
+        return signal_name
+
+    def _extract_signal_from_signal_tuple(self, potential_signal_tuple):
+        if type(potential_signal_tuple) is tuple:
+            if len(potential_signal_tuple) != 2:
+                raise AssertionError("Signal tuple must have length of 2 (first element is the signal, "
+                                     "the second element is the signal's name).")
+            signal_tuple = potential_signal_tuple
+            signal_name = signal_tuple[1]
+            if type(signal_tuple) != str or not signal_name:
+                raise TypeError("Invalid type for user-provided signal name, "
+                                "expected str but got {}".format(type(signal_name)))
+            return signal_name
+        return ""
+
+    def get_signal_name(self, potential_signal_tuple):
+        """
+        Attempts to extract the signal's name. If the user provided the signal name as 2nd value of the tuple, this
+        name has preference. Bad values cause a ``ValueError``.
+        Otherwise it attempts to get the signal from the ``signal`` attribute of ``signal`` (which only exists for
+        PyQt signals).
+        :returns: str name of the signal, an empty string if no signal name can be determined, or raises an error
+            in case the user provided an invalid signal name manually
+        """
+        signal_name = self._extract_signal_from_signal_tuple(potential_signal_tuple)
+
+        if not signal_name:
+            try:
+                signal_name = self._extract_pyqt_signal_name(potential_signal_tuple)
+            except AttributeError:
+                # not a PyQt signal
+                # -> no signal name could be determined
+                signal_name = ""
+
+        return signal_name
+
+    def get_callback_name(self, callback):
+        """Attempts to extract the name of the callback. Returns empty string in case of failure."""
+        try:
+            name = callback.__name__
+        except AttributeError:
+            try:
+                name = callback.func.__name__  # e.g. for callbacks wrapped with functools.partial()
+            except AttributeError:
+                name = ""
+        return name
 
     def __enter__(self):
         return self
@@ -103,7 +162,9 @@ class SignalBlocker(_AbstractSignalBlocker):
         super(SignalBlocker, self).__init__(timeout, raising=raising)
         self._signals = []
         self.args = None
+        self.all_args = []
         self.check_params_callback = check_params_cb
+        self.signal_name = ""
 
     def connect(self, signal):
         """
@@ -115,6 +176,7 @@ class SignalBlocker(_AbstractSignalBlocker):
 
         :param signal: QtCore.Signal
         """
+        self.signal_name = self.get_signal_name(potential_signal_tuple=signal)
         signal.connect(self._quit_loop_by_signal)
         self._signals.append(signal)
 
@@ -123,6 +185,7 @@ class SignalBlocker(_AbstractSignalBlocker):
         quits the event loop and marks that we finished because of a signal.
         """
         if self.check_params_callback:
+            self.all_args.append(args)
             if not self.check_params_callback(*args):
                 return  # parameter check did not pass
         try:
@@ -137,6 +200,31 @@ class SignalBlocker(_AbstractSignalBlocker):
         for signal in self._signals:
             _silent_disconnect(signal, self._quit_loop_by_signal)
         self._signals = []
+
+    def get_params_as_str(self):
+        if not self.all_args:
+            return ""
+
+        if len(self.all_args[0]) == 1:
+            # we have a list of tuples with 1 element each (i.e. the signal has 1 parameter), it doesn't make sense
+            # to return something like "[(someParam,), (someParam,)]", it's just ugly. Instead return something like
+            # "[someParam, someParam]"
+            args_list = [arg[0] for arg in self.all_args]
+        else:
+            args_list = self.all_args
+
+        return str(args_list)
+
+    def get_timeout_error_message(self):
+        if self.check_params_callback:
+            return "Signal {signal_name} emitted with parameters {params} " \
+                   "within {timeout} ms, but did not satisfy " \
+                   "the {cb_name} callback".format(signal_name=self.signal_name, params=self.get_params_as_str(),
+                                                   timeout=self.timeout,
+                                                   cb_name=self.get_callback_name(self.check_params_callback))
+        else:
+            return "Signal{signal_name} not emitted after {timeout} ms".format(signal_name=self.signal_name,
+                                                                               timeout=self.timeout)
 
 
 class MultiSignalBlocker(_AbstractSignalBlocker):
