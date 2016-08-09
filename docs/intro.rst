@@ -51,6 +51,9 @@ Alternatively, you can set the ``PYTEST_QT_API`` environment variable to the
 same values described above (the environment variable wins over the
 configuration if both are set).
 
+From ``pytest-qt`` version 2 the behaviour of ``pyqt4v2`` has changed, as
+explained in :doc:`note_pyqt4v2`.
+
 .. _version 2: http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
 
 Installation

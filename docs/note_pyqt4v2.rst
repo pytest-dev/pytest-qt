@@ -8,7 +8,7 @@ running, well after ``conftest.py`` files and other plugins have been imported.
 This can lead to some unexpected behaviour if ``pyqt4v2`` is set.
 
 If the ``conftest.py`` files, either directly or indirectly, set the API version
-to 2 and import ``PyQt4``, one of the following 
+to 2 and import ``PyQt4``, one of the following cases can happen:
 
 * if all the available types are set to version 2, then using ``pyqt4`` or
   ``pyqt4v2`` is equivalent
