@@ -47,30 +47,9 @@ API to `version 2`_.
     [pytest]
     qt_api=pyqt5
 
-Alternatively, you can set the ``PYTEST_QT_API`` environment
-variable to the same values described above (the environment variable wins over the configuration
-if both are set).
-
-Starting with ``pytest-qt`` version 2.0, ``PyQt`` or ``PySide`` are loaded after
-the ``conftest.py`` files but before all the test modules. This can lead to some
-unexpected behaviour if ``pyqt4v2``.
-
-If the ``conftest.py`` files, either directly or indirectly, set the API version
-to 2 and import ``PyQt4``, one of the following 
-
-* if all the available types are set to version 2, then using ``pyqt4`` or
-  ``pyqt4v2`` is equivalent
-* if only some of the types set to version 2, using ``pyqt4v2`` will make ``pytest``
-  to fail with an error similar to::
-
-    INTERNALERROR> sip.setapi("QDate", 2)
-    INTERNALERROR> ValueError: API 'QDate' has already been set to version 1
-
-  If this is the case, use ``pyqt4``.
-
-If the API is set in the test functions or in the code imported by them, then
-the new behaviour is indistinguishable from the old one and ``pyqt4v2`` must be
-used to avoid errors if version 2 is used.
+Alternatively, you can set the ``PYTEST_QT_API`` environment variable to the
+same values described above (the environment variable wins over the
+configuration if both are set).
 
 .. _version 2: http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
 
