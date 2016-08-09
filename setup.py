@@ -37,6 +37,7 @@ setup(
         'pytest11': ['pytest-qt = pytestqt.plugin'],
     },
     install_requires=['pytest>=2.7.0'],
+    extras_require={'doc': ['sphinx', 'sphinx_rtd_theme']},
 
     # metadata for upload to PyPI
     author="Bruno Oliveira",
