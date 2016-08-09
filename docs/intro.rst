@@ -79,9 +79,13 @@ activate a new fresh environment and execute::
 
     git clone https://github.com/pytest-dev/pytest-qt.git
     cd pytest-qt
-    python setup.py develop
+    pip install -e .  # or python setup.py develop
     pip install pyside # or pyqt4/pyqt5
 
+If you also intend to build the documentation locally, you can make sure to have
+all the needed dependences executing::
+
+    pip install -e .[doc]
 
 .. _virtualenv: https://virtualenv.readthedocs.io/
 
