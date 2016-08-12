@@ -830,6 +830,8 @@ class TestWaitSignalSignalTimeoutErrorMessage:
         parameters = "[('1', 1), ('2', 2)]"
         if PY_2:
             parameters = "[(u'1', 1), (u'2', 2)]"
+            if qt_api.pytest_qt_api == 'pyqt4':
+                parameters = "[(PyQt4.QtCore.QString(u'1'), 1), (PyQt4.QtCore.QString(u'2'), 2)]"
         assert ex_msg == ("Signal signal_args(QString,int) emitted with parameters {} "
                           "within 200 ms, but did not satisfy the arg_validator callback").format(parameters)
 
@@ -889,6 +891,8 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
         signal_args = "'1', 1"
         if PY_2:
             signal_args = "u'1', 1"
+            if qt_api.pytest_qt_api == 'pyqt4':
+                signal_args = "PyQt4.QtCore.QString(u'1'), 1"
         assert ex_msg == ("Emitted signals: [signal_args({})]. Missing: "
                           "[signal(), signal_args(QString,int) (callback: my_callback_2)]").format(signal_args)
 
@@ -918,6 +922,8 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
         signal_args = "'1', 1"
         if PY_2:
             signal_args = "u'1', 1"
+            if qt_api.pytest_qt_api == 'pyqt4':
+                signal_args = "PyQt4.QtCore.QString(u'1'), 1"
         assert ex_msg == ("Emitted signals: [signal_args({})]. Missing: "
                           "[signal(), signal_args(QString,int), signal_args(QString,int)]").format(signal_args)
 
@@ -936,6 +942,8 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
         signal_args = "'1', 1"
         if PY_2:
             signal_args = "u'1', 1"
+            if qt_api.pytest_qt_api == 'pyqt4':
+                signal_args = "PyQt4.QtCore.QString(u'1'), 1"
         assert ex_msg == ("Signal order violated! Expected signal() as 1st signal, "
                           "but received signal_args({}) instead. Emitted signals: [signal_args({}), signal]. "
                           "Missing: [signal(), signal_args(QString,int), signal_args(QString,int)]").format(signal_args,
