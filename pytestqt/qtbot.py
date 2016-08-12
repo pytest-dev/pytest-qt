@@ -219,7 +219,7 @@ class QtBot(object):
            The *check_params_cb* parameter.
 
         :param Signal signal:
-            A signal to wait for, or a tuple (signal, signal_name_as_str) to improve the error message that is part
+            A signal to wait for, or a tuple ``(signal, signal_name_as_str)`` to improve the error message that is part
             of ``SignalTimeoutError``. Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.

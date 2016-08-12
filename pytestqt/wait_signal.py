@@ -48,7 +48,6 @@ class _AbstractSignalBlocker(object):
             self._timer.start()
         self._loop.exec_()
         if not self.signal_triggered and self.raising:
-            # raise SignalTimeoutError("Didn't get signal after %sms." % self.timeout)
             raise SignalTimeoutError(self._timeout_message)
 
     def _quit_loop_by_timeout(self):
@@ -70,22 +69,21 @@ class _AbstractSignalBlocker(object):
 
     def _extract_pyqt_signal_name(self, potential_pyqt_signal):
         signal_name = potential_pyqt_signal.signal  # type: str
-        if type(signal_name) != str:
+        if not isinstance(signal_name, str):
             raise TypeError("Invalid 'signal' attribute in {}. "
                             "Expected str but got {}".format(signal_name, type(signal_name)))
         # strip magic number "2" that PyQt prepends to the signal names
-        if signal_name.startswith("2"):
-            signal_name = signal_name.lstrip('2')
+        signal_name = signal_name.lstrip('2')
         return signal_name
 
     def _extract_signal_from_signal_tuple(self, potential_signal_tuple):
-        if type(potential_signal_tuple) is tuple:
+        if isinstance(potential_signal_tuple, tuple):
             if len(potential_signal_tuple) != 2:
-                raise AssertionError("Signal tuple must have length of 2 (first element is the signal, "
-                                     "the second element is the signal's name).")
+                raise ValueError("Signal tuple must have length of 2 (first element is the signal, "
+                                 "the second element is the signal's name).")
             signal_tuple = potential_signal_tuple
             signal_name = signal_tuple[1]
-            if type(signal_name) != str or not signal_name:
+            if not isinstance(signal_name, str) or not signal_name:
                 raise TypeError("Invalid type for user-provided signal name, "
                                 "expected str but got {}".format(type(signal_name)))
             return signal_name
@@ -125,7 +123,7 @@ class _AbstractSignalBlocker(object):
 
     @staticmethod
     def get_signal_from_potential_signal_tuple(signal_tuple):
-        if type(signal_tuple) is tuple:
+        if isinstance(signal_tuple, tuple):
             return signal_tuple[0]
         return signal_tuple
 
@@ -236,36 +234,36 @@ class SignalBlocker(_AbstractSignalBlocker):
                                                    cb_name=self.get_callback_name(self.check_params_callback))
         else:
             return "Signal {signal_name} not emitted after {timeout} ms".format(signal_name=self.signal_name,
-                                                                               timeout=self.timeout)
+                                                                                timeout=self.timeout)
 
 
-SignalAndArgs = namedtuple("SignalAndArgs", ["signal_name", "args"])
+class SignalAndArgs:
+    def __init__(self, signal_name, args):
+        self.signal_name = signal_name
+        self.args = args
 
+    def _get_readable_signal_with_optional_args(self):
+        args = repr(self.args) if self.args else ""
 
-def _get_readable_signal_with_optional_args(self):
-    if self.args:
-        args_as_string = []
-        for arg in self.args:
-            if type(arg) is str:
-                args_as_string.append("'" + str(arg) + "'")
-            else:
-                args_as_string.append(str(arg))
-        args_as_list_string = ", ".join(args_as_string) if len(args_as_string) > 1 else args_as_string[0]
-        args = "({})".format(args_as_list_string)
-    else:
-        args = ""
+        # remove signal parameter signature, e.g. turn "some_signal(QString,int)" to "some_signal", because we're adding
+        # the actual parameters anyways
+        signal_name = self.signal_name
+        signal_name = signal_name.partition('(')[0]
 
-    # remove signal parameter signature, e.g. turn "some_signal(QString,int)" to "some_signal", because we're adding
-    # the actual parameters anyways
-    signal_name = self.signal_name
-    if '(' in signal_name:
-        signal_name = signal_name[:signal_name.index('(')]
+        return signal_name + args
 
-    return signal_name + args
+    def __str__(self):
+        return self._get_readable_signal_with_optional_args()
 
+    def __repr__(self):
+        return self._get_readable_signal_with_optional_args()
 
-SignalAndArgs.__str__ = _get_readable_signal_with_optional_args
-SignalAndArgs.__repr__ = _get_readable_signal_with_optional_args
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
 
 # Returns e.g. "3rd" for 3, or "21st" for 21
 get_ordinal_str = lambda n: "%d%s" % (n, {1: "st", 2: "nd", 3: "rd"}.get(n if n < 20 else n % 10, "th"))
@@ -400,8 +398,9 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
                     self._signal_expected_index += 1
                     self._strict_order_violated = False  # order has not been violated after all!
                 else:
-                    self._actual_signal_and_args_at_violation = SignalAndArgs(
-                        signal_name=self._signal_names[unique_signal], args=args)
+                    if self._are_signal_names_available():
+                        self._actual_signal_and_args_at_violation = SignalAndArgs(
+                            signal_name=self._signal_names[unique_signal], args=args)
 
     def _all_signals_emitted(self):
         return not self._strict_order_violated and all(self._signals_emitted)

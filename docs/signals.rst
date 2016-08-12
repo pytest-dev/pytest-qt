@@ -211,7 +211,7 @@ Getting emitted signals and arguments
 
 To determine which of the expected signals were emitted during a ``wait()`` you can use
 ``blocker.all_signals_and_args`` which contains a list of
-:class:`wait_signal.SignalAndArgs <SignalAndArgs>` ``namedtuple`` objects, indicating the signals (and their arguments)
+:class:`wait_signal.SignalAndArgs <SignalAndArgs>` objects, indicating the signals (and their arguments)
 in the order they were received.
 
 

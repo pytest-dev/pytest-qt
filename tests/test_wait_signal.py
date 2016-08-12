@@ -2,6 +2,7 @@ import functools
 import fnmatch
 
 import pytest
+import sys
 
 from pytestqt.qt_compat import qt_api
 from pytestqt.wait_signal import SignalEmittedError, SignalTimeoutError, SignalAndArgs
@@ -702,7 +703,7 @@ def get_mixed_signals_with_guaranteed_name(signaller):
 
 class TestAllSignalsAndArgs:
     """
-    Tests blocker.all_signals_and_args (waitSignals() blocker) is filled with the namedtuple SignalAndArgs for each
+    Tests blocker.all_signals_and_args (waitSignals() blocker) is a list of SignalAndArgs objects, one for each
     received expected signal (irrespective of the order parameter).
     """
 
@@ -738,7 +739,7 @@ class TestAllSignalsAndArgs:
                                raising=False) as blocker:
             signaller.signal_args.emit('1', 1)
             signaller.signal.emit()
-        assert blocker.signal_triggered is False
+        assert not blocker.signal_triggered
         assert blocker.all_signals_and_args == [
             SignalAndArgs(signal_name='signal_args(QString,int)', args=('1', 1)),
             SignalAndArgs(signal_name='signal()', args=())
@@ -755,12 +756,15 @@ class TestAllSignalsAndArgs:
             signaller.signal.emit()
             signaller.signal_args.emit('1', 1)
             signaller.signal_args.emit('2', 2)
-        assert blocker.signal_triggered is True
+        assert blocker.signal_triggered
         assert blocker.all_signals_and_args == [
             SignalAndArgs(signal_name='signal()', args=()),
             SignalAndArgs(signal_name='signal_args(QString,int)', args=('1', 1)),
             SignalAndArgs(signal_name='signal_args(QString,int)', args=('2', 2))
         ]
+
+
+PY_2 = sys.version_info[0] == 2
 
 
 class TestWaitSignalSignalTimeoutErrorMessage:
@@ -801,8 +805,8 @@ class TestWaitSignalSignalTimeoutErrorMessage:
                 signaller.signal_single_arg.emit(1)
                 signaller.signal_single_arg.emit(2)
         ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
-        assert ex_msg == "Signal signal_single_arg(int) emitted with parameters [1, 2] within 200 ms, " \
-                         "but did not satisfy the arg_validator callback"
+        assert ex_msg == ("Signal signal_single_arg(int) emitted with parameters [1, 2] within 200 ms, "
+                          "but did not satisfy the arg_validator callback")
 
     def test_with_multiple_args(self, qtbot, signaller):
         """
@@ -820,11 +824,14 @@ class TestWaitSignalSignalTimeoutErrorMessage:
 
         with pytest.raises(SignalTimeoutError) as excinfo:
             with qtbot.waitSignal(signal=signal, timeout=200, check_params_cb=arg_validator, raising=True):
-                signaller.signal_args.emit('1', 1)
+                signaller.signal_args.emit("1", 1)
                 signaller.signal_args.emit('2', 2)
         ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
-        assert ex_msg == "Signal signal_args(QString,int) emitted with parameters [('1', 1), ('2', 2)] " \
-                         "within 200 ms, but did not satisfy the arg_validator callback"
+        parameters = "[('1', 1), ('2', 2)]"
+        if PY_2:
+            parameters = "[(u'1', 1), (u'2', 2)]"
+        assert ex_msg == ("Signal signal_args(QString,int) emitted with parameters {} "
+                          "within 200 ms, but did not satisfy the arg_validator callback").format(parameters)
 
 
 class TestWaitSignalsSignalTimeoutErrorMessage:
@@ -845,8 +852,8 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
                                    check_params_cbs=[None, None, my_callback], order=order, raising=True):
                 pass  # don't emit any signals
         ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
-        assert ex_msg == "Emitted signals: None. Missing: " \
-                         "[signal(), signal_args(QString,int), signal_args(QString,int) (callback: my_callback)]"
+        assert ex_msg == ("Emitted signals: None. Missing: "
+                          "[signal(), signal_args(QString,int), signal_args(QString,int) (callback: my_callback)]")
 
     @pytest.mark.parametrize("order", ["none", "simple", "strict"])
     def test_no_signal_emitted_no_callbacks(self, qtbot, signaller, order):
@@ -859,8 +866,8 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
                                    check_params_cbs=None, order=order, raising=True):
                 pass  # don't emit any signals
         ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
-        assert ex_msg == "Emitted signals: None. Missing: " \
-                         "[signal(), signal_args(QString,int), signal_args(QString,int)]"
+        assert ex_msg == ("Emitted signals: None. Missing: "
+                          "[signal(), signal_args(QString,int), signal_args(QString,int)]")
 
     def test_none_order_one_signal_emitted(self, qtbot, signaller):
         """
@@ -879,8 +886,11 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
                                    check_params_cbs=[None, my_callback_1, my_callback_2], order="none", raising=True):
                 signaller.signal_args.emit("1", 1)
         ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
-        assert ex_msg == "Emitted signals: [signal_args('1', 1)]. Missing: " \
-                         "[signal(), signal_args(QString,int) (callback: my_callback_2)]"
+        signal_args = "'1', 1"
+        if PY_2:
+            signal_args = "u'1', 1"
+        assert ex_msg == ("Emitted signals: [signal_args({})]. Missing: "
+                          "[signal(), signal_args(QString,int) (callback: my_callback_2)]").format(signal_args)
 
     def test_simple_order_first_signal_emitted(self, qtbot, signaller):
         """
@@ -892,8 +902,8 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
                                    check_params_cbs=None, order="simple", raising=True):
                 signaller.signal.emit()
         ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
-        assert ex_msg == "Emitted signals: [signal]. Missing: " \
-                         "[signal_args(QString,int), signal_args(QString,int)]"
+        assert ex_msg == ("Emitted signals: [signal]. Missing: "
+                          "[signal_args(QString,int), signal_args(QString,int)]")
 
     def test_simple_order_second_signal_emitted(self, qtbot, signaller):
         """
@@ -905,8 +915,11 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
                                    check_params_cbs=None, order="simple", raising=True):
                 signaller.signal_args.emit("1", 1)
         ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
-        assert ex_msg == "Emitted signals: [signal_args('1', 1)]. Missing: " \
-                         "[signal(), signal_args(QString,int), signal_args(QString,int)]"
+        signal_args = "'1', 1"
+        if PY_2:
+            signal_args = "u'1', 1"
+        assert ex_msg == ("Emitted signals: [signal_args({})]. Missing: "
+                          "[signal(), signal_args(QString,int), signal_args(QString,int)]").format(signal_args)
 
     def test_strict_order_violation(self, qtbot, signaller):
         """
@@ -920,9 +933,13 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
                 signaller.signal_args.emit("1", 1)
                 signaller.signal.emit()
         ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
-        assert ex_msg == "Signal order violated! Expected signal() as 1st signal, " \
-                         "but received signal_args('1', 1) instead. Emitted signals: [signal_args('1', 1), signal]. " \
-                         "Missing: [signal(), signal_args(QString,int), signal_args(QString,int)]"
+        signal_args = "'1', 1"
+        if PY_2:
+            signal_args = "u'1', 1"
+        assert ex_msg == ("Signal order violated! Expected signal() as 1st signal, "
+                          "but received signal_args({}) instead. Emitted signals: [signal_args({}), signal]. "
+                          "Missing: [signal(), signal_args(QString,int), signal_args(QString,int)]").format(signal_args,
+                                                                                                            signal_args)
 
     def test_degenerate_error_msg(self, qtbot, signaller):
         """
@@ -939,9 +956,9 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
                                    raising=True):
                 signaller.signal.emit()
         ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
-        assert ex_msg == "Received 1 of the 3 expected signals. " \
-                         "To improve this error message, provide the names of the signals " \
-                         "in the waitSignals() call."
+        assert ex_msg == ("Received 1 of the 3 expected signals. "
+                          "To improve this error message, provide the names of the signals "
+                          "in the waitSignals() call.")
 
     def test_self_defined_signal_name(self, qtbot, signaller):
         """
@@ -959,8 +976,8 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
                                    raising=True):
                 pass
         ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
-        assert ex_msg == "Emitted signals: None. " \
-                         "Missing: [signal_without_args, signal_with_args (callback: my_cb)]"
+        assert ex_msg == ("Emitted signals: None. "
+                          "Missing: [signal_without_args, signal_with_args (callback: my_cb)]")
 
     @staticmethod
     def get_exception_message(excinfo):
