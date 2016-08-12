@@ -215,8 +215,12 @@ class QtBot(object):
         .. versionadded:: 1.4
            The *raising* parameter.
 
+        .. versionadded:: 2.0
+           The *check_params_cb* parameter.
+
         :param Signal signal:
-            A signal to wait for. Set to ``None`` to just use timeout.
+            A signal to wait for, or a tuple (signal, signal_name_as_str) to improve the error message that is part
+            of ``SignalTimeoutError``. Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
@@ -225,7 +229,7 @@ class QtBot(object):
             This defaults to ``True`` unless ``qt_wait_signal_raising = false``
             is set in the config.
         :param Callable check_params_cb:
-            Optional ``callable(*parameters)`` that compares the provided signal parameters to some expected parameters.
+            Optional ``callable`` that compares the provided signal parameters to some expected parameters.
             It has to match the signature of ``signal`` (just like a slot function would) and return ``True`` if
             parameters match, ``False`` otherwise.
         :returns:
@@ -274,8 +278,9 @@ class QtBot(object):
            blocker.wait()
 
         :param list signals:
-            A list of :class:`Signal` objects to wait for. Set to ``None`` to just use
-            timeout.
+            A list of :class:`Signal` objects to wait for. Alternatively: a list of (``Signal, str``) tuples of the form
+            ``(signal, signal_name_as_str)`` to improve the error message that is part of ``SignalTimeoutError``.
+            Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:

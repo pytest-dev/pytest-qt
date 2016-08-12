@@ -114,6 +114,16 @@ of the blocker:
 Signals without arguments will set ``args`` to an empty list. If the time out
 is reached instead, ``args`` will be ``None``.
 
+Getting all arguments of non-matching arguments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 2.0
+
+When using the ``check_params_cb`` parameter, it may happen that the provided signal is received multiple times with
+different parameter values, which may or may not match the requirements of the callback.
+``all_args`` then contains the list of signal parameters (as tuple) in the order they were received.
+
+
 waitSignals
 -----------
 
@@ -174,7 +184,7 @@ evaluation takes place).
 
 
 order parameter
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. versionadded:: 2.0
 
@@ -193,6 +203,17 @@ the signals ``[a, b]`` but the sender emitted signals ``[a, a, b]``.
 A third option is to set ``order="simple"`` which is like "strict", but signals may be emitted
 in-between the provided ones, e.g. if the expected signals are ``[a, b, c]`` and the sender 
 actually emits ``[a, a, b, a, c]``, the test completes successfully (it would fail with ``order="strict"``).
+
+Getting emitted signals and arguments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 2.1
+
+To determine which of the expected signals were emitted during a ``wait()`` you can use
+``blocker.all_signals_and_args`` which contains a list of
+:class:`wait_signal.SignalAndArgs <SignalAndArgs>` ``namedtuple`` objects, indicating the signals (and their arguments)
+in the order they were received.
+
 
 Making sure a given signal is not emitted
 -----------------------------------------
