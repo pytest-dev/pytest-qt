@@ -453,7 +453,7 @@ def test_signalandargs_equality():
 def test_signalandargs_inequality():
     signal_args1_1 = SignalAndArgs(signal_name="signal", args=(1,2))
     signal_args1_2 = "foo"
-    assert signal_args1_1 == signal_args1_2
+    assert signal_args1_1 != signal_args1_2
 
 
 def get_waitsignals_cases_all(order):
