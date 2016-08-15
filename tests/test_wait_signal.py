@@ -840,8 +840,13 @@ class TestWaitSignalSignalTimeoutErrorMessage:
     def test_unable_to_get_callback_name(self, qtbot, signaller):
         """
         Test that for complicated callbacks which aren't callables, but e.g. double-wrapped partials, the test code
-        is unable to determine the name of the callback.
+        is sometimes unable to determine the name of the callback.
+        Note that this behavior changes with Python 3.5, where a functools.partial() is smart enough to detect wrapped
+        calls.
         """
+        if sys.version_info >= (3,5):
+            pytest.skip("Only on Python 3.4 and lower double-wrapped functools.partial callbacks are a problem")
+
         if qt_api.pytest_qt_api == 'pyside':
             signal = (signaller.signal_single_arg, "signal_single_arg(int)")
         else:
