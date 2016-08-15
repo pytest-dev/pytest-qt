@@ -444,6 +444,18 @@ def test_provided_invalid_signal_name(qtbot, signaller):
             pass
 
 
+def test_signalandargs_equality():
+    signal_args1 = SignalAndArgs(signal_name="signal", args=(1,2))
+    signal_args2 = SignalAndArgs(signal_name="signal", args=(1, 2))
+    assert signal_args1 == signal_args2
+
+
+def test_signalandargs_inequality():
+    signal_args1_1 = SignalAndArgs(signal_name="signal", args=(1,2))
+    signal_args1_2 = "foo"
+    assert signal_args1_1 == signal_args1_2
+
+
 def get_waitsignals_cases_all(order):
     """
     Returns the list of tuples (emitted-signal-list, expected-signal-list, expect_signal_triggered) for the
@@ -824,6 +836,30 @@ class TestWaitSignalSignalTimeoutErrorMessage:
                 pass  # don't emit any signals
         ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
         assert ex_msg == "Signal signal() not emitted after 200 ms"
+
+    def test_unable_to_get_callback_name(self, qtbot, signaller):
+        """
+        Test that for complicated callbacks which aren't callables, but e.g. double-wrapped partials, the test code
+        is unable to determine the name of the callback.
+        """
+        if qt_api.pytest_qt_api == 'pyside':
+            signal = (signaller.signal_single_arg, "signal_single_arg(int)")
+        else:
+            signal = signaller.signal_single_arg
+
+        def callback(int_param, unused_param1, unused_param2):
+            return int_param == 1337
+
+        wrapped_callback = functools.partial(callback, unused_param2=1)
+        double_wrapped_callback = functools.partial(wrapped_callback, unused_param1=1)
+
+        with pytest.raises(SignalTimeoutError) as excinfo:
+            with qtbot.waitSignal(signal=signal, timeout=200, raising=True,
+                                  check_params_cb=double_wrapped_callback):
+                signaller.signal_single_arg.emit(1)
+        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        assert ex_msg == ("Signal signal_single_arg(int) emitted with parameters [1] within 200 ms, "
+                          "but did not satisfy the  callback")
 
     def test_with_single_arg(self, qtbot, signaller):
         """
