@@ -227,11 +227,11 @@ class SignalBlocker(_AbstractSignalBlocker):
 
     def get_timeout_error_message(self):
         if self.check_params_callback is not None:
-            return "Signal {signal_name} emitted with parameters {params} " \
-                   "within {timeout} ms, but did not satisfy " \
-                   "the {cb_name} callback".format(signal_name=self.signal_name, params=self.get_params_as_str(),
-                                                   timeout=self.timeout,
-                                                   cb_name=self.get_callback_name(self.check_params_callback))
+            return ("Signal {signal_name} emitted with parameters {params} "
+                    "within {timeout} ms, but did not satisfy "
+                    "the {cb_name} callback").format(signal_name=self.signal_name, params=self.get_params_as_str(),
+                                                     timeout=self.timeout,
+                                                     cb_name=self.get_callback_name(self.check_params_callback))
         else:
             return "Signal {signal_name} not emitted after {timeout} ms".format(signal_name=self.signal_name,
                                                                                 timeout=self.timeout)
@@ -253,9 +253,6 @@ class SignalAndArgs:
         return signal_name + args
 
     def __str__(self):
-        return self._get_readable_signal_with_optional_args()
-
-    def __repr__(self):
         return self._get_readable_signal_with_optional_args()
 
     def __eq__(self, other):
@@ -452,9 +449,9 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     def _get_degenerate_error_message(self):
         received_signals = sum(self._signals_emitted)
         total_signals = len(self._signals_emitted)
-        return "Received {actual} of the {total} expected signals. " \
-               "To improve this error message, provide the names of the signals " \
-               "in the waitSignals() call.".format(actual=received_signals, total=total_signals)
+        return ("Received {actual} of the {total} expected signals. "
+                "To improve this error message, provide the names of the signals "
+                "in the waitSignals() call.").format(actual=received_signals, total=total_signals)
 
     def _get_expected_and_actual_signals_message(self):
         if not self.all_signals_and_args:
@@ -477,8 +474,8 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     def _get_order_violation_message(self):
         expected_signal_as_str = self._get_signal_string_representation_for_index(self._signal_expected_index)
         actual_signal_as_str = str(self._actual_signal_and_args_at_violation)
-        return "Signal order violated! Expected {expected} as {ordinal} signal, " \
-               "but received {actual} instead. ".format(expected=expected_signal_as_str,
+        return ("Signal order violated! Expected {expected} as {ordinal} signal, "
+               "but received {actual} instead. ").format(expected=expected_signal_as_str,
                                                         ordinal=get_ordinal_str(self._signal_expected_index + 1),
                                                         actual=actual_signal_as_str)
 
