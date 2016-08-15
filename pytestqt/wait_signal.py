@@ -65,7 +65,8 @@ class _AbstractSignalBlocker(object):
             self._timer = None
 
     def get_timeout_error_message(self):
-        pass
+        """Subclasses have to implement this, returning an appropriate error message for a SignalTimeoutError."""
+        raise NotImplementedError
 
     def _extract_pyqt_signal_name(self, potential_pyqt_signal):
         signal_name = potential_pyqt_signal.signal  # type: str
