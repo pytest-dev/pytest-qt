@@ -405,6 +405,45 @@ def test_signal_identity(signaller):
     assert str(x) != str(z)
 
 
+def test_invalid_signal(qtbot):
+    """Tests that a TypeError is raised when providing a signal object that actually is not a Qt signal at all."""
+
+    class NotReallyASignal:
+        def __init__(self):
+            self.signal = False
+
+    with pytest.raises(TypeError):
+        with qtbot.waitSignal(signal=NotReallyASignal(), raising=False):
+            pass
+
+
+def test_invalid_signal_tuple_length(qtbot, signaller):
+    """
+    Test that a ValueError is raised when not providing a signal+name tuple with exactly 2 elements
+    as signal parameter.
+    """
+    with pytest.raises(ValueError):
+        signal_tuple_with_invalid_length = (signaller.signal, "signal()", "does not belong here")
+        with qtbot.waitSignal(signal=signal_tuple_with_invalid_length, raising=False):
+            pass
+
+
+def test_provided_empty_signal_name(qtbot, signaller):
+    """Test that a TypeError is raised when providing a signal+name tuple where the name is an empty string."""
+    with pytest.raises(TypeError):
+        invalid_signal_tuple = (signaller.signal, "")
+        with qtbot.waitSignal(signal=invalid_signal_tuple, raising=False):
+            pass
+
+
+def test_provided_invalid_signal_name(qtbot, signaller):
+    """Test that a TypeError is raised when providing a signal+name tuple where the name is not actually string."""
+    with pytest.raises(TypeError):
+        invalid_signal_tuple = (signaller.signal, 12345)  # 12345 is not a signal name
+        with qtbot.waitSignal(signal=invalid_signal_tuple, raising=False):
+            pass
+
+
 def get_waitsignals_cases_all(order):
     """
     Returns the list of tuples (emitted-signal-list, expected-signal-list, expect_signal_triggered) for the
