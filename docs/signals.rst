@@ -117,7 +117,7 @@ is reached instead, ``args`` will be ``None``.
 Getting all arguments of non-matching arguments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. versionadded:: 2.0
+.. versionadded:: 2.1
 
 When using the ``check_params_cb`` parameter, it may happen that the provided signal is received multiple times with
 different parameter values, which may or may not match the requirements of the callback.

@@ -58,15 +58,15 @@ class _AbstractSignalBlocker(object):
 
     def _cleanup(self):
         # store timeout message before the data to construct it is lost
-        self._timeout_message = self.get_timeout_error_message()
+        self._timeout_message = self._get_timeout_error_message()
         if self._timer is not None:
             _silent_disconnect(self._timer.timeout, self._quit_loop_by_timeout)
             self._timer.stop()
             self._timer = None
 
-    def get_timeout_error_message(self):
+    def _get_timeout_error_message(self):
         """Subclasses have to implement this, returning an appropriate error message for a SignalTimeoutError."""
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def _extract_pyqt_signal_name(self, potential_pyqt_signal):
         signal_name = potential_pyqt_signal.signal  # type: str
@@ -84,9 +84,11 @@ class _AbstractSignalBlocker(object):
                                  "the second element is the signal's name).")
             signal_tuple = potential_signal_tuple
             signal_name = signal_tuple[1]
-            if not isinstance(signal_name, str) or not signal_name:
-                raise TypeError("Invalid type for user-provided signal name, "
+            if not isinstance(signal_name, str):
+                raise TypeError("Invalid type for provided signal name, "
                                 "expected str but got {}".format(type(signal_name)))
+            if not signal_name:
+                raise ValueError("The provided signal name may not be empty")
             return signal_name
         return ""
 
@@ -226,7 +228,7 @@ class SignalBlocker(_AbstractSignalBlocker):
 
         return str(args_list)
 
-    def get_timeout_error_message(self):
+    def _get_timeout_error_message(self):
         if self.check_params_callback is not None:
             return ("Signal {signal_name} emitted with parameters {params} "
                     "within {timeout} ms, but did not satisfy "
@@ -267,6 +269,10 @@ class SignalAndArgs:
 get_ordinal_str = lambda n: "%d%s" % (n, {1: "st", 2: "nd", 3: "rd"}.get(n if n < 20 else n % 10, "th"))
 
 
+class NoMatchingIndexFoundError(Exception):
+    pass
+
+
 class MultiSignalBlocker(_AbstractSignalBlocker):
     """
     Returned by :meth:`pytestqt.qtbot.QtBot.waitSignals` method, blocks until
@@ -305,7 +311,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         self._create_signal_emitted_indices(signals)
         self._connect_unique_signals()
 
-    def get_timeout_error_message(self):
+    def _get_timeout_error_message(self):
         if not self._are_signal_names_available():
             error_message = self._get_degenerate_error_message()
         else:
@@ -381,7 +387,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
             try:
                 successful_index = self._get_first_matching_index(unique_signal, *args)
                 self._signals_emitted[successful_index] = True
-            except:  # none found
+            except NoMatchingIndexFoundError:  # none found
                 pass
         elif self._order == "simple":
             if self._check_signal_matches_expected_index(unique_signal, *args):
@@ -413,7 +419,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
                 successfully_emitted = True
                 break
         if not successfully_emitted:
-            raise Exception("No matching index was found")
+            raise NoMatchingIndexFoundError
 
         return successful_index
 
@@ -476,9 +482,9 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         expected_signal_as_str = self._get_signal_string_representation_for_index(self._signal_expected_index)
         actual_signal_as_str = str(self._actual_signal_and_args_at_violation)
         return ("Signal order violated! Expected {expected} as {ordinal} signal, "
-               "but received {actual} instead. ").format(expected=expected_signal_as_str,
-                                                        ordinal=get_ordinal_str(self._signal_expected_index + 1),
-                                                        actual=actual_signal_as_str)
+                "but received {actual} instead. ").format(expected=expected_signal_as_str,
+                                                          ordinal=get_ordinal_str(self._signal_expected_index + 1),
+                                                          actual=actual_signal_as_str)
 
     def _get_missing_signal_indices(self):
         return [index for index, value in enumerate(self._signals_emitted) if not self._signals_emitted[index]]

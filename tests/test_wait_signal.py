@@ -429,14 +429,14 @@ def test_invalid_signal_tuple_length(qtbot, signaller):
 
 
 def test_provided_empty_signal_name(qtbot, signaller):
-    """Test that a TypeError is raised when providing a signal+name tuple where the name is an empty string."""
-    with pytest.raises(TypeError):
+    """Test that a ValueError is raised when providing a signal+name tuple where the name is an empty string."""
+    with pytest.raises(ValueError):
         invalid_signal_tuple = (signaller.signal, "")
         with qtbot.waitSignal(signal=invalid_signal_tuple, raising=False):
             pass
 
 
-def test_provided_invalid_signal_name(qtbot, signaller):
+def test_provided_invalid_signal_name_type(qtbot, signaller):
     """Test that a TypeError is raised when providing a signal+name tuple where the name is not actually string."""
     with pytest.raises(TypeError):
         invalid_signal_tuple = (signaller.signal, 12345)  # 12345 is not a signal name
