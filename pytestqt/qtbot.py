@@ -1,6 +1,7 @@
 import functools
 import contextlib
 import weakref
+
 from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError, SignalEmittedSpy
 from pytestqt.qt_compat import qt_api
 
@@ -425,6 +426,26 @@ class QtBot(object):
             self.wait(10)
 
     wait_until = waitUntil  # pep-8 alias
+
+    @contextlib.contextmanager
+    def capture_exceptions(self):
+        """
+        .. versionadded:: 2.1
+
+        Context manager that captures Qt virtual method exceptions that happen in block inside
+        context.
+
+        .. code-block:: python
+
+            with qtbot.capture_exceptions() as exceptions:
+                qtbot.click(button)
+
+            # exception is a list of sys.exc_info tuples
+            assert len(exceptions) == 1
+        """
+        from pytestqt.exceptions import capture_exceptions
+        with capture_exceptions() as exceptions:
+            yield exceptions
 
     @classmethod
     def _inject_qtest_methods(cls):

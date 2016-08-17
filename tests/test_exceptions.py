@@ -260,6 +260,39 @@ def test_capture_exceptions_context_manager(qapp):
     assert [str(e) for (t, e, tb) in exceptions] == ['mistakes were made']
 
 
+def test_capture_exceptions_qtbot_context_manager(testdir):
+    """Test capturing exceptions in a block by using `capture_exceptions` method provided
+    by `qtbot`.
+    """
+    testdir.makepyfile('''
+        import pytest
+        from pytestqt.qt_compat import qt_api
+        QWidget = qt_api.QWidget
+        Signal = qt_api.Signal
+
+        class MyWidget(QWidget):
+
+            on_event = Signal()
+
+        def test_widget(qtbot):
+            widget = MyWidget()
+            qtbot.addWidget(widget)
+
+            def raise_on_event():
+                raise RuntimeError("error")
+
+            widget.on_event.connect(raise_on_event)
+
+            with qtbot.capture_exceptions() as exceptions:
+                widget.on_event.emit()
+
+            assert len(exceptions) == 1
+            assert str(exceptions[0][1]) == "error"
+    ''')
+    result = testdir.runpytest()
+    result.stdout.fnmatch_lines(['*1 passed*'])
+
+
 def test_exceptions_to_stderr(qapp, capsys):
     """
     Exceptions should still be reported to stderr.

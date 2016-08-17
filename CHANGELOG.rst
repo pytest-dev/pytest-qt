@@ -1,3 +1,11 @@
+2.1
+---
+
+- ``qtbot`` fixture now can capture Qt virtual method exceptions in a block using
+  ``capture_exceptions`` (`#154`_). Thanks to `@fogo`_ for the PR.
+
+.. _#154: https://github.com/pytest-dev/pytest-qt/issues/154
+
 2.0
 ---
 
@@ -379,6 +387,7 @@ First working version.
 .. _@billyshambrook: https://github.com/billyshambrook
 .. _@datalyze-solutions: https://github.com/datalyze-solutions
 .. _@fabioz: https://github.com/fabioz
+.. _@fogo: https://github.com/fogo
 .. _@gqmelo: https://github.com/gqmelo
 .. _@itghisi: https://github.com/itghisi
 .. _@jdreaver: https://github.com/jdreaver
