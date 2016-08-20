@@ -305,8 +305,8 @@ class SignalTimeoutError(Exception):
     """
     .. versionadded:: 1.4
 
-    The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitSignal` if the
-    *raising* parameter has been given and there was a timeout.
+    The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitSignal` if there
+    was a timeout and raising was not turned off.
     """
     pass
 
