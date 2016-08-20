@@ -86,7 +86,7 @@ class SignalBlocker(_AbstractSignalBlocker):
 
         .. note:: contrary to the parameter of same name in
             :meth:`pytestqt.qtbot.QtBot.waitSignal`, this parameter does not
-            consider the :ref:`qt_wait_signal_raising`.
+            consider the :ref:`qt_wait_signal_raising` option.
 
     :ivar list args:
         The arguments which were emitted by the signal, or None if the signal
