@@ -2,7 +2,9 @@ import functools
 import contextlib
 import weakref
 
-from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError, SignalEmittedSpy
+from pytestqt.wait_signal import (SignalBlocker, MultiSignalBlocker,
+                                  SignalTimeoutError, SignalEmittedSpy,
+                                  CallbackBlocker, CallbackTimeoutError)
 from pytestqt.qt_compat import qt_api
 
 
@@ -427,6 +429,54 @@ class QtBot(object):
 
     wait_until = waitUntil  # pep-8 alias
 
+    def waitCallback(self, timeout=1000, raising=None):
+        """
+        .. versionadded:: 2.1
+
+        Stops current test until a callback is called.
+
+        Used to stop the control flow of a test until the returned callback is
+        called, or a number of milliseconds, specified by ``timeout``, has
+        elapsed.
+
+        Best used as a context manager::
+
+           with qtbot.waitCallback() as callback:
+               function_taking_a_callback(callback)
+           assert callback.args == [True]
+
+        Also, you can use the :class:`CallbackBlocker` directly if the
+        context manager form is not convenient::
+
+           blocker = qtbot.waitCallback(timeout=1000)
+           function_calling_a_callback(blocker)
+           blocker.wait()
+
+
+        :param int timeout:
+            How many milliseconds to wait before resuming control flow.
+        :param bool raising:
+            If :class:`QtBot.CallbackTimeoutError <pytestqt.plugin.CallbackTimeoutError>`
+            should be raised if a timeout occurred.
+            This defaults to ``True`` unless ``qt_wait_signal_raising = false``
+            is set in the config.
+        :returns:
+            A ``CallbackBlocker`` object which can be used directly as a
+            callback as it implements ``__call__``.
+
+        .. note:: This method is also available as ``wait_callback`` (pep-8 alias)
+        """
+        if raising is None:
+            raising_val = self._request.config.getini('qt_wait_signal_raising')
+            if not raising_val:
+                raising = True
+            else:
+                raising = _parse_ini_boolean(raising_val)
+        blocker = CallbackBlocker(timeout=timeout, raising=raising)
+        return blocker
+
+    wait_callback = waitCallback  # pep-8 alias
+
     @contextlib.contextmanager
     def capture_exceptions(self):
         """
@@ -490,8 +540,9 @@ class QtBot(object):
                 setattr(cls, method_name, method)
 
 
-# provide easy access to SignalTimeoutError to qtbot fixtures
+# provide easy access to exceptions to qtbot fixtures
 QtBot.SignalTimeoutError = SignalTimeoutError
+QtBot.CallbackTimeoutError = CallbackTimeoutError
 
 
 def _add_widget(item, widget):
