@@ -236,42 +236,6 @@ def signaller(timer):
     return Signaller()
 
 
-@pytest.yield_fixture
-def timer():
-    """
-    Fixture that provides a callback with signature: (signal, delay) that
-    triggers that signal once after the given delay in ms.
-
-    The fixture is responsible for cleaning up after the timers.
-    """
-
-    class Timer(qt_api.QtCore.QObject):
-        def __init__(self):
-            qt_api.QtCore.QObject.__init__(self)
-            self.timers_and_slots = []
-
-        def shutdown(self):
-            for t, slot in self.timers_and_slots:
-                t.stop()
-                t.timeout.disconnect(slot)
-            self.timers_and_slots[:] = []
-
-        def single_shot(self, signal, delay):
-            t = qt_api.QtCore.QTimer(self)
-            t.setSingleShot(True)
-            slot = functools.partial(self._emit, signal)
-            t.timeout.connect(slot)
-            t.start(delay)
-            self.timers_and_slots.append((t, slot))
-
-        def _emit(self, signal):
-            signal.emit()
-
-    timer = Timer()
-    yield timer
-    timer.shutdown()
-
-
 @pytest.mark.parametrize('multiple', [True, False])
 @pytest.mark.parametrize('raising', [True, False])
 def test_wait_signals_handles_exceptions(qtbot, multiple, raising, signaller):

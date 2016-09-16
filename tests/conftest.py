@@ -1,6 +1,9 @@
-import pytest
-import time
+import functools
 import sys
+import time
+
+import pytest
+from pytestqt.qt_compat import qt_api
 
 pytest_plugins = 'pytester'
 
@@ -38,3 +41,47 @@ def stop_watch():
             assert self.elapsed < max_wait_ms
 
     return StopWatch()
+
+
+@pytest.yield_fixture
+def timer():
+    """
+    Returns a Timer-like object which can be used to trigger signals and callbacks
+    after some time.
+
+    It is recommended to use this instead of ``QTimer.singleShot`` uses a static timer which may
+    trigger after a test finishes, possibly causing havoc.
+    """
+
+    class Timer(qt_api.QtCore.QObject):
+        def __init__(self):
+            qt_api.QtCore.QObject.__init__(self)
+            self.timers_and_slots = []
+
+        def shutdown(self):
+            for t, slot in self.timers_and_slots:
+                t.stop()
+                t.timeout.disconnect(slot)
+            self.timers_and_slots[:] = []
+
+        def single_shot(self, signal, delay):
+            t = qt_api.QtCore.QTimer(self)
+            t.setSingleShot(True)
+            slot = functools.partial(self._emit, signal)
+            t.timeout.connect(slot)
+            t.start(delay)
+            self.timers_and_slots.append((t, slot))
+
+        def single_shot_callback(self, callback, delay):
+            t = qt_api.QtCore.QTimer(self)
+            t.setSingleShot(True)
+            t.timeout.connect(callback)
+            t.start(delay)
+            self.timers_and_slots.append((t, callback))
+
+        def _emit(self, signal):
+            signal.emit()
+
+    timer = Timer()
+    yield timer
+    timer.shutdown()
