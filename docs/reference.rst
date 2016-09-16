@@ -6,6 +6,11 @@ QtBot
 .. module:: pytestqt.qtbot
 .. autoclass:: QtBot
 
+TimeoutError
+------------
+
+.. autoclass:: TimeoutError
+
 SignalBlocker
 -------------
 
@@ -21,6 +26,11 @@ SignalTimeoutError
 ------------------
 
 .. autoclass:: SignalTimeoutError
+
+SignalEmittedError
+------------------
+
+.. autoclass:: SignalEmittedError
 
 Record
 ------

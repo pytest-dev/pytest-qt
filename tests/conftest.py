@@ -59,10 +59,10 @@ def timer():
             self.timers_and_slots = []
 
         def shutdown(self):
-            for t, slot in self.timers_and_slots:
+            while self.timers_and_slots:
+                t, slot = self.timers_and_slots.pop(-1)
                 t.stop()
                 t.timeout.disconnect(slot)
-            self.timers_and_slots[:] = []
 
         def single_shot(self, signal, delay):
             t = qt_api.QtCore.QTimer(self)
