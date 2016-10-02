@@ -157,7 +157,7 @@ class SignalBlocker(_AbstractSignalBlocker):
 
         .. note:: contrary to the parameter of same name in
             :meth:`pytestqt.qtbot.QtBot.waitSignal`, this parameter does not
-            consider the :ref:`qt_wait_signal_raising`.
+            consider the :ref:`qt_wait_signal_raising` option.
 
     :ivar list args:
         The arguments which were emitted by the signal, or None if the signal
@@ -554,12 +554,96 @@ class SignalEmittedSpy(object):
                                          (self.signal,))
 
 
+class CallbackBlocker(object):
+
+    """
+    .. versionadded:: 2.1
+
+    An object which checks if the returned callback gets called.
+
+    Intended to be used as a context manager.
+
+    :ivar int timeout: maximum time to wait for the callback to be called.
+
+    :ivar bool raising:
+        If :class:`CallbackTimeoutError` should be raised if a timeout occured.
+
+        .. note:: contrary to the parameter of same name in
+            :meth:`pytestqt.qtbot.QtBot.waitCallback`, this parameter does not
+            consider the :ref:`qt_wait_signal_raising` option.
+
+    :ivar list args:
+        The arguments with which the callback was called, or None if the
+        callback wasn't called at all.
+
+    :ivar dict kwargs:
+        The keyword arguments with which the callback was called, or None if
+        the callback wasn't called at all.
+    """
+
+    def __init__(self, timeout=1000, raising=True):
+        self.timeout = timeout
+        self.raising = raising
+        self.args = None
+        self.kwargs = None
+        self.called = False
+        self._loop = QtCore.QEventLoop()
+        self._timer = QtCore.QTimer(self._loop)
+        self._timer.setSingleShot(True)
+        self._timer.setInterval(timeout)
+
+    def _quit_loop_by_timeout(self):
+        try:
+            self._cleanup()
+        finally:
+            self._loop.quit()
+
+    def _cleanup(self):
+        if self._timer is not None:
+            self._timer.stop()
+            self._timer = None
+
+    def wait(self):
+        """
+        Waits until either the returned callback is called or timeout is
+        reached.
+        """
+        __tracebackhide__ = True
+        if self.called:
+            return
+        if self._timer is not None:
+            self._timer.timeout.connect(self._quit_loop_by_timeout)
+            self._timer.start()
+        self._loop.exec_()
+        if not self.called and self.raising:
+            raise CallbackTimeoutError("Callback wasn't called after %sms." %
+                                       self.timeout)
+
+    def __call__(self, *args, **kwargs):
+        try:
+            self.args = list(args)
+            self.kwargs = kwargs
+            self.called = True
+            self._cleanup()
+        finally:
+            self._loop.quit()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        __tracebackhide__ = True
+        if value is None:
+            # only wait if no exception happened inside the "with" block
+            self.wait()
+
+
 class SignalTimeoutError(Exception):
     """
     .. versionadded:: 1.4
 
-    The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitSignal` if the
-    *raising* parameter has been given and there was a timeout.
+    The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitSignal` if there
+    was a timeout and raising was not turned off.
     """
     pass
 
@@ -570,6 +654,16 @@ class SignalEmittedError(Exception):
 
     The exception thrown by :meth:`pytestqt.qtbot.QtBot.assertNotEmitted` if a
     signal was emitted unexpectedly.
+    """
+    pass
+
+
+class CallbackTimeoutError(Exception):
+    """
+    .. versionadded:: 2.1
+
+    The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitCallback` if there
+    was a timeout and raising was not turned off.
     """
     pass
 

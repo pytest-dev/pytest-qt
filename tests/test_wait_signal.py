@@ -272,25 +272,30 @@ def timer():
     timer.shutdown()
 
 
-@pytest.mark.parametrize('multiple', [True, False])
+@pytest.mark.parametrize('blocker', ['single', 'multiple', 'callback'])
 @pytest.mark.parametrize('raising', [True, False])
-def test_wait_signals_handles_exceptions(qtbot, multiple, raising, signaller):
+def test_blockers_handle_exceptions(qtbot, blocker, raising, signaller):
     """
-    Make sure waitSignal handles exceptions correctly.
+    Make sure blockers handle exceptions correctly.
     """
 
     class TestException(Exception):
         pass
 
-    if multiple:
+    if blocker == 'multiple':
         func = qtbot.waitSignals
-        arg = [signaller.signal, signaller.signal_2]
-    else:
+        args = [[signaller.signal, signaller.signal_2]]
+    elif blocker == 'single':
         func = qtbot.waitSignal
-        arg = signaller.signal
+        args = [signaller.signal]
+    elif blocker == 'callback':
+        func = qtbot.waitCallback
+        args = []
+    else:
+        assert False
 
     with pytest.raises(TestException):
-        with func(arg, timeout=10, raising=raising):
+        with func(*args, timeout=10, raising=raising):
             raise TestException
 
 
@@ -1100,3 +1105,36 @@ class TestAssertNotEmitted:
         with qtbot.assertNotEmitted(signaller.signal):
             pass
         signaller.signal.emit()
+
+
+class TestWaitCallback:
+
+    def test_immediate(self, qtbot):
+        with qtbot.waitCallback() as callback:
+            assert not callback.called
+            callback()
+        assert callback.called
+
+    def test_later(self, qtbot):
+        t = QtCore.QTimer()
+        t.setSingleShot(True)
+        t.setInterval(50)
+        with qtbot.waitCallback() as callback:
+            t.timeout.connect(callback)
+            t.start()
+        assert callback.called
+
+    def test_args(self, qtbot):
+        with qtbot.waitCallback() as callback:
+            callback(23, answer=42)
+        assert callback.args == [23]
+        assert callback.kwargs == {'answer': 42}
+
+    def test_explicit(self, qtbot):
+        blocker = qtbot.waitCallback()
+        assert not blocker.called
+        blocker()
+        blocker.wait()
+        assert blocker.called
+
+    # FIXME tests for timeouts
