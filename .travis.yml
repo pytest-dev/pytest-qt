@@ -40,7 +40,8 @@ install:
 
 script:
  - python setup.py develop
- - catchsegv xvfb-run coverage run --source=pytestqt setup.py test
+ # change screen size and depth in attempt to fix waitActive test (#160)
+ - catchsegv xvfb-run --server-args="-screen 0 640x480x24" coverage run --source=pytestqt setup.py test
  - tox -e lint
 
 after_success:
