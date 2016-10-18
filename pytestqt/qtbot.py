@@ -167,9 +167,13 @@ class QtBot(object):
         .. note::
             This function is only available in PyQt5, raising a ``RuntimeError`` if called from
             ``PyQt4`` or ``PySide``.
+
+        .. note:: This method is also available as ``wait_active`` (pep-8 alias)
         """
         __tracebackhide__ = True
         return _WaitWidgetContextManager('qWaitForWindowActive', 'activated', widget, timeout)
+
+    wait_active = waitActive  # pep-8 alias
 
     def waitExposed(self, widget, timeout=1000):
         """
@@ -193,9 +197,13 @@ class QtBot(object):
         .. note::
             This function is only available in PyQt5, raising a ``RuntimeError`` if called from
             ``PyQt4`` or ``PySide``.
+
+        .. note:: This method is also available as ``wait_exposed`` (pep-8 alias)
         """
         __tracebackhide__ = True
         return _WaitWidgetContextManager('qWaitForWindowExposed', 'exposed', widget, timeout)
+
+    wait_exposed = waitExposed  # pep-8 alias
 
     def waitForWindowShown(self, widget):
         """
