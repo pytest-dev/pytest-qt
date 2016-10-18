@@ -27,7 +27,7 @@ class QtBot(object):
     **Widgets**
 
     .. automethod:: addWidget
-    .. automethod:: capture_exceptions
+    .. automethod:: captureExceptions
     .. automethod:: waitActive
     .. automethod:: waitExposed
     .. automethod:: waitForWindowShown
@@ -486,7 +486,7 @@ class QtBot(object):
     wait_until = waitUntil  # pep-8 alias
 
     @contextlib.contextmanager
-    def capture_exceptions(self):
+    def captureExceptions(self):
         """
         .. versionadded:: 2.1
 
@@ -500,10 +500,14 @@ class QtBot(object):
 
             # exception is a list of sys.exc_info tuples
             assert len(exceptions) == 1
+
+        .. note:: This method is also available as ``capture_exceptions`` (pep-8 alias)
         """
         from pytestqt.exceptions import capture_exceptions
         with capture_exceptions() as exceptions:
             yield exceptions
+
+    capture_exceptions = captureExceptions
 
     @classmethod
     def _inject_qtest_methods(cls):

@@ -6,7 +6,7 @@
   (`#153`_).
 
 - ``qtbot`` fixture now can capture Qt virtual method exceptions in a block using
-  ``capture_exceptions`` (`#154`_). Thanks to `@fogo`_ for the PR.
+  ``captureExceptions`` (`#154`_). Thanks to `@fogo`_ for the PR.
 
 - New `qtbot.waitActive`_ and `qtbot.waitExposed`_ methods for PyQt5.
   Thanks `@The-Compiler`_ for the request (`#158`_).
