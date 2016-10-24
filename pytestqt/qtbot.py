@@ -2,9 +2,9 @@ import contextlib
 import functools
 import weakref
 
+from pytestqt.exceptions import SignalTimeoutError, TimeoutError
 from pytestqt.qt_compat import qt_api
-from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError, SignalEmittedSpy, \
-    SignalEmittedError
+from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalEmittedSpy, SignalEmittedError
 
 
 def _parse_ini_boolean(value):
@@ -282,11 +282,11 @@ class QtBot(object):
 
         :param Signal signal:
             A signal to wait for, or a tuple ``(signal, signal_name_as_str)`` to improve the error message that is part
-            of ``SignalTimeoutError``. Set to ``None`` to just use timeout.
+            of ``TimeoutError``. Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
-            If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
+            If :class:`QtBot.TimeoutError <pytestqt.plugin.TimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_wait_signal_raising = false``
             is set in the config.
@@ -341,12 +341,12 @@ class QtBot(object):
 
         :param list signals:
             A list of :class:`Signal` objects to wait for. Alternatively: a list of (``Signal, str``) tuples of the form
-            ``(signal, signal_name_as_str)`` to improve the error message that is part of ``SignalTimeoutError``.
+            ``(signal, signal_name_as_str)`` to improve the error message that is part of ``TimeoutError``.
             Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
-            If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
+            If :class:`QtBot.TimeoutError <pytestqt.plugin.TimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_wait_signal_raising = false``
             is set in the config.
@@ -559,15 +559,6 @@ class QtBot(object):
             if method is not None:
                 setattr(cls, method_name, method)
 
-
-class TimeoutError(Exception):
-    """
-    .. versionadded:: 2.1
-
-    Exception thrown by :meth:`pytestqt.qtbot.QtBot.waitActive` and
-    :meth:`pytestqt.qtbot.QtBot.waitExposed` methods if a timeout occurs.
-    """
-    pass
 
 # provide easy access to exceptions to qtbot fixtures
 QtBot.SignalTimeoutError = SignalTimeoutError

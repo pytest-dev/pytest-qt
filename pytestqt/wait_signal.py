@@ -1,6 +1,6 @@
 import functools
-from collections import namedtuple
 
+from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
 
 
@@ -48,7 +48,7 @@ class _AbstractSignalBlocker(object):
             self._timer.start()
         self._loop.exec_()
         if not self.signal_triggered and self.raising:
-            raise SignalTimeoutError(self._timeout_message)
+            raise TimeoutError(self._timeout_message)
 
     def _quit_loop_by_timeout(self):
         try:
@@ -65,7 +65,7 @@ class _AbstractSignalBlocker(object):
             self._timer = None
 
     def _get_timeout_error_message(self):
-        """Subclasses have to implement this, returning an appropriate error message for a SignalTimeoutError."""
+        """Subclasses have to implement this, returning an appropriate error message for a TimeoutError."""
         raise NotImplementedError  # pragma: no cover
 
     def _extract_pyqt_signal_name(self, potential_pyqt_signal):
@@ -153,7 +153,7 @@ class SignalBlocker(_AbstractSignalBlocker):
         this is set to ``None``.
 
     :ivar bool raising:
-        If :class:`SignalTimeoutError` should be raised if a timeout occurred.
+        If :class:`TimeoutError` should be raised if a timeout occurred.
 
         .. note:: contrary to the parameter of same name in
             :meth:`pytestqt.qtbot.QtBot.waitSignal`, this parameter does not
@@ -552,16 +552,6 @@ class SignalEmittedSpy(object):
             else:
                 raise SignalEmittedError("Signal %r unexpectedly emitted" %
                                          (self.signal,))
-
-
-class SignalTimeoutError(Exception):
-    """
-    .. versionadded:: 1.4
-
-    The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitSignal` if the
-    *raising* parameter has been given and there was a timeout.
-    """
-    pass
 
 
 class SignalEmittedError(Exception):

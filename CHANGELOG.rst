@@ -11,6 +11,9 @@
 - New `qtbot.waitActive`_ and `qtbot.waitExposed`_ methods for PyQt5.
   Thanks `@The-Compiler`_ for the request (`#158`_).
 
+- ``SignalTimeoutError`` has been renamed to ``TimeoutError``. ``SignalTimeoutError`` is kept as
+  a backward compatibility alias.
+
 .. _qtbot.waitActive: http://pytest-qt.readthedocs.io/en/latest/reference.html#pytestqt.qtbot.QtBot.waitActive
 .. _qtbot.waitExposed: http://pytest-qt.readthedocs.io/en/latest/reference.html#pytestqt.qtbot.QtBot.waitExposed
 

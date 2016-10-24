@@ -5,7 +5,7 @@ import pytest
 import sys
 
 from pytestqt.qt_compat import qt_api
-from pytestqt.wait_signal import SignalEmittedError, SignalTimeoutError, SignalAndArgs
+from pytestqt.wait_signal import SignalEmittedError, TimeoutError, SignalAndArgs
 
 
 def test_signal_blocker_exception(qtbot):
@@ -27,7 +27,7 @@ def explicit_wait(qtbot, signal, timeout, multiple, raising, should_raise):
     blocker = func(signal, timeout, raising=raising)
     assert not blocker.signal_triggered
     if should_raise:
-        with pytest.raises(qtbot.SignalTimeoutError):
+        with pytest.raises(qtbot.TimeoutError):
             blocker.wait()
     else:
         blocker.wait()
@@ -41,7 +41,7 @@ def context_manager_wait(qtbot, signal, timeout, multiple, raising,
     """
     func = qtbot.waitSignals if multiple else qtbot.waitSignal
     if should_raise:
-        with pytest.raises(qtbot.SignalTimeoutError):
+        with pytest.raises(qtbot.TimeoutError):
             with func(signal, timeout, raising=raising) as blocker:
                 pass
     else:
@@ -782,12 +782,12 @@ class TestAllSignalsAndArgs:
 PY_2 = sys.version_info[0] == 2
 
 
-class TestWaitSignalSignalTimeoutErrorMessage:
-    """Tests that the messages of SignalTimeoutError are formatted correctly, for waitSignal() calls."""
+class TestWaitSignalTimeoutErrorMessage:
+    """Tests that the messages of TimeoutError are formatted correctly, for waitSignal() calls."""
 
     def test_without_callback_and_args(self, qtbot, signaller):
         """
-        In a situation where a signal without args is expected but not emitted, tests that the SignalTimeoutError
+        In a situation where a signal without args is expected but not emitted, tests that the TimeoutError
         message contains the name of the signal (without arguments).
         """
         if qt_api.pytest_qt_api == 'pyside':
@@ -795,10 +795,10 @@ class TestWaitSignalSignalTimeoutErrorMessage:
         else:
             signal = signaller.signal
 
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignal(signal=signal, timeout=200, check_params_cb=None, raising=True):
                 pass  # don't emit any signals
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         assert ex_msg == "Signal signal() not emitted after 200 ms"
 
     def test_unable_to_get_callback_name(self, qtbot, signaller):
@@ -822,18 +822,18 @@ class TestWaitSignalSignalTimeoutErrorMessage:
         wrapped_callback = functools.partial(callback, unused_param2=1)
         double_wrapped_callback = functools.partial(wrapped_callback, unused_param1=1)
 
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignal(signal=signal, timeout=200, raising=True,
                                   check_params_cb=double_wrapped_callback):
                 signaller.signal_single_arg.emit(1)
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         assert ex_msg == ("Signal signal_single_arg(int) emitted with parameters [1] within 200 ms, "
                           "but did not satisfy the  callback")
 
     def test_with_single_arg(self, qtbot, signaller):
         """
         In a situation where a signal with one argument is expected but the emitted instances have values that are
-        rejected by a callback, tests that the SignalTimeoutError message contains the name of the signal and the
+        rejected by a callback, tests that the TimeoutError message contains the name of the signal and the
         list of non-accepted arguments.
         """
         if qt_api.pytest_qt_api == 'pyside':
@@ -844,18 +844,18 @@ class TestWaitSignalSignalTimeoutErrorMessage:
         def arg_validator(int_param):
             return int_param == 1337
 
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignal(signal=signal, timeout=200, check_params_cb=arg_validator, raising=True):
                 signaller.signal_single_arg.emit(1)
                 signaller.signal_single_arg.emit(2)
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         assert ex_msg == ("Signal signal_single_arg(int) emitted with parameters [1, 2] within 200 ms, "
                           "but did not satisfy the arg_validator callback")
 
     def test_with_multiple_args(self, qtbot, signaller):
         """
         In a situation where a signal with two arguments is expected but the emitted instances have values that are
-        rejected by a callback, tests that the SignalTimeoutError message contains the name of the signal and the
+        rejected by a callback, tests that the TimeoutError message contains the name of the signal and the
         list of tuples of the non-accepted arguments.
         """
         if qt_api.pytest_qt_api == 'pyside':
@@ -866,11 +866,11 @@ class TestWaitSignalSignalTimeoutErrorMessage:
         def arg_validator(str_param, int_param):
             return str_param == "1337" and int_param == 1337
 
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignal(signal=signal, timeout=200, check_params_cb=arg_validator, raising=True):
                 signaller.signal_args.emit("1", 1)
                 signaller.signal_args.emit('2', 2)
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         parameters = "[('1', 1), ('2', 2)]"
         if PY_2:
             parameters = "[(u'1', 1), (u'2', 2)]"
@@ -880,44 +880,44 @@ class TestWaitSignalSignalTimeoutErrorMessage:
                           "within 200 ms, but did not satisfy the arg_validator callback").format(parameters)
 
 
-class TestWaitSignalsSignalTimeoutErrorMessage:
-    """Tests that the messages of SignalTimeoutError are formatted correctly, for waitSignals() calls."""
+class TestWaitSignalsTimeoutErrorMessage:
+    """Tests that the messages of TimeoutError are formatted correctly, for waitSignals() calls."""
 
     @pytest.mark.parametrize("order", ["none", "simple", "strict"])
     def test_no_signal_emitted_with_some_callbacks(self, qtbot, signaller, order):
         """
-        Tests that the SignalTimeoutError message contains that none of the expected signals were emitted, and lists
+        Tests that the TimeoutError message contains that none of the expected signals were emitted, and lists
         the expected signals correctly, with the name of the callbacks where applicable.
         """
 
         def my_callback(str_param, int_param):
             return True
 
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignals(signals=get_mixed_signals_with_guaranteed_name(signaller), timeout=200,
                                    check_params_cbs=[None, None, my_callback], order=order, raising=True):
                 pass  # don't emit any signals
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         assert ex_msg == ("Emitted signals: None. Missing: "
                           "[signal(), signal_args(QString,int), signal_args(QString,int) (callback: my_callback)]")
 
     @pytest.mark.parametrize("order", ["none", "simple", "strict"])
     def test_no_signal_emitted_no_callbacks(self, qtbot, signaller, order):
         """
-        Tests that the SignalTimeoutError message contains that none of the expected signals were emitted, and lists
+        Tests that the TimeoutError message contains that none of the expected signals were emitted, and lists
         the expected signals correctly (without any callbacks).
         """
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignals(signals=get_mixed_signals_with_guaranteed_name(signaller), timeout=200,
                                    check_params_cbs=None, order=order, raising=True):
                 pass  # don't emit any signals
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         assert ex_msg == ("Emitted signals: None. Missing: "
                           "[signal(), signal_args(QString,int), signal_args(QString,int)]")
 
     def test_none_order_one_signal_emitted(self, qtbot, signaller):
         """
-        When expecting 3 signals but only one of them is emitted, test that the SignalTimeoutError message contains
+        When expecting 3 signals but only one of them is emitted, test that the TimeoutError message contains
         the emitted signal and the 2 missing expected signals. order is set to "none".
         """
 
@@ -927,11 +927,11 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
         def my_callback_2(str_param, int_param):
             return str_param == "2" and int_param == 2
 
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignals(signals=get_mixed_signals_with_guaranteed_name(signaller), timeout=200,
                                    check_params_cbs=[None, my_callback_1, my_callback_2], order="none", raising=True):
                 signaller.signal_args.emit("1", 1)
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         signal_args = "'1', 1"
         if PY_2:
             signal_args = "u'1', 1"
@@ -943,26 +943,26 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
     def test_simple_order_first_signal_emitted(self, qtbot, signaller):
         """
         When expecting 3 signals in a simple order but only the first one is emitted, test that the
-        SignalTimeoutError message contains the emitted signal and the 2nd+3rd missing expected signals.
+        TimeoutError message contains the emitted signal and the 2nd+3rd missing expected signals.
         """
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignals(signals=get_mixed_signals_with_guaranteed_name(signaller), timeout=200,
                                    check_params_cbs=None, order="simple", raising=True):
                 signaller.signal.emit()
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         assert ex_msg == ("Emitted signals: [signal]. Missing: "
                           "[signal_args(QString,int), signal_args(QString,int)]")
 
     def test_simple_order_second_signal_emitted(self, qtbot, signaller):
         """
         When expecting 3 signals in a simple order but only the second one is emitted, test that the
-        SignalTimeoutError message contains the emitted signal and all 3 missing expected signals.
+        TimeoutError message contains the emitted signal and all 3 missing expected signals.
         """
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignals(signals=get_mixed_signals_with_guaranteed_name(signaller), timeout=200,
                                    check_params_cbs=None, order="simple", raising=True):
                 signaller.signal_args.emit("1", 1)
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         signal_args = "'1', 1"
         if PY_2:
             signal_args = "u'1', 1"
@@ -974,15 +974,15 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
     def test_strict_order_violation(self, qtbot, signaller):
         """
         When expecting 3 signals in a strict order but only the second and then the first one is emitted, test that the
-        SignalTimeoutError message contains the order violation, the 2 emitted signals and all 3 missing expected
+        TimeoutError message contains the order violation, the 2 emitted signals and all 3 missing expected
         signals.
         """
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignals(signals=get_mixed_signals_with_guaranteed_name(signaller), timeout=200,
                                    check_params_cbs=None, order="strict", raising=True):
                 signaller.signal_args.emit("1", 1)
                 signaller.signal.emit()
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         signal_args = "'1', 1"
         if PY_2:
             signal_args = "u'1', 1"
@@ -995,19 +995,19 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
 
     def test_degenerate_error_msg(self, qtbot, signaller):
         """
-        Tests that the SignalTimeoutError message is degenerate when using PySide signals for which no name is provided
+        Tests that the TimeoutError message is degenerate when using PySide signals for which no name is provided
         by the user. This degenerate messages doesn't contain the signals' names, and includes a hint to the user how
         to fix the situation.
         """
         if qt_api.pytest_qt_api != 'pyside':
             pytest.skip("test only makes sense for PySide, whose signals don't contain a name!")
 
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignals(signals=[signaller.signal, signaller.signal_args, signaller.signal_args],
                                    timeout=200, check_params_cbs=None, order="none",
                                    raising=True):
                 signaller.signal.emit()
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         assert ex_msg == ("Received 1 of the 3 expected signals. "
                           "To improve this error message, provide the names of the signals "
                           "in the waitSignals() call.")
@@ -1021,13 +1021,13 @@ class TestWaitSignalsSignalTimeoutErrorMessage:
         def my_cb(str_param, int_param):
             return True
 
-        with pytest.raises(SignalTimeoutError) as excinfo:
+        with pytest.raises(TimeoutError) as excinfo:
             signals = [(signaller.signal, "signal_without_args"), (signaller.signal_args, "signal_with_args")]
             callbacks = [None, my_cb]
             with qtbot.waitSignals(signals=signals, timeout=200, check_params_cbs=callbacks, order="none",
                                    raising=True):
                 pass
-        ex_msg = TestWaitSignalsSignalTimeoutErrorMessage.get_exception_message(excinfo)
+        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         assert ex_msg == ("Emitted signals: None. "
                           "Missing: [signal_without_args, signal_with_args (callback: my_cb)]")
 

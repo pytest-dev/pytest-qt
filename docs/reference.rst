@@ -22,11 +22,6 @@ MultiSignalBlocker
 
 .. autoclass:: MultiSignalBlocker
 
-SignalTimeoutError
-------------------
-
-.. autoclass:: SignalTimeoutError
-
 SignalEmittedError
 ------------------
 
