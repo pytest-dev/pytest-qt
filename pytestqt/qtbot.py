@@ -147,7 +147,7 @@ class QtBot(object):
 
     def waitActive(self, widget, timeout=1000):
         """
-        Context manager that waits for timeout milliseconds or until the window is active.
+        Context manager that waits for ``timeout`` milliseconds or until the window is active.
         If window is not exposed within ``timeout`` milliseconds, raise ``TimeoutError``.
 
         This is mainly useful for asynchronous systems like X11, where a window will be mapped to screen
@@ -159,10 +159,10 @@ class QtBot(object):
                 show_action()
 
         :param QWidget widget:
-            Widget to wait on.
+            Widget to wait for.
 
         :param int|None timeout:
-            How many miliseconds to wait on.
+            How many milliseconds to wait for.
 
         .. note::
             This function is only available in PyQt5, raising a ``RuntimeError`` if called from
@@ -177,7 +177,7 @@ class QtBot(object):
 
     def waitExposed(self, widget, timeout=1000):
         """
-        Context manager that waits for timeout milliseconds or until the window is exposed.
+        Context manager that waits for ``timeout`` milliseconds or until the window is exposed.
         If the window is not exposed within ``timeout`` milliseconds, raise ``TimeoutError``.
 
         This is mainly useful for asynchronous systems like X11, where a window will be mapped to screen
@@ -189,10 +189,10 @@ class QtBot(object):
                 startup()
 
         :param QWidget widget:
-            Widget to wait on.
+            Widget to wait for.
 
         :param int|None timeout:
-            How many miliseconds to wait on.
+            How many milliseconds to wait for.
 
         .. note::
             This function is only available in PyQt5, raising a ``RuntimeError`` if called from
@@ -214,7 +214,7 @@ class QtBot(object):
         :param QWidget widget:
             Widget to wait on.
 
-        .. note:: In ``PyQt5`` this function is considered deprecated in favor of :meth:`waitForWindowExposed`.
+        .. note:: In ``PyQt5`` this function is considered deprecated in favor of :meth:`waitExposed`.
 
         .. note:: This method is also available as ``wait_for_window_shown`` (pep-8 alias)
         """
