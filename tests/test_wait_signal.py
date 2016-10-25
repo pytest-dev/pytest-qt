@@ -290,22 +290,36 @@ def test_wait_signals_invalid_strict_parameter(qtbot, signaller):
 
 def test_destroyed(qtbot):
     """Test that waitSignal works with the destroyed signal (#82).
-
-    For some reason, this crashes PySide although it seems perfectly fine code.
     """
-    if qt_api.pytest_qt_api == 'pyside':
-        pytest.skip('test crashes PySide')
+    if qt_api.pytest_qt_api.startswith('pyside'):
+        # PySide uses shiboken instead of sip.
+        if qt_api.pytest_qt_api == 'pyside':
+            try:
+                from PySide import shiboken
+            except ImportError:
+                import shiboken
+        else:
+            from PySide2 import shiboken2 as shiboken
 
-    import sip
+        class Obj(qt_api.QtCore.QObject):
+            pass
 
-    class Obj(qt_api.QtCore.QObject):
-        pass
+        obj = Obj()
+        with qtbot.waitSignal(obj.destroyed):
+            obj.deleteLater()
 
-    obj = Obj()
-    with qtbot.waitSignal(obj.destroyed):
-        obj.deleteLater()
+        assert not shiboken.isValid(obj)
+    else:
+        import sip
 
-    assert sip.isdeleted(obj)
+        class Obj(qt_api.QtCore.QObject):
+            pass
+
+        obj = Obj()
+        with qtbot.waitSignal(obj.destroyed):
+            obj.deleteLater()
+
+        assert sip.isdeleted(obj)
 
 
 class TestArgs:
@@ -708,7 +722,7 @@ def get_mixed_signals_with_guaranteed_name(signaller):
     Returns a list of signals with the guarantee that the signals have names (i.e. the names are
     manually provided in case of using PySide, where the signal names cannot be determined at run-time).
     """
-    if qt_api.pytest_qt_api == 'pyside':
+    if qt_api.pytest_qt_api.startswith('pyside'):
         signals = [(signaller.signal, "signal()"), (signaller.signal_args, "signal_args(QString,int)"),
                    (signaller.signal_args, "signal_args(QString,int)")]
     else:
@@ -790,7 +804,7 @@ class TestWaitSignalTimeoutErrorMessage:
         In a situation where a signal without args is expected but not emitted, tests that the TimeoutError
         message contains the name of the signal (without arguments).
         """
-        if qt_api.pytest_qt_api == 'pyside':
+        if qt_api.pytest_qt_api.startswith('pyside'):
             signal = (signaller.signal, "signal()")
         else:
             signal = signaller.signal
@@ -811,7 +825,7 @@ class TestWaitSignalTimeoutErrorMessage:
         if sys.version_info >= (3,5):
             pytest.skip("Only on Python 3.4 and lower double-wrapped functools.partial callbacks are a problem")
 
-        if qt_api.pytest_qt_api == 'pyside':
+        if qt_api.pytest_qt_api.startswith('pyside'):
             signal = (signaller.signal_single_arg, "signal_single_arg(int)")
         else:
             signal = signaller.signal_single_arg
@@ -836,7 +850,7 @@ class TestWaitSignalTimeoutErrorMessage:
         rejected by a callback, tests that the TimeoutError message contains the name of the signal and the
         list of non-accepted arguments.
         """
-        if qt_api.pytest_qt_api == 'pyside':
+        if qt_api.pytest_qt_api.startswith('pyside'):
             signal = (signaller.signal_single_arg, "signal_single_arg(int)")
         else:
             signal = signaller.signal_single_arg
@@ -858,7 +872,7 @@ class TestWaitSignalTimeoutErrorMessage:
         rejected by a callback, tests that the TimeoutError message contains the name of the signal and the
         list of tuples of the non-accepted arguments.
         """
-        if qt_api.pytest_qt_api == 'pyside':
+        if qt_api.pytest_qt_api.startswith('pyside'):
             signal = (signaller.signal_args, "signal_args(QString,int)")
         else:
             signal = signaller.signal_args
@@ -999,7 +1013,7 @@ class TestWaitSignalsTimeoutErrorMessage:
         by the user. This degenerate messages doesn't contain the signals' names, and includes a hint to the user how
         to fix the situation.
         """
-        if qt_api.pytest_qt_api != 'pyside':
+        if qt_api.pytest_qt_api not in ('pyside', 'pyside2'):
             pytest.skip("test only makes sense for PySide, whose signals don't contain a name!")
 
         with pytest.raises(TimeoutError) as excinfo:

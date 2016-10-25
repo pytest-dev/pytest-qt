@@ -218,7 +218,7 @@ class QtBot(object):
 
         .. note:: This method is also available as ``wait_for_window_shown`` (pep-8 alias)
         """
-        if qt_api.pytest_qt_api == 'pyqt5':
+        if hasattr(qt_api.QtTest.QTest, 'qWaitForWindowExposed'):
             return qt_api.QtTest.QTest.qWaitForWindowExposed(widget)
         else:
             return qt_api.QtTest.QTest.qWaitForWindowShown(widget)
