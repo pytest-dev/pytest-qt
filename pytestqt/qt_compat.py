@@ -1,6 +1,6 @@
 """
 Provide a common way to import Qt classes used by pytest-qt in a unique manner,
-abstracting API differences between PyQt4, PyQt5 and PySide.
+abstracting API differences between PyQt4, PyQt5, PySide and PySide2.
 
 .. note:: This module is not part of pytest-qt public API, hence its interface
 may change between releases and users should not rely on it.
@@ -8,8 +8,7 @@ may change between releases and users should not rely on it.
 Based on from https://github.com/epage/PythonUtils.
 """
 
-from __future__ import with_statement
-from __future__ import division
+from __future__ import with_statement, division
 from collections import namedtuple
 import os
 
@@ -29,7 +28,7 @@ class _QtApi:
         api = os.environ.get('PYTEST_QT_API')
         if api is not None:
             api = api.lower()
-            if api not in ('pyside', 'pyqt4', 'pyqt4v2', 'pyqt5'):  # pragma: no cover
+            if api not in ('pyside', 'pyside2', 'pyqt4', 'pyqt4v2', 'pyqt5'):  # pragma: no cover
                 msg = 'Invalid value for $PYTEST_QT_API: %s'
                 raise RuntimeError(msg % api)
         return api
@@ -42,22 +41,27 @@ class _QtApi:
             except ImportError:
                 return False
 
-        if _can_import('PyQt5'):
+        # Note, not importing only the root namespace because when uninstalling from conda,
+        # the namespace can still be there.
+        if _can_import('PyQt5.QtCore'):
             return 'pyqt5'
-        elif _can_import('PySide'):
+        elif _can_import('PySide.QtCore'):
             return 'pyside'
-        elif _can_import('PyQt4'):
+        elif _can_import('PySide2.QtCore'):
+            return 'pyside2'
+        elif _can_import('PyQt4.QtCore'):
             return 'pyqt4'
         return None
 
     def set_qt_api(self, api):
         self.pytest_qt_api = api or self._get_qt_api_from_env() or self._guess_qt_api()
         if not self.pytest_qt_api:  # pragma: no cover
-            msg = 'pytest-qt requires either PySide, PyQt4 or PyQt5 to be installed'
+            msg = 'pytest-qt requires either PySide, PySide2, PyQt4 or PyQt5 to be installed'
             raise RuntimeError(msg)
 
         _root_modules = {
             'pyside': 'PySide',
+            'pyside2': 'PySide2',
             'pyqt4': 'PyQt4',
             'pyqt4v2': 'PyQt4',
             'pyqt5': 'PyQt5',
@@ -100,21 +104,35 @@ class _QtApi:
         self.qInstallMsgHandler = None
         self.qInstallMessageHandler = None
 
-        if self.pytest_qt_api == 'pyside':
+        if self.pytest_qt_api in ('pyside', 'pyside2'):
             self.Signal = QtCore.Signal
             self.Slot = QtCore.Slot
             self.Property = QtCore.Property
             self.QApplication = QtGui.QApplication
             self.QWidget = QtGui.QWidget
             self.QStringListModel = QtGui.QStringListModel
-            self.qInstallMsgHandler = QtCore.qInstallMsgHandler
 
             self.QStandardItem = QtGui.QStandardItem
             self.QStandardItemModel = QtGui.QStandardItemModel
-            self.QStringListModel = QtGui.QStringListModel
-            self.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
             self.QAbstractListModel = QtCore.QAbstractListModel
             self.QAbstractTableModel = QtCore.QAbstractTableModel
+            self.QStringListModel = QtGui.QStringListModel
+
+            if self.pytest_qt_api == 'pyside2':
+                _QtWidgets = _import_module('QtWidgets')
+                self.QApplication = _QtWidgets.QApplication
+                self.QWidget = _QtWidgets.QWidget
+                self.QLineEdit = _QtWidgets.QLineEdit
+                self.qInstallMessageHandler = QtCore.qInstallMessageHandler
+
+                self.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
+            else:
+                self.QApplication = QtGui.QApplication
+                self.QWidget = QtGui.QWidget
+                self.QLineEdit = QtGui.QLineEdit
+                self.qInstallMsgHandler = QtCore.qInstallMsgHandler
+
+                self.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
 
             def extract_from_variant(variant):
                 """PySide does not expose QVariant API"""
@@ -180,9 +198,16 @@ class _QtApi:
             self.make_variant = make_variant
 
     def get_versions(self):
-        if self.pytest_qt_api == 'pyside':
-            import PySide
-            return VersionTuple('PySide', PySide.__version__, self.QtCore.qVersion(),
+        if self.pytest_qt_api in ('pyside', 'pyside2'):
+            qt_api_name = 'PySide2' if self.pytest_qt_api == 'pyside2' else 'PySide'
+            if self.pytest_qt_api == 'pyside2':
+                import PySide2
+                version = PySide2.__version__
+            else:
+                import PySide
+                version = PySide.__version__
+
+            return VersionTuple(qt_api_name, version, self.QtCore.qVersion(),
                                 self.QtCore.__version__)
         else:
             qt_api_name = 'PyQt5' if self.pytest_qt_api == 'pyqt5' else 'PyQt4'
