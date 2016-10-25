@@ -23,15 +23,8 @@ class PyTest(TestCommand):
         errno = pytest.main([])
         sys.exit(errno)
 
-
-with open('pytestqt/__init__.py') as f:
-    m = re.search("version = '(.*)'", f.read())
-    assert m is not None
-    version = m.group(1)
-
 setup(
     name="pytest-qt",
-    version=version,
     packages=['pytestqt'],
     entry_points={
         'pytest11': ['pytest-qt = pytestqt.plugin'],
@@ -47,6 +40,8 @@ setup(
     license="MIT",
     keywords="pytest qt test unittest",
     url="http://github.com/pytest-dev/pytest-qt",
+    use_scm_version={'write_to': 'pytestqt/_version.py'},
+    setup_requires=['setuptools_scm'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Framework :: Pytest',
