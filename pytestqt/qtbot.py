@@ -1,9 +1,10 @@
-import functools
 import contextlib
+import functools
 import weakref
 
-from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalTimeoutError, SignalEmittedSpy
+from pytestqt.exceptions import SignalTimeoutError, TimeoutError
 from pytestqt.qt_compat import qt_api
+from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalEmittedSpy, SignalEmittedError
 
 
 def _parse_ini_boolean(value):
@@ -26,6 +27,9 @@ class QtBot(object):
     **Widgets**
 
     .. automethod:: addWidget
+    .. automethod:: captureExceptions
+    .. automethod:: waitActive
+    .. automethod:: waitExposed
     .. automethod:: waitForWindowShown
     .. automethod:: stopForInteraction
     .. automethod:: wait
@@ -141,6 +145,66 @@ class QtBot(object):
 
     add_widget = addWidget  # pep-8 alias
 
+    def waitActive(self, widget, timeout=1000):
+        """
+        Context manager that waits for ``timeout`` milliseconds or until the window is active.
+        If window is not exposed within ``timeout`` milliseconds, raise ``TimeoutError``.
+
+        This is mainly useful for asynchronous systems like X11, where a window will be mapped to screen
+        some time after  being asked to show itself on the screen.
+
+        .. code-block:: python
+
+            with qtbot.waitActive(widget, timeout=500):
+                show_action()
+
+        :param QWidget widget:
+            Widget to wait for.
+
+        :param int|None timeout:
+            How many milliseconds to wait for.
+
+        .. note::
+            This function is only available in PyQt5, raising a ``RuntimeError`` if called from
+            ``PyQt4`` or ``PySide``.
+
+        .. note:: This method is also available as ``wait_active`` (pep-8 alias)
+        """
+        __tracebackhide__ = True
+        return _WaitWidgetContextManager('qWaitForWindowActive', 'activated', widget, timeout)
+
+    wait_active = waitActive  # pep-8 alias
+
+    def waitExposed(self, widget, timeout=1000):
+        """
+        Context manager that waits for ``timeout`` milliseconds or until the window is exposed.
+        If the window is not exposed within ``timeout`` milliseconds, raise ``TimeoutError``.
+
+        This is mainly useful for asynchronous systems like X11, where a window will be mapped to screen
+        some time after  being asked to show itself on the screen.
+
+        .. code-block:: python
+
+            with qtbot.waitExposed(splash, timeout=500):
+                startup()
+
+        :param QWidget widget:
+            Widget to wait for.
+
+        :param int|None timeout:
+            How many milliseconds to wait for.
+
+        .. note::
+            This function is only available in PyQt5, raising a ``RuntimeError`` if called from
+            ``PyQt4`` or ``PySide``.
+
+        .. note:: This method is also available as ``wait_exposed`` (pep-8 alias)
+        """
+        __tracebackhide__ = True
+        return _WaitWidgetContextManager('qWaitForWindowExposed', 'exposed', widget, timeout)
+
+    wait_exposed = waitExposed  # pep-8 alias
+
     def waitForWindowShown(self, widget):
         """
         Waits until the window is shown in the screen. This is mainly useful for asynchronous
@@ -150,17 +214,14 @@ class QtBot(object):
         :param QWidget widget:
             Widget to wait on.
 
-        .. note:: In Qt5, the actual method called is qWaitForWindowExposed,
-            but this name is kept for backward compatibility
+        .. note:: In ``PyQt5`` this function is considered deprecated in favor of :meth:`waitExposed`.
 
         .. note:: This method is also available as ``wait_for_window_shown`` (pep-8 alias)
         """
-        if hasattr(qt_api.QtTest.QTest, 'qWaitForWindowShown'):  # pragma: no cover
-            # PyQt4 and PySide
-            qt_api.QtTest.QTest.qWaitForWindowShown(widget)
-        else:  # pragma: no cover
-            # PyQt5
-            qt_api.QtTest.QTest.qWaitForWindowExposed(widget)
+        if qt_api.pytest_qt_api == 'pyqt5':
+            return qt_api.QtTest.QTest.qWaitForWindowExposed(widget)
+        else:
+            return qt_api.QtTest.QTest.qWaitForWindowShown(widget)
 
     wait_for_window_shown = waitForWindowShown  # pep-8 alias
 
@@ -221,11 +282,11 @@ class QtBot(object):
 
         :param Signal signal:
             A signal to wait for, or a tuple ``(signal, signal_name_as_str)`` to improve the error message that is part
-            of ``SignalTimeoutError``. Set to ``None`` to just use timeout.
+            of ``TimeoutError``. Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
-            If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
+            If :class:`QtBot.TimeoutError <pytestqt.plugin.TimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_wait_signal_raising = false``
             is set in the config.
@@ -280,12 +341,12 @@ class QtBot(object):
 
         :param list signals:
             A list of :class:`Signal` objects to wait for. Alternatively: a list of (``Signal, str``) tuples of the form
-            ``(signal, signal_name_as_str)`` to improve the error message that is part of ``SignalTimeoutError``.
+            ``(signal, signal_name_as_str)`` to improve the error message that is part of ``TimeoutError``.
             Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
-            If :class:`QtBot.SignalTimeoutError <pytestqt.plugin.SignalTimeoutError>`
+            If :class:`QtBot.TimeoutError <pytestqt.plugin.TimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_wait_signal_raising = false``
             is set in the config.
@@ -390,7 +451,7 @@ class QtBot(object):
             qtbot.waitUntil(lambda: view_model.count() > 10)
 
         Note that this usage only accepts returning actual ``True`` and ``False`` values,
-        so returning an empty list to express "falseness" raises an ``ValueError``.
+        so returning an empty list to express "falseness" raises a ``ValueError``.
 
         :param callback: callable that will be called periodically.
         :param timeout: timeout value in ms.
@@ -433,7 +494,7 @@ class QtBot(object):
     wait_until = waitUntil  # pep-8 alias
 
     @contextlib.contextmanager
-    def capture_exceptions(self):
+    def captureExceptions(self):
         """
         .. versionadded:: 2.1
 
@@ -447,10 +508,14 @@ class QtBot(object):
 
             # exception is a list of sys.exc_info tuples
             assert len(exceptions) == 1
+
+        .. note:: This method is also available as ``capture_exceptions`` (pep-8 alias)
         """
         from pytestqt.exceptions import capture_exceptions
         with capture_exceptions() as exceptions:
             yield exceptions
+
+    capture_exceptions = captureExceptions
 
     @classmethod
     def _inject_qtest_methods(cls):
@@ -495,8 +560,10 @@ class QtBot(object):
                 setattr(cls, method_name, method)
 
 
-# provide easy access to SignalTimeoutError to qtbot fixtures
+# provide easy access to exceptions to qtbot fixtures
 QtBot.SignalTimeoutError = SignalTimeoutError
+QtBot.SignalEmittedError = SignalEmittedError
+QtBot.TimeoutError = TimeoutError
 
 
 def _add_widget(item, widget):
@@ -527,3 +594,40 @@ def _iter_widgets(item):
     Iterates over widgets registered in the given pytest item.
     """
     return iter(getattr(item, 'qt_widgets', []))
+
+
+class _WaitWidgetContextManager(object):
+    """
+    Context manager implementation used by ``waitActive`` and ``waitExposed`` methods.
+    """
+
+    def __init__(self, method_name, adjective_name, widget, timeout):
+        """
+        :param str method_name: name ot the ``QtTest`` method to call to check if widget is active/exposed.
+        :param str adjective_name: "activated" or "exposed".
+        :param widget:
+        :param timeout:
+        """
+        self._method_name = method_name
+        self._adjective_name = adjective_name
+        self._widget = widget
+        self._timeout = timeout
+
+    def __enter__(self):
+        __tracebackhide__ = True
+        if qt_api.pytest_qt_api != 'pyqt5':
+            raise RuntimeError('Available in PyQt5 only')
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        __tracebackhide__ = True
+        try:
+            if exc_type is None:
+                method = getattr(qt_api.QtTest.QTest, self._method_name)
+                r = method(self._widget, self._timeout)
+                if not r:
+                    msg = 'widget {} not {} in {} ms.'.format(self._widget, self._adjective_name, self._timeout)
+                    raise TimeoutError(msg)
+        finally:
+            self._widget = None
+

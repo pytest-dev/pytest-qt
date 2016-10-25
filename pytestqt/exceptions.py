@@ -82,3 +82,20 @@ def _is_exception_capture_enabled(item):
     disabled = item.get_marker('qt_no_exception_capture') or \
                item.config.getini('qt_no_exception_capture')
     return not disabled
+
+
+class TimeoutError(Exception):
+    """
+    .. versionadded:: 2.1
+
+    Exception thrown by :class:`pytestqt.qtbot.QtBot` methods.
+
+    .. note::
+        In versions prior to ``2.1``, this exception was called ``SignalTimeoutError``.
+        An alias is kept for backward compatibility.
+    """
+    pass
+
+
+# backward compatibility alias
+SignalTimeoutError = TimeoutError
