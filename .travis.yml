@@ -46,3 +46,14 @@ script:
 
 after_success:
  - coveralls
+
+deploy:
+  provider: pypi
+  user: nicoddemus
+  password:
+    secure: Uj4XhkIUGE8CkE9mbP4y2wrp1s+jODkEi+wXCL1ZDhcCxxs3gjEOtAlqIXS/4PMLZcxeV2rXNGzGJ6n+i6Ruj2T1wfar7hmy2faaur6tcUDhEpXLkAl6DAKlMiZbEyT4C7OpunBoYmw8Gh/3kaDeGgz4FxEiJakAqzEmmeyFvFY=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: pytest-dev/pytest-qt
+
