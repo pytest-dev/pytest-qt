@@ -84,7 +84,7 @@ def test_wait_window(show, method_name, qtbot):
                 pass
         assert str(exc_info.value) == 'Available in PyQt5 only'
     else:
-        widget = qt_api.QLineEdit()
+        widget = qt_api.QWidget()
         qtbot.add_widget(widget)
         if show:
             with method(widget, timeout=1000):

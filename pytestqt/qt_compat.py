@@ -106,7 +106,6 @@ class _QtApi:
             self.Property = QtCore.Property
             self.QApplication = QtGui.QApplication
             self.QWidget = QtGui.QWidget
-            self.QLineEdit = QtGui.QLineEdit
             self.QStringListModel = QtGui.QStringListModel
             self.qInstallMsgHandler = QtCore.qInstallMsgHandler
 
@@ -137,7 +136,6 @@ class _QtApi:
                 _QtWidgets = _import_module('QtWidgets')
                 self.QApplication = _QtWidgets.QApplication
                 self.QWidget = _QtWidgets.QWidget
-                self.QLineEdit = _QtWidgets.QLineEdit
                 self.qInstallMessageHandler = QtCore.qInstallMessageHandler
 
                 self.QStringListModel = QtCore.QStringListModel
