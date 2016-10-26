@@ -89,8 +89,6 @@ def test_wait_window(show, method_name, qtbot):
         if show:
             with method(widget, timeout=1000):
                 widget.show()
-                if 'TRAVIS' in os.environ and method_name == 'waitActive':
-                    pytest.xfail('skipping this check on travis, see #160')
         else:
             with pytest.raises(qtbot.TimeoutError):
                 with method(widget, timeout=100):
