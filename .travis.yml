@@ -5,6 +5,7 @@ dist: trusty
 python:
   - "2.7"
   - "3.4"
+  - "3.5"
 
 virtualenv:
   system_site_packages: true
@@ -13,6 +14,14 @@ matrix:
   exclude:
     - env: PYTEST_QT_API=pyqt5
       python: "2.7"
+    - env: PYTEST_QT_API=pyqt5
+      python: "3.4"
+    - env: PYTEST_QT_API=pyqt4
+      python: "3.5"
+    - env: PYTEST_QT_API=pyqt4v2
+      python: "3.5"
+    - env: PYTEST_QT_API=pyside
+      python: "3.5"
 
 env:
  - PYTEST_QT_API=pyqt4

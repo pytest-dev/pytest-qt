@@ -1,8 +1,5 @@
 environment:
   matrix:
-    - INSTALL_QT: "py34-pyqt5"
-      TESTENVS: "py34-pyqt5"
-
     - INSTALL_QT: "py35-pyqt5"
       TESTENVS: "py35-pyqt5"
 
