@@ -31,8 +31,8 @@ This allows you to test and make sure your view layer is behaving the way you ex
 .. |version| image:: http://img.shields.io/pypi/v/pytest-qt.svg
   :target: https://pypi.python.org/pypi/pytest-qt
   
-.. |downloads| image:: http://img.shields.io/pypi/dm/pytest-qt.svg
-  :target: https://pypi.python.org/pypi/pytest-qt
+.. |anaconda| image:: https://anaconda.org/conda-forge/pytest-qt/badges/version.svg
+    :target: https://anaconda.org/conda-forge/pytest-qt
   
 .. |travis| image:: https://img.shields.io/travis/pytest-dev/pytest-qt/master.svg
   :target: https://travis-ci.org/pytest-dev/pytest-qt
@@ -50,7 +50,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
   :target: https://pypi.python.org/pypi/pytest-qt/
   :alt: Supported Python versions
 
-|python| |version| |downloads| |travis| |appveyor| |coverage| |docs|
+|python| |version| |anaconda| |travis| |appveyor| |coverage| |docs|
 
 
 Features
