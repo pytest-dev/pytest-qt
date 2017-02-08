@@ -353,3 +353,17 @@ def test_qt_api_ini_config(testdir, option_api):
             '*ImportError:*'
         ])
 
+
+def test_invalid_qt_api_envvar(testdir, monkeypatch):
+    """
+    Make sure the error message with an invalid PYQTEST_QT_API is correct.
+    """
+    testdir.makepyfile('''
+        import pytest
+
+        def test_foo(qtbot):
+            pass
+    ''')
+    monkeypatch.setenv('PYTEST_QT_API', 'piecute')
+    result = testdir.runpytest_subprocess()
+    result.stderr.fnmatch_lines(['* Invalid value for $PYTEST_QT_API: piecute'])
