@@ -31,7 +31,7 @@ class _QtApi:
             api = api.lower()
             if api not in ('pyside', 'pyqt4', 'pyqt4v2', 'pyqt5'):  # pragma: no cover
                 msg = 'Invalid value for $PYTEST_QT_API: %s'
-                raise RuntimeError(msg % qt_api)
+                raise RuntimeError(msg % api)
         return api
 
     def _guess_qt_api(self):  # pragma: no cover
