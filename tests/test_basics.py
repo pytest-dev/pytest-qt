@@ -349,9 +349,18 @@ def test_qt_api_ini_config(testdir, option_api):
             '* 1 passed in *'
         ])
     else:
-        result.stderr.fnmatch_lines([
-            '*ImportError:*'
-        ])
+        try:
+            ModuleNotFoundError
+        except NameError:
+            # Python < 3.6
+            result.stderr.fnmatch_lines([
+                '*ImportError:*'
+            ])
+        else:
+            # Python >= 3.6
+            result.stderr.fnmatch_lines([
+                '*ModuleNotFoundError:*'
+            ])
 
 
 def test_invalid_qt_api_envvar(testdir, monkeypatch):
