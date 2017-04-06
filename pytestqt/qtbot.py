@@ -489,7 +489,6 @@ class QtBot(object):
                     return
                 else:
                     assert not timed_out(), 'waitUntil timed out in %s miliseconds' % timeout
-            self.wait(10)
 
     wait_until = waitUntil  # pep-8 alias
 
