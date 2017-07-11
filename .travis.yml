@@ -1,24 +1,16 @@
-language: python
+language: generic
 sudo: required
 dist: trusty
 
-python:
-  - "2.7"
-  - "3.4"
-
-virtualenv:
-  system_site_packages: true
-
-matrix:
-  exclude:
-    - env: PYTEST_QT_API=pyqt5
-      python: "2.7"
-
 env:
- - PYTEST_QT_API=pyqt4
- - PYTEST_QT_API=pyqt4v2
- - PYTEST_QT_API=pyside
- - PYTEST_QT_API=pyqt5
+ - PYTEST_QT_API=pyqt4   PYTHON=python2.7
+ - PYTEST_QT_API=pyqt4v2 PYTHON=python2.7
+ - PYTEST_QT_API=pyside  PYTHON=python2.7
+
+ - PYTEST_QT_API=pyqt4   PYTHON=python3.4
+ - PYTEST_QT_API=pyqt4v2 PYTHON=python3.4
+ - PYTEST_QT_API=pyside  PYTHON=python3.4
+ - PYTEST_QT_API=pyqt5   PYTHON=python3.4
 
 install:
  - sudo apt-get update
@@ -27,16 +19,17 @@ install:
  - sudo apt-get install -y xvfb herbstluftwm
 
  # Qt
- - python scripts/install-qt.py
+ - $PYTHON scripts/install-qt.py
 
- # PyTest
- - pip install -U pytest
+ # Pip (3.4 does not have it by default)
+ - wget https://bootstrap.pypa.io/get-pip.py
+ - sudo $PYTHON get-pip.py
 
- # Tox
- - pip install -U tox
+ # Dependencies
+ - sudo $PYTHON -m pip install -U pytest tox coveralls
 
- # others
- - pip install coveralls --use-wheel
+ # pytest-qt
+ - sudo $PYTHON setup.py develop
 
 before_script:
  - "export DISPLAY=:99.0"
@@ -46,9 +39,8 @@ before_script:
  - sleep 1
 
 script:
- - python setup.py develop
- - catchsegv coverage run --source=pytestqt setup.py test
- - tox -e lint
+ - sudo catchsegv coverage run --source=pytestqt setup.py test
+ - sudo tox -e lint
 
 after_success:
  - coveralls
