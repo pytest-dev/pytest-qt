@@ -46,9 +46,8 @@ copyright = u'2013, Bruno Oliveira'
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-#
-import pkg_resources
-version = pkg_resources.get_distribution('pytest-qt').version
+from pytestqt import version
+
 # The short X.Y version.
 # The full version, including alpha/beta/rc tags.
 
