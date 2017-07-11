@@ -131,15 +131,16 @@ fixed, and make sure to include yourself in the contributors list. :)
 Running tests
 -------------
 
-Tests are run using `tox`_. The simplest way to test is with `PySide`_, as it
-is available on pip and can be installed by ``tox`` automatically::
+Tests are run using `tox`_. The simplest way to test is with `PySide`_ or Python
+3.5 with PyQt5, as they are available on pip and can be installed by ``tox``
+automatically::
 
-    $ tox -e py34-pyside,py27-pyside,docs
+    $ tox -e py35-pyqt5,py34-pyside,py27-pyside,docs
 
-If you want to test against `PyQt`_, install it into your global python
-installation and use the ``py27-pyqt4``, ``py34-pyqt4`` or ``py34-pyqt5``
-testing environments, and ``tox`` will copy the appropriate files into
-its virtual environments to ensure isolation.
+If you want to test against other `PyQt`_ combinations, install it into your
+global python installation and use the ``py27-pyqt4``, ``py34-pyqt4`` or
+``py34-pyqt5`` testing environments, and ``tox`` will copy the appropriate files
+into its virtual environments to ensure isolation.
 
 Contributors
 ------------

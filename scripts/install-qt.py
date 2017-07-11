@@ -60,7 +60,7 @@ if 'APPVEYOR' in os.environ:
     else:
         print('Skip install for this build')
 
-elif 'TRAVIS' in os.environ:
+elif 'TRAVIS' in os.environ and os.environ['PYTEST_QT_API'] != 'pyqt5':
     def apt_get_install(packages):
         print('Installing %s...' % ', '.join(packages))
         subprocess.check_call(['sudo', 'apt-get', 'install', '-y', '-qq'] + packages)
@@ -85,4 +85,4 @@ elif 'TRAVIS' in os.environ:
         apt_get_install([pkg])
 
 else:
-    print('Nothing to do (not in Travis or AppVeyor)')
+    print('Nothing to do (PyQt5, or not on Travis/AppVeyor)')
