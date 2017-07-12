@@ -70,8 +70,7 @@ def format_captured_exceptions(exceptions):
     message = 'Qt exceptions in virtual methods:\n'
     message += '_' * 80 + '\n'
     for (exc_type, value, tback) in exceptions:
-        message += ''.join(traceback.format_tb(tback)) + '\n'
-        message += '%s: %s\n' % (exc_type.__name__, value)
+        message += ''.join(traceback.format_exception(exc_type, value, tback)) + '\n'
         message += '_' * 80 + '\n'
     return message
 
