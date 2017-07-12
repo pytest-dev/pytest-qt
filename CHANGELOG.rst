@@ -1,3 +1,8 @@
+2.1.1
+-----
+
+- Fixed tests on Python 3.6.
+
 2.1
 ---
 
