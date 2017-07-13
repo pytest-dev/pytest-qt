@@ -39,8 +39,9 @@ before_script:
  - sleep 1
 
 script:
- - sudo catchsegv coverage run --source=pytestqt setup.py test
+ - catchsegv coverage run --source=pytestqt -m pytest tests
  - sudo tox -e lint
+ - sudo chmod -R a+rw .
 
 after_success:
  - coveralls
