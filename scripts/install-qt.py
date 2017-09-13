@@ -1,5 +1,5 @@
 """
-Simple script to install PyQt or PySide in CI (Travis and AppVeyor).
+Simple script to install PyQt or PySide in CI (AppVeyor).
 """
 from __future__ import print_function
 import os
@@ -60,29 +60,5 @@ if 'APPVEYOR' in os.environ:
     else:
         print('Skip install for this build')
 
-elif 'TRAVIS' in os.environ:
-    def apt_get_install(packages):
-        print('Installing %s...' % ', '.join(packages))
-        subprocess.check_call(['sudo', 'apt-get', 'install', '-y', '-qq'] + packages)
-
-    py3k = sys.version_info[0] == 3
-    pyqt_version = {'pyqt4': 4,
-                    'pyqt4v2': 4,
-                    'pyqt5': 5,
-                    }
-    if os.environ['PYTEST_QT_API'] in pyqt_version:
-        pyqt_ver = pyqt_version[os.environ['PYTEST_QT_API']]
-        if py3k:
-            pkg = 'python3-pyqt%s' % pyqt_ver
-        else:
-            pkg = 'python-qt%s' % pyqt_ver
-        apt_get_install([pkg])
-    else:
-        if py3k:
-            pkg = 'python3-pyside'
-        else:
-            pkg = 'python-pyside'
-        apt_get_install([pkg])
-
 else:
-    print('Nothing to do (not in Travis or AppVeyor)')
+    print('Nothing to do (not in AppVeyor)')

@@ -18,7 +18,7 @@ install:
  # Xvfb / window manager
  - sudo apt-get install -y xvfb herbstluftwm
 
- # Install 
+ # Setup miniconda 
  - git clone --depth 1 git://github.com/astropy/ci-helpers.git
  - export SETUP_XVFB=true && source ci-helpers/travis/setup_conda.sh
 
