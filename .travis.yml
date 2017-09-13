@@ -3,14 +3,14 @@ sudo: required
 dist: trusty
 
 env:
- - PYTEST_QT_API=pyqt4   PYTHON=python2.7
- - PYTEST_QT_API=pyqt4v2 PYTHON=python2.7
- - PYTEST_QT_API=pyside  PYTHON=python2.7
+ - PYTEST_QT_API=pyqt4   PYTHON_VERSION=2.7
+ - PYTEST_QT_API=pyqt4v2 PYTHON_VERSION=2.7
+ - PYTEST_QT_API=pyside  PYTHON_VERSION=2.7
 
- - PYTEST_QT_API=pyqt4   PYTHON=python3.4
- - PYTEST_QT_API=pyqt4v2 PYTHON=python3.4
- - PYTEST_QT_API=pyside  PYTHON=python3.4
- - PYTEST_QT_API=pyqt5   PYTHON=python3.4
+ - PYTEST_QT_API=pyqt4   PYTHON_VERSION=3.4
+ - PYTEST_QT_API=pyqt4v2 PYTHON_VERSION=3.4
+ - PYTEST_QT_API=pyside  PYTHON_VERSION=3.4
+ - PYTEST_QT_API=pyqt5   PYTHON_VERSION=3.4
 
 install:
  - sudo apt-get update
@@ -18,30 +18,33 @@ install:
  # Xvfb / window manager
  - sudo apt-get install -y xvfb herbstluftwm
 
- # Qt
- - $PYTHON scripts/install-qt.py
-
- # Pip (3.4 does not have it by default)
- - wget https://bootstrap.pypa.io/get-pip.py
- - sudo $PYTHON get-pip.py
+ # Install 
+ - git clone --depth 1 git://github.com/astropy/ci-helpers.git
+ - export SETUP_XVFB=true && source ci-helpers/travis/setup_conda.sh
 
  # Dependencies
- - sudo $PYTHON -m pip install -U pytest tox coveralls
+ - |
+     if [[ ${PYTEST_QT_API} == 'pyside' ]]; then
+         pyqt_package="pyside==1.2.4"
+     elif [[ ${PYTEST_QT_API} == 'pyqt5' ]]; then
+        pyqt_package="pyqt==5.6.0"
+     else
+         pyqt_package="pyqt==4.11.4"
+     fi
+     conda create -c conda-forge -n test-env -y pytest tox coveralls ${pyqt_package} python=${PYTHON_VERSION}
+ - source activate test-env && pip install -e .
 
- # pytest-qt
- - sudo $PYTHON setup.py develop
 
 before_script:
- - "export DISPLAY=:99.0"
- - start-stop-daemon --start --background --exec /usr/bin/Xvfb -- $DISPLAY -screen 0 1024x768x24
- - sleep 3 # give xvfb some time to start
  - "herbstluftwm &"
  - sleep 1
 
 script:
- - catchsegv coverage run --source=pytestqt -m pytest tests
- - sudo tox -e lint
- - sudo chmod -R a+rw .
+ - source activate test-env && catchsegv coverage run --source=pytestqt -m pytest tests
+ # for some reason tox doesn't get installed with a u+x flag
+ - | 
+     chmod u+x /home/travis/miniconda/envs/test-env/bin/tox 
+     /home/travis/miniconda/envs/test-env/bin/tox -e lint
 
 after_success:
  - coveralls
