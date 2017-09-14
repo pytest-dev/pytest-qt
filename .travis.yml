@@ -3,14 +3,14 @@ sudo: required
 dist: trusty
 
 env:
- - PYTEST_QT_API=pyqt4   PYTHON_VERSION=2.7
- - PYTEST_QT_API=pyqt4v2 PYTHON_VERSION=2.7
- - PYTEST_QT_API=pyside  PYTHON_VERSION=2.7
+ - PYTEST_QT_API=pyqt4   PYQT_PACKAGE="pyqt==4.*" PYTHON_VERSION=2.7
+ - PYTEST_QT_API=pyqt4v2 PYQT_PACKAGE="pyqt==4.*" PYTHON_VERSION=2.7
+ - PYTEST_QT_API=pyside  PYQT_PACKAGE="pyside==1.*" PYTHON_VERSION=2.7
 
- - PYTEST_QT_API=pyqt4   PYTHON_VERSION=3.4
- - PYTEST_QT_API=pyqt4v2 PYTHON_VERSION=3.4
- - PYTEST_QT_API=pyside  PYTHON_VERSION=3.4
- - PYTEST_QT_API=pyqt5   PYTHON_VERSION=3.4
+ - PYTEST_QT_API=pyqt4   PYQT_PACKAGE="pyqt==4.*" PYTHON_VERSION=3.4
+ - PYTEST_QT_API=pyqt4v2 PYQT_PACKAGE="pyqt==4.*" PYTHON_VERSION=3.4
+ - PYTEST_QT_API=pyside  PYQT_PACKAGE="pyside==1.*" PYTHON_VERSION=3.4
+ - PYTEST_QT_API=pyqt5   PYQT_PACKAGE="pyqt==5.*" PYTHON_VERSION=3.4
 
 install:
  - sudo apt-get update
@@ -23,15 +23,7 @@ install:
  - export SETUP_XVFB=true && source ci-helpers/travis/setup_conda.sh
 
  # Dependencies
- - |
-     if [[ ${PYTEST_QT_API} == 'pyside' ]]; then
-         pyqt_package="pyside==1.2.4"
-     elif [[ ${PYTEST_QT_API} == 'pyqt5' ]]; then
-        pyqt_package="pyqt==5.6.0"
-     else
-         pyqt_package="pyqt==4.11.4"
-     fi
-     conda create -c conda-forge -n test-env -y pytest tox coveralls ${pyqt_package} python=${PYTHON_VERSION}
+ - conda create -c conda-forge -n test-env -y pytest tox coveralls ${PYQT_PACKAGE} python=${PYTHON_VERSION}
  - source activate test-env && pip install -e .
 
 
