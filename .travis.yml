@@ -16,6 +16,7 @@ env:
       - PYTEST_QT_API=pyqt4v2 PYQT_PACKAGE="pyqt=4.*" PYTHON_VERSION=3.4
       - PYTEST_QT_API=pyside  PYQT_PACKAGE="pyside=1.*" PYTHON_VERSION=3.4
       - PYTEST_QT_API=pyqt5   PYQT_PACKAGE="pyqt=5.*" PYTHON_VERSION=3.4
+      - PYTEST_QT_API=pyside2   PYQT_PACKAGE="pyside2=2.*" PYTHON_VERSION=3.5
 
 install:
  - sudo apt-get update
