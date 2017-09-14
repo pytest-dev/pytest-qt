@@ -13,26 +13,26 @@ environment:
   matrix:
     - PYTHON_VERSION: "2.7"
       PYTEST_QT_API: "pyqt4"
-      CONDA_DEPENDENCIES: "pytest tox coveralls pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest pyqt=4.*"
     - PYTHON_VERSION: "2.7"
       PYTEST_QT_API: "pyqt4v2"
-      CONDA_DEPENDENCIES: "pytest tox coveralls pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest pyqt=4.*"
     - PYTHON_VERSION: "2.7"
       PYTEST_QT_API: "pyside"
-      CONDA_DEPENDENCIES: "pytest tox coveralls pyside=1.*"
+      CONDA_DEPENDENCIES: "pytest pyside=1.*"
       
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyqt4"
-      CONDA_DEPENDENCIES: "pytest tox coveralls pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest pyqt=4.*"
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyqt4v2"
-      CONDA_DEPENDENCIES: "pytest tox coveralls pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest pyqt=4.*"
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyside"
-      CONDA_DEPENDENCIES: "pytest tox coveralls pyside=1.*"
+      CONDA_DEPENDENCIES: "pytest pyside=1.*"
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyqt5"
-      CONDA_DEPENDENCIES: "pytest tox coveralls pyqt=5.*"
+      CONDA_DEPENDENCIES: "pytest pyqt=5.*"
 
 platform:
     -x64
