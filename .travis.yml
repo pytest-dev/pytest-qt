@@ -3,14 +3,19 @@ sudo: required
 dist: trusty
 
 env:
- - PYTEST_QT_API=pyqt4   PYQT_PACKAGE="pyqt==4.*" PYTHON_VERSION=2.7
- - PYTEST_QT_API=pyqt4v2 PYQT_PACKAGE="pyqt==4.*" PYTHON_VERSION=2.7
- - PYTEST_QT_API=pyside  PYQT_PACKAGE="pyside==1.*" PYTHON_VERSION=2.7
+  global:
+      # used by ci-helpers
+      - CONDA_CHANNELS=conda-forge SETUP_XVFB=true  DEPS="pytest tox coveralls"
 
- - PYTEST_QT_API=pyqt4   PYQT_PACKAGE="pyqt==4.*" PYTHON_VERSION=3.4
- - PYTEST_QT_API=pyqt4v2 PYQT_PACKAGE="pyqt==4.*" PYTHON_VERSION=3.4
- - PYTEST_QT_API=pyside  PYQT_PACKAGE="pyside==1.*" PYTHON_VERSION=3.4
- - PYTEST_QT_API=pyqt5   PYQT_PACKAGE="pyqt==5.*" PYTHON_VERSION=3.4
+  matrix:
+      - PYTEST_QT_API=pyqt4   PYQT_PACKAGE="pyqt=4.*" PYTHON_VERSION=2.7
+      - PYTEST_QT_API=pyqt4v2 PYQT_PACKAGE="pyqt=4.*" PYTHON_VERSION=2.7
+      - PYTEST_QT_API=pyside  PYQT_PACKAGE="pyside=1.*" PYTHON_VERSION=2.7
+
+      - PYTEST_QT_API=pyqt4   PYQT_PACKAGE="pyqt=4.*" PYTHON_VERSION=3.4
+      - PYTEST_QT_API=pyqt4v2 PYQT_PACKAGE="pyqt=4.*" PYTHON_VERSION=3.4
+      - PYTEST_QT_API=pyside  PYQT_PACKAGE="pyside=1.*" PYTHON_VERSION=3.4
+      - PYTEST_QT_API=pyqt5   PYQT_PACKAGE="pyqt=5.*" PYTHON_VERSION=3.4
 
 install:
  - sudo apt-get update
@@ -20,11 +25,8 @@ install:
 
  # Setup miniconda 
  - git clone --depth 1 git://github.com/astropy/ci-helpers.git
- - export SETUP_XVFB=true && source ci-helpers/travis/setup_conda.sh
-
- # Dependencies
- - conda create -c conda-forge -n test-env -y pytest tox coveralls ${PYQT_PACKAGE} python=${PYTHON_VERSION}
- - source activate test-env && pip install -e .
+ - CONDA_DEPENDENCIES="${DEPS} ${PYQT_PACKAGE}" source ci-helpers/travis/setup_conda.sh
+ - source activate test && pip install -e .
 
 
 before_script:
@@ -32,11 +34,11 @@ before_script:
  - sleep 1
 
 script:
- - source activate test-env && catchsegv coverage run --source=pytestqt -m pytest tests
+ - source activate test && catchsegv coverage run --source=pytestqt -m pytest tests
  # for some reason tox doesn't get installed with a u+x flag
  - | 
-     chmod u+x /home/travis/miniconda/envs/test-env/bin/tox 
-     /home/travis/miniconda/envs/test-env/bin/tox -e lint
+     chmod u+x /home/travis/miniconda/envs/test/bin/tox 
+     /home/travis/miniconda/envs/test/bin/tox -e lint
 
 after_success:
  - coveralls
