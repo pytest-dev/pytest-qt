@@ -9,31 +9,30 @@ environment:
                         # to the matrix section.
       # Used by atropy ci-helpers
       CONDA_CHANNELS: "conda-forge"
-      DEPS: "pytest tox coveralls"
 
   matrix:
     - PYTHON_VERSION: "2.7"
       PYTEST_QT_API: "pyqt4"
-      PYQT_PACKAGE: "pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest tox coveralls pyqt=4.*"
     - PYTHON_VERSION: "2.7"
       PYTEST_QT_API: "pyqt4v2"
-      PYQT_PACKAGE: "pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest tox coveralls pyqt=4.*"
     - PYTHON_VERSION: "2.7"
       PYTEST_QT_API: "pyside"
-      PYQT_PACKAGE: "pyside=1.*"
+      CONDA_DEPENDENCIES: "pytest tox coveralls pyside=1.*"
       
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyqt4"
-      PYQT_PACKAGE: "pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest tox coveralls pyqt=4.*"
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyqt4v2"
-      PYQT_PACKAGE: "pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest tox coveralls pyqt=4.*"
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyside"
-      PYQT_PACKAGE: "pyside=1.*"
+      CONDA_DEPENDENCIES: "pytest tox coveralls pyside=1.*"
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyqt5"
-      PYQT_PACKAGE: "pyqt=5.*"
+      CONDA_DEPENDENCIES: "pytest tox coveralls pyqt=5.*"
 
 platform:
     -x64
@@ -49,7 +48,6 @@ install:
         Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
           throw "There are newer queued builds for this pull request, failing early." }
     - "git clone --depth 1 git://github.com/astropy/ci-helpers.git"
-    - "SET CONDA_DEPENDENCIES=%%%DEPS%%PYQT_PACKAGE%%%"  
     - "powershell ci-helpers/appveyor/install-miniconda.ps1"
     - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     - "activate test"
