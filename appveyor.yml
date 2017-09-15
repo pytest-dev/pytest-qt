@@ -33,6 +33,9 @@ environment:
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyqt5"
       CONDA_DEPENDENCIES: "pytest pyqt=5.*"
+    - PYTHON_VERSION: "3.5"
+      PYTEST_QT_API: "pyside2"
+      CONDA_DEPENDENCIES: "pytest pyside2=2.*"
 
 platform:
     -x64
@@ -57,4 +60,4 @@ install:
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% python -m pytest tests/"
+  - "%CMD_IN_ENV% python -m pytest -v tests/"

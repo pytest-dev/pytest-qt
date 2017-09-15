@@ -324,7 +324,7 @@ def test_parse_ini_boolean_invalid():
         pytestqt.qtbot._parse_ini_boolean('foo')
 
 
-@pytest.mark.parametrize('option_api', ['pyqt4', 'pyqt5', 'pyside'])
+@pytest.mark.parametrize('option_api', ['pyqt4', 'pyqt5', 'pyside', 'pyside2'])
 def test_qt_api_ini_config(testdir, option_api):
     """
     Test qt_api ini option handling.
@@ -344,7 +344,7 @@ def test_qt_api_ini_config(testdir, option_api):
     ''')
 
     result = testdir.runpytest_subprocess()
-    if qt_api.pytest_qt_api.startswith(option_api):  # handle pyqt4v2
+    if qt_api.pytest_qt_api.replace('v2', '') == option_api:  # handle pyqt4v2
         result.stdout.fnmatch_lines([
             '* 1 passed in *'
         ])

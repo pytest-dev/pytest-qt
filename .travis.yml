@@ -16,6 +16,7 @@ env:
       - PYTEST_QT_API=pyqt4v2 PYQT_PACKAGE="pyqt=4.*" PYTHON_VERSION=3.4
       - PYTEST_QT_API=pyside  PYQT_PACKAGE="pyside=1.*" PYTHON_VERSION=3.4
       - PYTEST_QT_API=pyqt5   PYQT_PACKAGE="pyqt=5.*" PYTHON_VERSION=3.4
+      - PYTEST_QT_API=pyside2   PYQT_PACKAGE="pyside2=2.*" PYTHON_VERSION=3.5
 
 install:
  - sudo apt-get update
@@ -34,7 +35,7 @@ before_script:
  - sleep 1
 
 script:
- - source activate test && catchsegv coverage run --source=pytestqt -m pytest tests
+ - source activate test && catchsegv coverage run --source=pytestqt -m pytest -v tests
  # for some reason tox doesn't get installed with a u+x flag
  - | 
      chmod u+x /home/travis/miniconda/envs/test/bin/tox 

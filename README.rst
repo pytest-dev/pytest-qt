@@ -3,7 +3,7 @@ pytest-qt
 =========
 
 pytest-qt is a `pytest`_ plugin that allows programmers to write tests
-for `PySide`_ and `PyQt`_ applications.
+for `PySide`_, `PySide2` and `PyQt`_ applications.
 
 The main usage is to use the `qtbot` fixture, responsible for handling `qApp` 
 creation as needed and provides methods to simulate user interaction, 
@@ -23,6 +23,7 @@ like key presses and mouse clicks:
 
 
 .. _PySide: https://pypi.python.org/pypi/PySide
+.. _PySide2: https://wiki.qt.io/PySide2
 .. _PyQt: http://www.riverbankcomputing.com/software/pyqt
 .. _pytest: http://pytest.org
 
@@ -72,16 +73,17 @@ Features
 Requirements
 ============
 
-Works with either PySide_ or PyQt_ (``PyQt5`` and ``PyQt4``) picking whichever
+Works with either PySide_, PySide2_ or PyQt_ (``PyQt5`` and ``PyQt4``) picking whichever
 is available on the system, giving preference to the first one installed in
 this order:
 
+- ``PySide2``
 - ``PyQt5``
 - ``PySide``
 - ``PyQt4``
 
 To force a particular API, set the configuration variable ``qt_api`` in your ``pytest.ini`` file to
-``pyqt5``, ``pyside``, ``pyqt4`` or ``pyqt4v2``. ``pyqt4v2`` sets the ``PyQt4``
+``pyqt5``, ``pyside``, ``pyside2``, ``pyqt4`` or ``pyqt4v2``. ``pyqt4v2`` sets the ``PyQt4``
 API to `version 2`_.
 
 .. code-block:: ini
