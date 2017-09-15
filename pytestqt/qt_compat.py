@@ -108,8 +108,6 @@ class _QtApi:
             self.Signal = QtCore.Signal
             self.Slot = QtCore.Slot
             self.Property = QtCore.Property
-            self.QApplication = QtGui.QApplication
-            self.QWidget = QtGui.QWidget
             self.QStringListModel = QtGui.QStringListModel
 
             self.QStandardItem = QtGui.QStandardItem
