@@ -43,12 +43,12 @@ class _QtApi:
 
         # Note, not importing only the root namespace because when uninstalling from conda,
         # the namespace can still be there.
-        if _can_import('PyQt5.QtCore'):
+        if _can_import('PySide2.QtCore'):
+            return 'pyside2'
+        elif _can_import('PyQt5.QtCore'):
             return 'pyqt5'
         elif _can_import('PySide.QtCore'):
             return 'pyside'
-        elif _can_import('PySide2.QtCore'):
-            return 'pyside2'
         elif _can_import('PyQt4.QtCore'):
             return 'pyqt4'
         return None
@@ -104,7 +104,7 @@ class _QtApi:
         self.qInstallMsgHandler = None
         self.qInstallMessageHandler = None
 
-        if self.pytest_qt_api in ('pyside', 'pyside2'):
+        if self.pytest_qt_api.startswith('pyside'):
             self.Signal = QtCore.Signal
             self.Slot = QtCore.Slot
             self.Property = QtCore.Property

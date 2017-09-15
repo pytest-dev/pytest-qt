@@ -290,36 +290,22 @@ def test_wait_signals_invalid_strict_parameter(qtbot, signaller):
 
 def test_destroyed(qtbot):
     """Test that waitSignal works with the destroyed signal (#82).
+
+    For some reason, this crashes PySide although it seems perfectly fine code.
     """
     if qt_api.pytest_qt_api.startswith('pyside'):
-        # PySide uses shiboken instead of sip.
-        if qt_api.pytest_qt_api == 'pyside':
-            try:
-                from PySide import shiboken
-            except ImportError:
-                import shiboken
-        else:
-            from PySide2 import shiboken2 as shiboken
+        pytest.skip('test crashes PySide and PySide2')
 
-        class Obj(qt_api.QtCore.QObject):
-            pass
+    import sip
 
-        obj = Obj()
-        with qtbot.waitSignal(obj.destroyed):
-            obj.deleteLater()
+    class Obj(qt_api.QtCore.QObject):
+        pass
 
-        assert not shiboken.isValid(obj)
-    else:
-        import sip
+    obj = Obj()
+    with qtbot.waitSignal(obj.destroyed):
+        obj.deleteLater()
 
-        class Obj(qt_api.QtCore.QObject):
-            pass
-
-        obj = Obj()
-        with qtbot.waitSignal(obj.destroyed):
-            obj.deleteLater()
-
-        assert sip.isdeleted(obj)
+    assert sip.isdeleted(obj)
 
 
 class TestArgs:
@@ -1013,7 +999,7 @@ class TestWaitSignalsTimeoutErrorMessage:
         by the user. This degenerate messages doesn't contain the signals' names, and includes a hint to the user how
         to fix the situation.
         """
-        if qt_api.pytest_qt_api not in ('pyside', 'pyside2'):
+        if not qt_api.pytest_qt_api.startswith('pyside'):
             pytest.skip("test only makes sense for PySide, whose signals don't contain a name!")
 
         with pytest.raises(TimeoutError) as excinfo:

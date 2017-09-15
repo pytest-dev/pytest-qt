@@ -4,7 +4,7 @@ import pytest
 from pytestqt.qt_compat import qt_api
 
 
-fails_on_pyqt = pytest.mark.xfail('qt_api.pytest_qt_api not in ("pyside", "pyside2")')
+fails_on_pyqt = pytest.mark.xfail('not qt_api.pytest_qt_api.startswith("pyside")')
 
 
 @pytest.mark.parametrize('expected_method', [
