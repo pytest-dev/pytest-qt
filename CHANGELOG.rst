@@ -1,3 +1,11 @@
+2.2.0
+-----
+
+- ``pytest-qt`` now supports `PySide2`_ thanks to `@rth`_!
+
+.. _PySide2: https://wiki.qt.io/PySide2
+.. _@rth: https://github.com/rth
+
 2.1.2
 -----
 
