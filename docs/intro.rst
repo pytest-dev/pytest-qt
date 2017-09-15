@@ -30,16 +30,17 @@ Python 2.7 or later, including Python 3.4+.
 
 Requires pytest version 2.7 or later.
 
-Works with either ``PyQt5``, ``PySide`` or ``PyQt4``, picking whichever
+Works with either ``PyQt5``, ``PyQt4``, ``PySide`` or ``PySide2``, picking whichever
 is available on the system giving preference to the first one installed in
 this order:
 
+- ``PySide2``
 - ``PyQt5``
 - ``PySide``
 - ``PyQt4``
 
 To force a particular API, set the configuration variable ``qt_api`` in your ``pytest.ini`` file to
-``pyqt5``, ``pyside``, ``pyqt4`` or ``pyqt4v2``. ``pyqt4v2`` sets the ``PyQt4``
+``pyqt5``, ``pyside``, ``pyside2``, ``pyqt4`` or ``pyqt4v2``. ``pyqt4v2`` sets the ``PyQt4``
 API to `version 2`_.
 
 .. code-block:: ini
