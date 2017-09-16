@@ -30,10 +30,18 @@ environment:
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyside"
       CONDA_DEPENDENCIES: "pytest pyside=1.*"
-    - PYTHON_VERSION: "3.4"
+
+    - PYTHON_VERSION: "3.5"
       PYTEST_QT_API: "pyqt5"
       CONDA_DEPENDENCIES: "pytest pyqt=5.*"
     - PYTHON_VERSION: "3.5"
+      PYTEST_QT_API: "pyside2"
+      CONDA_DEPENDENCIES: "pytest pyside2=2.*"
+
+    - PYTHON_VERSION: "3.6"
+      PYTEST_QT_API: "pyqt5"
+      CONDA_DEPENDENCIES: "pytest pyqt=5.*"
+    - PYTHON_VERSION: "3.6"
       PYTEST_QT_API: "pyside2"
       CONDA_DEPENDENCIES: "pytest pyside2=2.*"
 
