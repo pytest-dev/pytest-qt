@@ -341,3 +341,37 @@ def test_exceptions_to_stderr(qapp, capsys):
     del exceptions[:]
     _out, err = capsys.readouterr()
     assert "raise RuntimeError('event processed')" in err
+
+
+def test_exceptions_dont_leak(testdir):
+    """
+    Ensure exceptions are cleared when an exception occurs and don't leak (#187).
+    """
+    testdir.makepyfile("""
+        from pytestqt.qt_compat import qt_api
+        import gc
+        import weakref
+    
+        class MyWidget(qt_api.QWidget):
+    
+            def event(self, ev):
+                called.append(1)
+                raise RuntimeError('event processed')
+                
+        weak_ref = None
+        called = []
+        
+        def test_1(qapp):
+            global weak_ref
+            w = MyWidget()
+            weak_ref = weakref.ref(w)        
+            qapp.postEvent(w, qt_api.QEvent(qt_api.QEvent.User))
+            qapp.processEvents()    
+            
+        def test_2(qapp):
+            assert called     
+            gc.collect()       
+            assert weak_ref() is None
+    """)
+    result = testdir.runpytest()
+    result.stdout.fnmatch_lines(['*1 failed, 1 passed*'])
