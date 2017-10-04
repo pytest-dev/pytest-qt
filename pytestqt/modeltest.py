@@ -448,8 +448,8 @@ class ModelTester:
             (qt_api.QtCore.Qt.WhatsThisRole, str),
             (qt_api.QtCore.Qt.SizeHintRole, qt_api.QtCore.QSize),
             (qt_api.QtCore.Qt.FontRole, qt_api.QtGui.QFont),
-            (qt_api.QtCore.Qt.BackgroundColorRole, qt_api.QtGui.QColor),
-            (qt_api.QtCore.Qt.TextColorRole, qt_api.QtGui.QColor),
+            (qt_api.QtCore.Qt.BackgroundColorRole, (qt_api.QtGui.QColor, qt_api.QtGui.QBrush)),
+            (qt_api.QtCore.Qt.TextColorRole, (qt_api.QtGui.QColor, qt_api.QtGui.QBrush)),
         ]
 
         # General purpose roles with a fixed expected type
@@ -493,7 +493,7 @@ class ModelTester:
                         self._modelindex_debug(last_index),
                         self._modelindex_debug(next_index),
                     )
-        )
+                    )
 
         last_data = self._model.data(last_index)
         next_data = self._model.data(next_index)
@@ -518,7 +518,7 @@ class ModelTester:
                         qt_api.extract_from_variant(c.next),
                         qt_api.extract_from_variant(c.last)
                     )
-        )
+                    )
 
         self._debug("  now in rowsInserted:        parent {}, size {}, "
                     "next data {!r}, last data {!r}".format(
@@ -527,7 +527,7 @@ class ModelTester:
                         qt_api.extract_from_variant(next_data),
                         qt_api.extract_from_variant(last_data)
                     )
-        )
+                    )
 
         if not qt_api.QtCore.qVersion().startswith('4.'):
             # Skipping this on Qt4 as the parent changes for some reason:
@@ -577,7 +577,7 @@ class ModelTester:
                         self._modelindex_debug(last_index),
                         self._modelindex_debug(next_index),
                     )
-        )
+                    )
 
         last_data = self._model.data(last_index)
         next_data = self._model.data(next_index)
@@ -602,7 +602,7 @@ class ModelTester:
                         qt_api.extract_from_variant(c.next),
                         qt_api.extract_from_variant(c.last)
                     )
-        )
+                    )
 
         self._debug("  now in rowsRemoved:        parent {}, size {}, "
                     "next data {!r}, last data {!r}".format(
@@ -611,7 +611,7 @@ class ModelTester:
                         qt_api.extract_from_variant(next_data),
                         qt_api.extract_from_variant(last_data)
                     )
-        )
+                    )
 
         if not qt_api.QtCore.qVersion().startswith('4.'):
             # Skipping this on Qt4 as the parent changes for some reason
