@@ -1,3 +1,13 @@
+2.2.1
+-----
+
+- ``modeltester`` now accepts ``QBrush`` for ``BackgroundColorRole`` and ``TextColorRole`` (`#189`_).
+  Thanks `@p0las`_ for the PR.
+
+.. _#189: https://github.com/pytest-dev/pytest-qt/issues/189
+.. _@p0las: https://github.com/p0las
+
+
 2.2.0
 -----
 
