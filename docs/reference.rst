@@ -3,6 +3,7 @@ Reference
 
 QtBot
 -----
+
 .. module:: pytestqt.qtbot
 .. autoclass:: QtBot
 
@@ -32,3 +33,10 @@ Record
 
 .. module:: pytestqt.logging
 .. autoclass:: Record
+
+qapp fixture
+------------
+
+.. module:: pytestqt.plugin
+.. autofunction:: qapp
+.. autofunction:: qapp_args

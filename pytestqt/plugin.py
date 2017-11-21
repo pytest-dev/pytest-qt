@@ -18,16 +18,36 @@ assert capture_exceptions
 assert format_captured_exceptions
 
 
-@pytest.yield_fixture(scope='session')
-def qapp():
+@pytest.fixture(scope='session')
+def qapp_args():
     """
-    fixture that instantiates the QApplication instance that will be used by
+    Fixture that provides QApplication arguments to use.
+
+    You can override this fixture to pass different arguments to
+    ``QApplication``:
+
+    .. code-block:: python
+
+       @pytest.fixture(scope='session')
+       def qapp_args():
+           return ['--arg']
+    """
+    return []
+
+
+@pytest.yield_fixture(scope='session')
+def qapp(qapp_args):
+    """
+    Fixture that instantiates the QApplication instance that will be used by
     the tests.
+
+    You can use the ``qapp`` fixture in tests which require a ``QApplication``
+    to run, but where you don't need full ``qtbot`` functionality.
     """
     app = qt_api.QApplication.instance()
     if app is None:
         global _qapp_instance
-        _qapp_instance = qt_api.QApplication([])
+        _qapp_instance = qt_api.QApplication(qapp_args)
         yield _qapp_instance
     else:
         yield app  # pragma: no cover

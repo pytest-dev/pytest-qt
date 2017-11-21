@@ -1,3 +1,10 @@
+2.3.0
+-----
+
+- New ``qapp_args`` fixture which can be used to pass custom arguments to
+  ``QApplication``.
+  Thanks `@The-Compiler`_ for the PR.
+
 2.2.1
 -----
 

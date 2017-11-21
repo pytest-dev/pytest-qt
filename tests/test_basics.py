@@ -1,4 +1,5 @@
 import os
+import sys
 import weakref
 import pytest
 from pytestqt.qt_compat import qt_api
@@ -376,3 +377,28 @@ def test_invalid_qt_api_envvar(testdir, monkeypatch):
     monkeypatch.setenv('PYTEST_QT_API', 'piecute')
     result = testdir.runpytest_subprocess()
     result.stderr.fnmatch_lines(['* Invalid value for $PYTEST_QT_API: piecute'])
+
+
+@pytest.mark.skipif(qt_api.pytest_qt_api in ['pyqt4', 'pyqt4v2', 'pyside'],
+                    reason="QApplication.arguments() doesn't return custom arguments with Qt4 and Windows")
+def test_qapp_args(testdir):
+    """
+    Test customizing of QApplication arguments.
+    """
+    testdir.makeconftest(
+        '''
+        import pytest
+
+        @pytest.fixture(scope='session')
+        def qapp_args():
+            return ['--test-arg']
+        '''
+    )
+    testdir.makepyfile('''
+        def test_args(qapp):
+            assert '--test-arg' in list(qapp.arguments())
+    ''')
+    result = testdir.runpytest_subprocess()
+    result.stdout.fnmatch_lines([
+        '*= 1 passed in *'
+    ])
