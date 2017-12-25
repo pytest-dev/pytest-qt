@@ -326,11 +326,13 @@ def test_parse_ini_boolean_invalid():
 
 
 @pytest.mark.parametrize('option_api', ['pyqt4', 'pyqt5', 'pyside', 'pyside2'])
-def test_qt_api_ini_config(testdir, option_api):
+def test_qt_api_ini_config(testdir, monkeypatch, option_api):
     """
     Test qt_api ini option handling.
     """
     from pytestqt.qt_compat import qt_api
+
+    monkeypatch.delenv("PYTEST_QT_API")
 
     testdir.makeini("""
         [pytest]
