@@ -366,6 +366,44 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
             ])
 
 
+@pytest.mark.parametrize('envvar', ['pyqt4', 'pyqt5', 'pyside', 'pyside2'])
+def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
+    """ensure environment variable wins over config value if both are present
+    """
+    testdir.makeini("""
+        [pytest]
+        qt_api={option_api}
+    """.format(option_api='piecute'))
+
+    monkeypatch.setenv('PYTEST_QT_API', envvar)
+
+    testdir.makepyfile('''
+        import pytest
+
+        def test_foo(qtbot):
+            pass
+    ''')
+
+    result = testdir.runpytest_subprocess()
+    if qt_api.pytest_qt_api.replace('v2', '') == envvar:
+        result.stdout.fnmatch_lines([
+            '* 1 passed in *'
+        ])
+    else:
+        try:
+            ModuleNotFoundError
+        except NameError:
+            # Python < 3.6
+            result.stderr.fnmatch_lines([
+                '*ImportError:*'
+            ])
+        else:
+            # Python >= 3.6
+            result.stderr.fnmatch_lines([
+                '*ModuleNotFoundError:*'
+            ])
+
+
 def test_invalid_qt_api_envvar(testdir, monkeypatch):
     """
     Make sure the error message with an invalid PYQTEST_QT_API is correct.
