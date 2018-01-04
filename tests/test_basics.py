@@ -326,11 +326,13 @@ def test_parse_ini_boolean_invalid():
 
 
 @pytest.mark.parametrize('option_api', ['pyqt4', 'pyqt5', 'pyside', 'pyside2'])
-def test_qt_api_ini_config(testdir, option_api):
+def test_qt_api_ini_config(testdir, monkeypatch, option_api):
     """
     Test qt_api ini option handling.
     """
     from pytestqt.qt_compat import qt_api
+
+    monkeypatch.delenv("PYTEST_QT_API")
 
     testdir.makeini("""
         [pytest]
@@ -346,6 +348,44 @@ def test_qt_api_ini_config(testdir, option_api):
 
     result = testdir.runpytest_subprocess()
     if qt_api.pytest_qt_api.replace('v2', '') == option_api:  # handle pyqt4v2
+        result.stdout.fnmatch_lines([
+            '* 1 passed in *'
+        ])
+    else:
+        try:
+            ModuleNotFoundError
+        except NameError:
+            # Python < 3.6
+            result.stderr.fnmatch_lines([
+                '*ImportError:*'
+            ])
+        else:
+            # Python >= 3.6
+            result.stderr.fnmatch_lines([
+                '*ModuleNotFoundError:*'
+            ])
+
+
+@pytest.mark.parametrize('envvar', ['pyqt4', 'pyqt5', 'pyside', 'pyside2'])
+def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
+    """ensure environment variable wins over config value if both are present
+    """
+    testdir.makeini("""
+        [pytest]
+        qt_api={option_api}
+    """.format(option_api='piecute'))
+
+    monkeypatch.setenv('PYTEST_QT_API', envvar)
+
+    testdir.makepyfile('''
+        import pytest
+
+        def test_foo(qtbot):
+            pass
+    ''')
+
+    result = testdir.runpytest_subprocess()
+    if qt_api.pytest_qt_api.replace('v2', '') == envvar:
         result.stdout.fnmatch_lines([
             '* 1 passed in *'
         ])

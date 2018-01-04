@@ -54,7 +54,7 @@ class _QtApi:
         return None
 
     def set_qt_api(self, api):
-        self.pytest_qt_api = api or self._get_qt_api_from_env() or self._guess_qt_api()
+        self.pytest_qt_api = self._get_qt_api_from_env() or api or self._guess_qt_api()
         if not self.pytest_qt_api:  # pragma: no cover
             msg = 'pytest-qt requires either PySide, PySide2, PyQt4 or PyQt5 to be installed'
             raise RuntimeError(msg)
