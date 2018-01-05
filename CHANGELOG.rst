@@ -2,7 +2,7 @@
 -----
 
 - ``PYTEST_QT_API`` environment variable correctly wins over ``qt_api``
-  ini variable if both are set at the same time (`#196`_). Thanks `@mochick` for the PR.
+  ini variable if both are set at the same time (`#196`_). Thanks `@mochick`_ for the PR.
 
 .. _#196: https://github.com/pytest-dev/pytest-qt/pull/196
 .. _@mochick: https://github.com/mochick
