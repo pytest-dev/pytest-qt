@@ -4,15 +4,15 @@ A note about Modal Dialogs
 Simple Dialogs
 --------------
 
-For QMessageBox.question one approach is to ``mock`` it:
+For QMessageBox.question one approach is to mock the function using the ``monkeypatch`` fixture:
 
 .. code-block:: python
                 
-    def test_Qt(qtbot, mock):
+    def test_Qt(qtbot, monkeypatch):
         simple = Simple()
         qtbot.addWidget(simple)
 
-        mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
+        monkeypatch.setattr(QMessageBox, 'question', lambda *args: QMessageBox.Yes)
         simple.query()
         assert simple.answer
 
@@ -44,14 +44,14 @@ This allows clients of the dialog to use it this way:
    if name is not None:
        # use name and age for bananas
 
-And now it is also easy to mock AskNameAndAgeDialog.ask when testing the form:
+And now it is also easy to mock ``AskNameAndAgeDialog.ask`` when testing the form:
 
 .. code-block:: python
                 
-    def test_form_registration(qtbot, mock):
+    def test_form_registration(qtbot, monkeypatch):
         form = RegistrationForm()
 
-        mock.patch.object(AskNameAndAgeDialog, 'ask', return_value=('Jonh', 30))
+        monkeypatch.setattr(AskNameAndAgeDialog, 'ask', classmethod(lambda *args: ('Jonh', 30)))
         qtbot.click(form.enter_info())
         # calls AskNameAndAgeDialog.ask
         # test that the rest of the form correctly behaves as if
