@@ -20,7 +20,7 @@ environment:
     - PYTHON_VERSION: "2.7"
       PYTEST_QT_API: "pyside"
       CONDA_DEPENDENCIES: "pytest pyside=1.*"
-      
+
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyqt4"
       CONDA_DEPENDENCIES: "pytest pyqt=4.*"
@@ -44,6 +44,11 @@ environment:
     - PYTHON_VERSION: "3.6"
       PYTEST_QT_API: "pyside2"
       CONDA_DEPENDENCIES: "pytest pyside2=2.*"
+
+matrix:
+  exclude:
+    # PySide2 crashes: #202
+    - PYTEST_QT_API: "pyside2"
 
 platform:
     -x64
