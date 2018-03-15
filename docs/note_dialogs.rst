@@ -56,5 +56,3 @@ And now it is also easy to mock ``AskNameAndAgeDialog.ask`` when testing the for
         # calls AskNameAndAgeDialog.ask
         # test that the rest of the form correctly behaves as if
         # user entered "Jonh" and 30 as name and age
-
-These examples use the ``pytest-mock`` package.
