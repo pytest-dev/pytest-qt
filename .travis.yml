@@ -24,7 +24,7 @@ env:
 
 matrix:
   # PySide2 crashes: #202
-  allow-failures:
+  allow_failures:
     - env: PYTEST_QT_API=pyside2   PYQT_PACKAGE="pyside2=2.*" PYTHON_VERSION=3.5
     - env: PYTEST_QT_API=pyside2   PYQT_PACKAGE="pyside2=2.*" PYTHON_VERSION=3.6
 
