@@ -4,7 +4,7 @@ A note about Modal Dialogs
 Simple Dialogs
 --------------
 
-For QMessageBox.question one approach is to mock the function using the ``monkeypatch`` fixture:
+For QMessageBox.question one approach is to mock the function using the `monkeypatch <https://docs.pytest.org/en/latest/monkeypatch.html>`_ fixture:
 
 .. code-block:: python
                 
