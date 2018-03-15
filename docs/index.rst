@@ -25,6 +25,7 @@ pytest-qt
     modeltester
     app_exit
     note_pyqt4v2
+    note_dialogs
     troubleshooting
     reference
     changelog
