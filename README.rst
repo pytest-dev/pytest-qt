@@ -44,7 +44,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
 .. |docs| image:: https://readthedocs.org/projects/pytest-qt/badge/?version=latest
   :target: https://pytest-qt.readthedocs.io
 
-.. |appveyor| image:: https://img.shields.io/appveyor/ci/pytest-dev/pytest-qt/master.svg
+.. |appveyor| image:: https://img.shields.io/appveyor/ci/nicoddemus/pytest-qt/master.svg
   :target: https://ci.appveyor.com/project/nicoddemus/pytest-qt
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/pytest-qt.svg
