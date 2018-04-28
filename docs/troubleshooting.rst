@@ -30,3 +30,34 @@ More details can be found in `issue #170`_.
 
 .. _pytest-xvfb: https://pypi.python.org/pypi/pytest-xvfb/
 .. _issue #170: https://github.com/pytest-dev/pytest-qt/issues/170
+
+
+
+xvfb: ``AssertionError``, ``TimeoutError`` when using ``waitUntil``, ``waitExposed`` and UI events.
+---------------------------------------------------------------------------------------------------
+
+When using ``xvfb`` or equivalent make sure to have a window manager running otherwise UI events will not work properly.
+
+If you are running your code on Travis-CI make sure that your ``.travis.yml`` has the following content:
+
+.. code-block:: yaml
+
+    sudo: required
+
+    before_install:
+      - sudo apt-get update
+      - sudo apt-get install -y xvfb herbstluftwm
+
+    install:
+      - "export DISPLAY=:99.0"
+      - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset"
+      - sleep 3
+
+    before_script:
+      - "herbstluftwm &"
+      - sleep 1
+
+More details can be found in `issue #206`_.
+
+.. _issue #206: https://github.com/pytest-dev/pytest-qt/issues/206
+
