@@ -108,13 +108,15 @@ class _QtApi:
             self.Signal = QtCore.Signal
             self.Slot = QtCore.Slot
             self.Property = QtCore.Property
-            self.QStringListModel = QtGui.QStringListModel
+            if hasattr(QtGui, 'QStringListModel'):
+                self.QStringListModel = QtGui.QStringListModel
+            else:
+                self.QStringListModel = QtCore.QStringListModel
 
             self.QStandardItem = QtGui.QStandardItem
             self.QStandardItemModel = QtGui.QStandardItemModel
             self.QAbstractListModel = QtCore.QAbstractListModel
             self.QAbstractTableModel = QtCore.QAbstractTableModel
-            self.QStringListModel = QtGui.QStringListModel
 
             if self.pytest_qt_api == 'pyside2':
                 _QtWidgets = _import_module('QtWidgets')
