@@ -32,7 +32,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
 .. |version| image:: http://img.shields.io/pypi/v/pytest-qt.svg
   :target: https://pypi.python.org/pypi/pytest-qt
   
-.. |anaconda| image:: https://anaconda.org/conda-forge/pytest-qt/badges/version.svg
+.. |conda-forge| image:: https://img.shields.io/conda/vn/conda-forge/pytest-qt.svg
     :target: https://anaconda.org/conda-forge/pytest-qt
   
 .. |travis| image:: https://img.shields.io/travis/pytest-dev/pytest-qt/master.svg
@@ -51,7 +51,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
   :target: https://pypi.python.org/pypi/pytest-qt/
   :alt: Supported Python versions
 
-|python| |version| |anaconda| |travis| |appveyor| |coverage| |docs|
+|python| |version| |conda-forge| |travis| |appveyor| |coverage| |docs|
 
 
 Features
