@@ -1,3 +1,11 @@
+2.3.2
+-----
+
+- Fix ``QStringListModel`` import when using ``PySide2`` (`#209`_). Thanks `@rth`_ for the PR.
+
+.. _#209: https://github.com/pytest-dev/pytest-qt/pull/209
+
+
 2.3.1
 -----
 
@@ -5,7 +13,7 @@
   ini variable if both are set at the same time (`#196`_). Thanks `@mochick`_ for the PR.
 
 .. _#196: https://github.com/pytest-dev/pytest-qt/pull/196
-.. _@mochick: https://github.com/mochick
+
 
 2.3.0
 -----
@@ -21,7 +29,7 @@
   Thanks `@p0las`_ for the PR.
 
 .. _#189: https://github.com/pytest-dev/pytest-qt/issues/189
-.. _@p0las: https://github.com/p0las
+
 
 
 2.2.0
@@ -30,7 +38,7 @@
 - ``pytest-qt`` now supports `PySide2`_ thanks to `@rth`_!
 
 .. _PySide2: https://wiki.qt.io/PySide2
-.. _@rth: https://github.com/rth
+
 
 2.1.2
 -----
@@ -450,7 +458,10 @@ First working version.
 .. _@gqmelo: https://github.com/gqmelo
 .. _@itghisi: https://github.com/itghisi
 .. _@jdreaver: https://github.com/jdreaver
+.. _@mochick: https://github.com/mochick
 .. _@montefra: https://github.com/montefra
 .. _@MShekow: https://github.com/MShekow
+.. _@p0las: https://github.com/p0las
+.. _@rth: https://github.com/rth
 .. _@Sheeo: https://github.com/Sheeo
 .. _@The-Compiler: https://github.com/The-Compiler
