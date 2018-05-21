@@ -1,3 +1,10 @@
+2.4.0 (unreleased)
+------------------
+
+- Use new pytest 3.6 marker API when possible (`#212`_). Thanks `@The-Compiler`_ for the PR.
+
+.. _#212: https://github.com/pytest-dev/pytest-qt/pull/212
+
 2.3.2
 -----
 
