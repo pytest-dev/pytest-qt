@@ -5,6 +5,7 @@ import re
 from py._code.code import TerminalRepr, ReprFileLocation
 import pytest
 from pytestqt.qt_compat import qt_api
+from pytestqt.utils import get_marker
 
 
 class QtLoggingPlugin(object):
@@ -19,9 +20,9 @@ class QtLoggingPlugin(object):
         self.config = config
 
     def pytest_runtest_setup(self, item):
-        if item.get_marker('no_qt_log'):
+        if get_marker(item, 'no_qt_log'):
             return
-        m = item.get_marker('qt_log_ignore')
+        m = get_marker(item, 'qt_log_ignore')
         if m:
             if not set(m.kwargs).issubset(set(['extend'])):
                 raise ValueError("Invalid keyword arguments in {0!r} for "
@@ -46,7 +47,7 @@ class QtLoggingPlugin(object):
         if call.when == 'call':
             report = outcome.get_result()
 
-            m = item.get_marker('qt_log_level_fail')
+            m = get_marker(item, 'qt_log_level_fail')
             if m:
                 log_fail_level = m.args[0]
             else:
