@@ -1,5 +1,5 @@
-2.4.0 (unreleased)
-------------------
+2.4.0
+-----
 
 - Use new pytest 3.6 marker API when possible (`#212`_). Thanks `@The-Compiler`_ for the PR.
 
