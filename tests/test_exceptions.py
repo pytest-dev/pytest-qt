@@ -1,6 +1,8 @@
-from pytestqt.exceptions import capture_exceptions, format_captured_exceptions
-import pytest
 import sys
+
+import pytest
+
+from pytestqt.exceptions import capture_exceptions, format_captured_exceptions
 
 
 @pytest.mark.parametrize('raise_error', [False, True])
@@ -18,7 +20,11 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
 
             def event(self, ev):
                 if {raise_error}:
-                    raise ValueError('mistakes were made')
+                    try:
+                        raise RuntimeError('original error')
+                    except RuntimeError:
+                        raise ValueError('mistakes were made')
+                        
                 return qt_api.QtCore.QObject.event(self, ev)
 
 
@@ -32,11 +38,14 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
     '''.format(raise_error=raise_error))
     result = testdir.runpytest()
     if raise_error:
-        result.stdout.fnmatch_lines([
-            '*Qt exceptions in virtual methods:*',
+        expected_lines = ['*Qt exceptions in virtual methods:*']
+        if sys.version_info.major == 3:
+            expected_lines.append('RuntimeError: original error')
+        expected_lines.extend([
             '*ValueError: mistakes were made*',
-            '*1 failed*',
+            '*1 failed*'
         ])
+        result.stdout.fnmatch_lines(expected_lines)
         assert 'pytest.fail' not in '\n'.join(result.outlines)
     else:
         result.stdout.fnmatch_lines('*1 passed*')
@@ -53,6 +62,24 @@ def test_format_captured_exceptions():
 
     assert 'Qt exceptions in virtual methods:' in lines
     assert 'ValueError: errors were made' in lines
+
+
+@pytest.mark.skipif(sys.version_info.major == 2, reason='Python 3 only')
+def test_format_captured_exceptions_chained():
+    try:
+        try:
+            raise ValueError('errors were made')
+        except ValueError:
+            raise RuntimeError('error handling value error')
+    except RuntimeError:
+        exceptions = [sys.exc_info()]
+
+    obtained_text = format_captured_exceptions(exceptions)
+    lines = obtained_text.splitlines()
+
+    assert 'Qt exceptions in virtual methods:' in lines
+    assert 'ValueError: errors were made' in lines
+    assert 'RuntimeError: error handling value error' in lines
 
 
 @pytest.mark.parametrize('no_capture_by_marker', [True, False])

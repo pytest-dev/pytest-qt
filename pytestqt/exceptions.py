@@ -68,12 +68,19 @@ def format_captured_exceptions(exceptions):
     Formats exceptions given as (type, value, traceback) into a string
     suitable to display as a test failure.
     """
-    message = 'Qt exceptions in virtual methods:\n'
-    message += '_' * 80 + '\n'
+    if sys.version_info.major == 2:
+        from StringIO import StringIO
+    else:
+        from io import StringIO
+    
+    stream = StringIO()
+    stream.write('Qt exceptions in virtual methods:\n')
+    sep = '_' * 80 + '\n'
+    stream.write(sep)
     for (exc_type, value, tback) in exceptions:
-        message += ''.join(traceback.format_exception(exc_type, value, tback)) + '\n'
-        message += '_' * 80 + '\n'
-    return message
+        traceback.print_exception(exc_type, value, tback, file=stream)
+        stream.write(sep)
+    return stream.getvalue()
 
 
 def _is_exception_capture_enabled(item):
