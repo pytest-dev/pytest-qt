@@ -1,3 +1,13 @@
+2.4.1
+-----
+
+- Properly handle chained exceptions when capturing them inside
+  virtual methods (`#215`_). Thanks `@fabioz`_ for the report and sample
+  code with the fix.
+
+.. _#215: https://github.com/pytest-dev/pytest-qt/pull/215
+
+
 2.4.0
 -----
 

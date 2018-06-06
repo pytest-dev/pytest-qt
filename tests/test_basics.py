@@ -332,7 +332,7 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
     """
     from pytestqt.qt_compat import qt_api
 
-    monkeypatch.delenv("PYTEST_QT_API")
+    monkeypatch.delenv("PYTEST_QT_API", raising=False)
 
     testdir.makeini("""
         [pytest]
