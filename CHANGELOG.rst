@@ -1,5 +1,5 @@
-2.4.1
------
+2.4.1 (2018-06-14)
+------------------
 
 - Properly handle chained exceptions when capturing them inside
   virtual methods (`#215`_). Thanks `@fabioz`_ for the report and sample
