@@ -1,6 +1,8 @@
-from contextlib import contextmanager
+import functools
 import sys
 import traceback
+from contextlib import contextmanager
+
 import pytest
 from pytestqt.utils import get_marker
 
@@ -20,6 +22,12 @@ def capture_exceptions():
         manager.finish()
 
 
+def _except_hook(type_, value, tback, exceptions=None):
+    """Hook functions installed by _QtExceptionCaptureManager"""
+    exceptions.append((type_, value, tback))
+    sys.stderr.write(format_captured_exceptions([(type_, value, tback)]))
+
+
 class _QtExceptionCaptureManager(object):
     """
     Manages exception capture context.
@@ -33,12 +41,8 @@ class _QtExceptionCaptureManager(object):
         """Start exception capturing by installing a hook into sys.excepthook
         that records exceptions received into ``self.exceptions``.
         """
-        def hook(type_, value, tback):
-            self.exceptions.append((type_, value, tback))
-            sys.stderr.write(format_captured_exceptions([(type_, value, tback)]))
-
         self.old_hook = sys.excepthook
-        sys.excepthook = hook
+        sys.excepthook = functools.partial(_except_hook, exceptions=self.exceptions)
 
     def finish(self):
         """Stop exception capturing, restoring the original hook.
@@ -59,8 +63,9 @@ class _QtExceptionCaptureManager(object):
             exceptions = self.exceptions
             self.exceptions = []
             prefix = '%s ERROR: ' % when
-            pytest.fail(prefix + format_captured_exceptions(exceptions),
-                        pytrace=False)
+            msg = prefix + format_captured_exceptions(exceptions)
+            del exceptions[:]  # Don't keep exceptions alive longer.
+            pytest.fail(msg, pytrace=False)
 
 
 def format_captured_exceptions(exceptions):
