@@ -18,7 +18,6 @@ fails_on_pyqt = pytest.mark.xfail('not qt_api.pytest_qt_api.startswith("pyside")
 
     'mouseClick',
     'mouseDClick',
-    'mouseEvent',
     'mouseMove',
     'mousePress',
     'mouseRelease',

@@ -96,7 +96,6 @@ class QtBot(object):
 
     .. staticmethod:: mouseClick (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
     .. staticmethod:: mouseDClick (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
-    .. staticmethod:: mouseEvent (action, widget, button, stateKey, pos[, delay=-1])
     .. staticmethod:: mouseMove (widget[, pos=QPoint()[, delay=-1]])
     .. staticmethod:: mousePress (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
     .. staticmethod:: mouseRelease (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
@@ -549,7 +548,6 @@ class QtBot(object):
 
             'mouseClick',
             'mouseDClick',
-            'mouseEvent',
             'mouseMove',
             'mousePress',
             'mouseRelease',
