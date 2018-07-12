@@ -1,3 +1,16 @@
+3.0.0 (2018-07-12)
+------------------
+
+- Removed ``qtbot.mouseEvent`` proxy, it was an internal Qt function which has
+  now been removed in PyQt 5.11 (`#219`_). Thanks `@mitya57`_ for the PR.
+
+- Fix memory leak when tests raised an exception inside Qt virtual methods (`#187`_).
+  Thanks `@fabioz`_ for the report and PR.
+
+.. _#187: https://github.com/pytest-dev/pytest-qt/issues/187
+.. _#219: https://github.com/pytest-dev/pytest-qt/pull/219
+
+
 2.4.1 (2018-06-14)
 ------------------
 
@@ -475,6 +488,7 @@ First working version.
 .. _@gqmelo: https://github.com/gqmelo
 .. _@itghisi: https://github.com/itghisi
 .. _@jdreaver: https://github.com/jdreaver
+.. _@mitya57: https://github.com/mitya57
 .. _@mochick: https://github.com/mochick
 .. _@montefra: https://github.com/montefra
 .. _@MShekow: https://github.com/MShekow
