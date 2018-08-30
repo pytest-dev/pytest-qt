@@ -90,10 +90,13 @@ class _QtApi:
         self.Qt = QtCore.Qt
         self.QEvent = QtCore.QEvent
 
+        # qInfo is not exposed in PyQt5 and PySide2 bindings (#225)
+        self.qInfo = None
         self.qDebug = QtCore.qDebug
         self.qWarning = QtCore.qWarning
         self.qCritical = QtCore.qCritical
         self.qFatal = QtCore.qFatal
+        self.QtInfoMsg = getattr(QtCore, 'QtInfoMsg', None)
         self.QtDebugMsg = QtCore.QtDebugMsg
         self.QtWarningMsg = QtCore.QtWarningMsg
         self.QtCriticalMsg = QtCore.QtCriticalMsg

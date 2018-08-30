@@ -241,6 +241,8 @@ class Record(object):
                 qt_api.QtCriticalMsg: 'QtCriticalMsg',
                 qt_api.QtFatalMsg: 'QtFatalMsg',
             }
+            if qt_api.QtInfoMsg is not None:
+                cls._type_name_map[qt_api.QtInfoMsg] = 'QtInfoMsg'
         return cls._type_name_map[msg_type]
 
     @classmethod

@@ -31,6 +31,8 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
             qt_api.qInstallMsgHandler(print_msg)
 
         def test_types():
+            # qInfo is not exposed by the bindings yet (#225)
+            # qt_api.qInfo('this is an INFO message')
             qt_api.qDebug('this is a DEBUG message')
             qt_api.qWarning('this is a WARNING message')
             qt_api.qCritical('this is a CRITICAL message')
@@ -45,6 +47,8 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
         if qt_log:
             res.stdout.fnmatch_lines([
                 '*-- Captured Qt messages --*',
+                # qInfo is not exposed by the bindings yet (#225)
+                # '*QtInfoMsg: this is an INFO message*',
                 '*QtDebugMsg: this is a DEBUG message*',
                 '*QtWarningMsg: this is a WARNING message*',
                 '*QtCriticalMsg: this is a CRITICAL message*',
@@ -52,6 +56,9 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
         else:
             res.stdout.fnmatch_lines([
                 '*-- Captured stderr call --*',
+                # qInfo is not exposed by the bindings yet (#225)
+                # '*QtInfoMsg: this is an INFO message*',
+                # 'this is an INFO message*',
                 'this is a DEBUG message*',
                 'this is a WARNING message*',
                 'this is a CRITICAL message*',
