@@ -4,8 +4,6 @@ import pytest
 
 from pytestqt.qt_compat import qt_api
 
-pytestmark = pytest.mark.skipif(qt_api.pytest_qt_api == 'pyside2', reason="https://bugreports.qt.io/browse/PYSIDE-435")
-
 
 @pytest.mark.parametrize('test_succeeds', [True, False])
 @pytest.mark.parametrize('qt_log', [True, False])
