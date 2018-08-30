@@ -1,3 +1,12 @@
+3.0.1 (unreleased)
+------------------
+
+- Fix handling of ``QtInfoMsg`` objects during logging (`#225`_).
+  Thanks `@willsALMANJ`_ for the report.
+
+.. _#225: https://github.com/pytest-dev/pytest-qt/issues/225
+
+
 3.0.0 (2018-07-12)
 ------------------
 
@@ -496,3 +505,4 @@ First working version.
 .. _@rth: https://github.com/rth
 .. _@Sheeo: https://github.com/Sheeo
 .. _@The-Compiler: https://github.com/The-Compiler
+.. _@willsALMANJ: https://github.com/willsALMANJ
