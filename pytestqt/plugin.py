@@ -1,7 +1,12 @@
 import pytest
 
-from pytestqt.exceptions import capture_exceptions, format_captured_exceptions, \
-    _is_exception_capture_enabled, _QtExceptionCaptureManager, SignalTimeoutError
+from pytestqt.exceptions import (
+    capture_exceptions,
+    format_captured_exceptions,
+    _is_exception_capture_enabled,
+    _QtExceptionCaptureManager,
+    SignalTimeoutError,
+)
 from pytestqt.logging import QtLoggingPlugin, _QtMessageCapture, Record
 from pytestqt.qt_compat import qt_api
 from pytestqt.qtbot import QtBot, _close_widgets
@@ -18,7 +23,7 @@ assert capture_exceptions
 assert format_captured_exceptions
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def qapp_args():
     """
     Fixture that provides QApplication arguments to use.
@@ -35,7 +40,7 @@ def qapp_args():
     return []
 
 
-@pytest.yield_fixture(scope='session')
+@pytest.yield_fixture(scope="session")
 def qapp(qapp_args):
     """
     Fixture that instantiates the QApplication instance that will be used by
@@ -51,6 +56,7 @@ def qapp(qapp_args):
         yield _qapp_instance
     else:
         yield app  # pragma: no cover
+
 
 # holds a global QApplication instance created in the qapp fixture; keeping
 # this reference alive avoids it being garbage collected too early
@@ -72,7 +78,7 @@ def qtbot(qapp, request):
 @pytest.fixture
 def qtlog(request):
     """Fixture that can access messages captured during testing"""
-    if hasattr(request._pyfuncitem, 'qt_log_capture'):
+    if hasattr(request._pyfuncitem, "qt_log_capture"):
         return request._pyfuncitem.qt_log_capture
     else:
         return _QtMessageCapture([])  # pragma: no cover
@@ -84,33 +90,50 @@ def qtmodeltester(request):
     Fixture used to create a ModelTester instance to test models.
     """
     from pytestqt.modeltest import ModelTester
+
     tester = ModelTester(request.config)
     yield tester
     tester._cleanup()
 
 
 def pytest_addoption(parser):
-    parser.addini('qt_api',
-                  'Qt api version to use: "pyside", "pyqt4", "pyqt4v2", "pyqt5"')
-    parser.addini('qt_no_exception_capture',
-                  'disable automatic exception capture')
-    parser.addini('qt_wait_signal_raising',
-                  'Default value for the raising parameter of qtbot.waitSignal')
+    parser.addini(
+        "qt_api", 'Qt api version to use: "pyside", "pyqt4", "pyqt4v2", "pyqt5"'
+    )
+    parser.addini("qt_no_exception_capture", "disable automatic exception capture")
+    parser.addini(
+        "qt_wait_signal_raising",
+        "Default value for the raising parameter of qtbot.waitSignal",
+    )
 
     default_log_fail = QtLoggingPlugin.LOG_FAIL_OPTIONS[0]
-    parser.addini('qt_log_level_fail',
-                  'log level in which tests can fail: {0} (default: "{1}")'
-                  .format(QtLoggingPlugin.LOG_FAIL_OPTIONS, default_log_fail),
-                  default=default_log_fail)
-    parser.addini('qt_log_ignore',
-                  'list of regexes for messages that should not cause a tests '
-                  'to fails', type='linelist')
+    parser.addini(
+        "qt_log_level_fail",
+        'log level in which tests can fail: {} (default: "{}")'.format(
+            QtLoggingPlugin.LOG_FAIL_OPTIONS, default_log_fail
+        ),
+        default=default_log_fail,
+    )
+    parser.addini(
+        "qt_log_ignore",
+        "list of regexes for messages that should not cause a tests " "to fails",
+        type="linelist",
+    )
 
-    group = parser.getgroup('qt', 'qt testing')
-    group.addoption('--no-qt-log', dest='qt_log', action='store_false',
-                    default=True, help='disable pytest-qt logging capture')
-    group.addoption('--qt-log-format', dest='qt_log_format', default=None,
-                    help='defines how qt log messages are displayed.')
+    group = parser.getgroup("qt", "qt testing")
+    group.addoption(
+        "--no-qt-log",
+        dest="qt_log",
+        action="store_false",
+        default=True,
+        help="disable pytest-qt logging capture",
+    )
+    group.addoption(
+        "--qt-log-format",
+        dest="qt_log_format",
+        default=None,
+        help="defines how qt log messages are displayed.",
+    )
 
 
 @pytest.mark.hookwrapper
@@ -127,7 +150,7 @@ def pytest_runtest_setup(item):
     yield
     _process_events()
     if capture_enabled:
-        item.qt_exception_capture_manager.fail_if_exceptions_occurred('SETUP')
+        item.qt_exception_capture_manager.fail_if_exceptions_occurred("SETUP")
 
 
 @pytest.mark.hookwrapper
@@ -137,7 +160,7 @@ def pytest_runtest_call(item):
     _process_events()
     capture_enabled = _is_exception_capture_enabled(item)
     if capture_enabled:
-        item.qt_exception_capture_manager.fail_if_exceptions_occurred('CALL')
+        item.qt_exception_capture_manager.fail_if_exceptions_occurred("CALL")
 
 
 @pytest.mark.hookwrapper
@@ -155,7 +178,7 @@ def pytest_runtest_teardown(item):
     _process_events()
     capture_enabled = _is_exception_capture_enabled(item)
     if capture_enabled:
-        item.qt_exception_capture_manager.fail_if_exceptions_occurred('TEARDOWN')
+        item.qt_exception_capture_manager.fail_if_exceptions_occurred("TEARDOWN")
         item.qt_exception_capture_manager.finish()
 
 
@@ -170,37 +193,36 @@ def _process_events():
 
 def pytest_configure(config):
     config.addinivalue_line(
-        'markers',
+        "markers",
         "qt_no_exception_capture: Disables pytest-qt's automatic exception "
-        'capture for just one test item.')
+        "capture for just one test item.",
+    )
 
     config.addinivalue_line(
-        'markers',
-        'qt_log_level_fail: overrides qt_log_level_fail ini option.')
+        "markers", "qt_log_level_fail: overrides qt_log_level_fail ini option."
+    )
     config.addinivalue_line(
-        'markers',
-        'qt_log_ignore: overrides qt_log_ignore ini option.')
+        "markers", "qt_log_ignore: overrides qt_log_ignore ini option."
+    )
 
-    if config.getoption('qt_log'):
-        config.pluginmanager.register(QtLoggingPlugin(config), '_qt_logging')
+    if config.getoption("qt_log"):
+        config.pluginmanager.register(QtLoggingPlugin(config), "_qt_logging")
 
-    qt_api.set_qt_api(config.getini('qt_api'))
+    qt_api.set_qt_api(config.getini("qt_api"))
 
     from .qtbot import QtBot
+
     QtBot._inject_qtest_methods()
 
 
 def pytest_report_header():
     from pytestqt.qt_compat import qt_api
+
     v = qt_api.get_versions()
     fields = [
-        '%s %s' % (v.qt_api, v.qt_api_version),
-        'Qt runtime %s' % v.runtime,
-        'Qt compiled %s' % v.compiled,
+        "%s %s" % (v.qt_api, v.qt_api_version),
+        "Qt runtime %s" % v.runtime,
+        "Qt compiled %s" % v.compiled,
     ]
-    version_line = ' -- '.join(fields)
+    version_line = " -- ".join(fields)
     return [version_line]
-
-
-
-

@@ -3,10 +3,10 @@ pytest-qt
 =========
 
 pytest-qt is a `pytest`_ plugin that allows programmers to write tests
-for `PySide`_, `PySide2` and `PyQt`_ applications.
+for `PySide`_, ``PySide2`` and `PyQt`_ applications.
 
-The main usage is to use the `qtbot` fixture, responsible for handling `qApp` 
-creation as needed and provides methods to simulate user interaction, 
+The main usage is to use the ``qtbot`` fixture, responsible for handling ``qApp``
+creation as needed and provides methods to simulate user interaction,
 like key presses and mouse clicks:
 
 
@@ -15,11 +15,11 @@ like key presses and mouse clicks:
     def test_hello(qtbot):
         widget = HelloWidget()
         qtbot.addWidget(widget)
-    
+
         # click in the Greet button and make sure it updates the appropriate label
         qtbot.mouseClick(widget.button_greet, QtCore.Qt.LeftButton)
-    
-        assert widget.greet_label.text() == 'Hello!'
+
+        assert widget.greet_label.text() == "Hello!"
 
 
 .. _PySide: https://pypi.python.org/pypi/PySide
@@ -31,10 +31,10 @@ This allows you to test and make sure your view layer is behaving the way you ex
 
 .. |version| image:: http://img.shields.io/pypi/v/pytest-qt.svg
   :target: https://pypi.python.org/pypi/pytest-qt
-  
+
 .. |conda-forge| image:: https://img.shields.io/conda/vn/conda-forge/pytest-qt.svg
     :target: https://anaconda.org/conda-forge/pytest-qt
-  
+
 .. |travis| image:: https://img.shields.io/travis/pytest-dev/pytest-qt/master.svg
   :target: https://travis-ci.org/pytest-dev/pytest-qt
 
@@ -166,12 +166,12 @@ Many thanks to:
 
 .. |pycharm| image:: https://www.jetbrains.com/pycharm/docs/logo_pycharm.png
   :target: https://www.jetbrains.com/pycharm
-  
+
 .. |pydev| image:: http://www.pydev.org/images/pydev_banner3.png
   :target: https://www.pydev.org
-  
-|pycharm|  
 
-|pydev|  
+|pycharm|
+
+|pydev|
 
 .. _tox: https://tox.readthedocs.io

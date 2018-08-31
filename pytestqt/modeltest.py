@@ -37,7 +37,7 @@ import collections
 from pytestqt.qt_compat import qt_api
 
 
-_Changing = collections.namedtuple('_Changing', 'parent, old_size, last, next')
+_Changing = collections.namedtuple("_Changing", "parent, old_size, last, next")
 
 
 class ModelTester:
@@ -57,18 +57,20 @@ class ModelTester:
         self.data_display_may_return_none = False
 
     def _debug(self, text):
-        print('modeltest: ' + text)
+        print("modeltest: " + text)
 
     def _modelindex_debug(self, index):
         """Get a string for debug output for a QModelIndex."""
         if not index.isValid():
-            return '<invalid> (0x{:x})'.format(id(index))
+            return "<invalid> (0x{:x})".format(id(index))
         else:
             data = self._model.data(index, qt_api.QtCore.Qt.DisplayRole)
-            return '{}/{} {!r} (0x{:x})'.format(
-                index.row(), index.column(),
+            return "{}/{} {!r} (0x{:x})".format(
+                index.row(),
+                index.column(),
                 qt_api.extract_from_variant(data),
-                id(index))
+                id(index),
+            )
 
     def check(self, model):
         """Runs a series of checks in the given model.
@@ -99,13 +101,10 @@ class ModelTester:
         self._model.rowsRemoved.connect(self._run)
 
         # Special checks for changes
-        self._model.layoutAboutToBeChanged.connect(
-            self._on_layout_about_to_be_changed)
+        self._model.layoutAboutToBeChanged.connect(self._on_layout_about_to_be_changed)
         self._model.layoutChanged.connect(self._on_layout_changed)
-        self._model.rowsAboutToBeInserted.connect(
-            self._on_rows_about_to_be_inserted)
-        self._model.rowsAboutToBeRemoved.connect(
-            self._on_rows_about_to_be_removed)
+        self._model.rowsAboutToBeInserted.connect(self._on_rows_about_to_be_inserted)
+        self._model.rowsAboutToBeRemoved.connect(self._on_rows_about_to_be_removed)
         self._model.rowsInserted.connect(self._on_rows_inserted)
         self._model.rowsRemoved.connect(self._on_rows_removed)
         self._model.dataChanged.connect(self._on_data_changed)
@@ -133,12 +132,11 @@ class ModelTester:
         self._model.rowsRemoved.disconnect(self._run)
 
         self._model.layoutAboutToBeChanged.disconnect(
-            self._on_layout_about_to_be_changed)
+            self._on_layout_about_to_be_changed
+        )
         self._model.layoutChanged.disconnect(self._on_layout_changed)
-        self._model.rowsAboutToBeInserted.disconnect(
-            self._on_rows_about_to_be_inserted)
-        self._model.rowsAboutToBeRemoved.disconnect(
-            self._on_rows_about_to_be_removed)
+        self._model.rowsAboutToBeInserted.disconnect(self._on_rows_about_to_be_inserted)
+        self._model.rowsAboutToBeRemoved.disconnect(self._on_rows_about_to_be_removed)
         self._model.rowsInserted.disconnect(self._on_rows_inserted)
         self._model.rowsRemoved.disconnect(self._on_rows_removed)
         self._model.dataChanged.disconnect(self._on_data_changed)
@@ -165,11 +163,15 @@ class ModelTester:
         Make sure the model doesn't outright segfault, testing the functions
         which make sense.
         """
-        assert self._model.buddy(qt_api.QtCore.QModelIndex()) == qt_api.QtCore.QModelIndex()
+        assert (
+            self._model.buddy(qt_api.QtCore.QModelIndex())
+            == qt_api.QtCore.QModelIndex()
+        )
         self._model.canFetchMore(qt_api.QtCore.QModelIndex())
         assert self._column_count(qt_api.QtCore.QModelIndex()) >= 0
-        display_data = self._model.data(qt_api.QtCore.QModelIndex(),
-                                        qt_api.QtCore.Qt.DisplayRole)
+        display_data = self._model.data(
+            qt_api.QtCore.QModelIndex(), qt_api.QtCore.Qt.DisplayRole
+        )
 
         assert qt_api.extract_from_variant(display_data) is None
         self._fetch_more(qt_api.QtCore.QModelIndex())
@@ -351,10 +353,12 @@ class ModelTester:
         assert columns >= 0
         if rows > 0:
             assert self._has_children(parent)
-        self._debug("Checking children of {} with depth {} "
-                    "({} rows, {} columns)".format(
-                        self._modelindex_debug(parent), current_depth,
-                        rows, columns))
+        self._debug(
+            "Checking children of {} with depth {} "
+            "({} rows, {} columns)".format(
+                self._modelindex_debug(parent), current_depth, rows, columns
+            )
+        )
 
         top_left_child = self._model.index(0, 0, parent)
 
@@ -404,7 +408,7 @@ class ModelTester:
                         "  parent {} != expected {}".format(
                             self._modelindex_debug(index),
                             self._modelindex_debug(self._parent(index)),
-                            self._modelindex_debug(parent)
+                            self._modelindex_debug(parent),
                         )
                     )
 
@@ -413,10 +417,11 @@ class ModelTester:
 
                 # recursively go down the children
                 if self._has_children(index) and current_depth < 10:
-                    self._debug("{} has {} children".format(
-                        self._modelindex_debug(index),
-                        self._model.rowCount(index)
-                    ))
+                    self._debug(
+                        "{} has {} children".format(
+                            self._modelindex_debug(index), self._model.rowCount(index)
+                        )
+                    )
                     self._check_children(index, current_depth + 1)
 
                 # make sure that after testing the children that the index
@@ -428,7 +433,9 @@ class ModelTester:
     def _test_data(self):
         """Test model's implementation of data()"""
         # Invalid index should return an invalid qvariant
-        value = self._model.data(qt_api.QtCore.QModelIndex(), qt_api.QtCore.Qt.DisplayRole)
+        value = self._model.data(
+            qt_api.QtCore.QModelIndex(), qt_api.QtCore.Qt.DisplayRole
+        )
         assert qt_api.extract_from_variant(value) is None
 
         if self._model.rowCount() == 0:
@@ -438,8 +445,9 @@ class ModelTester:
         assert self._model.index(0, 0).isValid()
 
         # shouldn't be able to set data on an invalid index
-        ok = self._model.setData(qt_api.QtCore.QModelIndex(), "foo",
-                                 qt_api.QtCore.Qt.DisplayRole)
+        ok = self._model.setData(
+            qt_api.QtCore.QModelIndex(), "foo", qt_api.QtCore.Qt.DisplayRole
+        )
         assert not ok
 
         types = [
@@ -448,33 +456,47 @@ class ModelTester:
             (qt_api.QtCore.Qt.WhatsThisRole, str),
             (qt_api.QtCore.Qt.SizeHintRole, qt_api.QtCore.QSize),
             (qt_api.QtCore.Qt.FontRole, qt_api.QtGui.QFont),
-            (qt_api.QtCore.Qt.BackgroundColorRole, (qt_api.QtGui.QColor, qt_api.QtGui.QBrush)),
-            (qt_api.QtCore.Qt.TextColorRole, (qt_api.QtGui.QColor, qt_api.QtGui.QBrush)),
+            (
+                qt_api.QtCore.Qt.BackgroundColorRole,
+                (qt_api.QtGui.QColor, qt_api.QtGui.QBrush),
+            ),
+            (
+                qt_api.QtCore.Qt.TextColorRole,
+                (qt_api.QtGui.QColor, qt_api.QtGui.QBrush),
+            ),
         ]
 
         # General purpose roles with a fixed expected type
         for role, typ in types:
             data = self._model.data(self._model.index(0, 0), role)
-            assert data == None or isinstance(data, typ), role
+            assert data is None or isinstance(data, typ), role
 
         # Check that the alignment is one we know about
-        alignment = self._model.data(self._model.index(0, 0),
-                                     qt_api.QtCore.Qt.TextAlignmentRole)
+        alignment = self._model.data(
+            self._model.index(0, 0), qt_api.QtCore.Qt.TextAlignmentRole
+        )
         alignment = qt_api.extract_from_variant(alignment)
         if alignment is not None:
             try:
                 alignment = int(alignment)
             except (TypeError, ValueError):
-                assert 0, '%r should be a TextAlignmentRole enum' % alignment
-            mask = int(qt_api.QtCore.Qt.AlignHorizontal_Mask |
-                       qt_api.QtCore.Qt.AlignVertical_Mask)
+                assert 0, "%r should be a TextAlignmentRole enum" % alignment
+            mask = int(
+                qt_api.QtCore.Qt.AlignHorizontal_Mask
+                | qt_api.QtCore.Qt.AlignVertical_Mask
+            )
             assert alignment == alignment & mask
 
         # Check that the "check state" is one we know about.
-        state = self._model.data(self._model.index(0, 0),
-                                 qt_api.QtCore.Qt.CheckStateRole)
-        assert state in [None, qt_api.QtCore.Qt.Unchecked, qt_api.QtCore.Qt.PartiallyChecked,
-                         qt_api.QtCore.Qt.Checked]
+        state = self._model.data(
+            self._model.index(0, 0), qt_api.QtCore.Qt.CheckStateRole
+        )
+        assert state in [
+            None,
+            qt_api.QtCore.Qt.Unchecked,
+            qt_api.QtCore.Qt.PartiallyChecked,
+            qt_api.QtCore.Qt.Checked,
+        ]
 
     def _on_rows_about_to_be_inserted(self, parent, start, end):
         """Store what is about to be inserted.
@@ -485,20 +507,23 @@ class ModelTester:
         next_index = self._model.index(start, 0, parent)
         parent_rowcount = self._model.rowCount(parent)
 
-        self._debug("rows about to be inserted: start {}, end {}, parent {}, "
-                    "parent row count {}, last item {}, next item {}".format(
-                        start, end,
-                        self._modelindex_debug(parent),
-                        parent_rowcount,
-                        self._modelindex_debug(last_index),
-                        self._modelindex_debug(next_index),
-                    )
+        self._debug(
+            "rows about to be inserted: start {}, end {}, parent {}, "
+            "parent row count {}, last item {}, next item {}".format(
+                start,
+                end,
+                self._modelindex_debug(parent),
+                parent_rowcount,
+                self._modelindex_debug(last_index),
+                self._modelindex_debug(next_index),
+            )
         )
 
         last_data = self._model.data(last_index)
         next_data = self._model.data(next_index)
-        c = _Changing(parent=parent, old_size=parent_rowcount,
-                      last=last_data, next=next_data)
+        c = _Changing(
+            parent=parent, old_size=parent_rowcount, last=last_data, next=next_data
+        )
         self._insert.append(c)
 
     def _on_rows_inserted(self, parent, start, end):
@@ -510,26 +535,29 @@ class ModelTester:
         current_size = self._model.rowCount(parent)
 
         self._debug("rows inserted: start {}, end {}".format(start, end))
-        self._debug("  from rowsAboutToBeInserted: parent {}, "
-                    "size {} (-> {} expected), "
-                    "next data {!r}, last data {!r}".format(
-                        self._modelindex_debug(c.parent),
-                        c.old_size, expected_size,
-                        qt_api.extract_from_variant(c.next),
-                        qt_api.extract_from_variant(c.last)
-                    )
+        self._debug(
+            "  from rowsAboutToBeInserted: parent {}, "
+            "size {} (-> {} expected), "
+            "next data {!r}, last data {!r}".format(
+                self._modelindex_debug(c.parent),
+                c.old_size,
+                expected_size,
+                qt_api.extract_from_variant(c.next),
+                qt_api.extract_from_variant(c.last),
+            )
         )
 
-        self._debug("  now in rowsInserted:        parent {}, size {}, "
-                    "next data {!r}, last data {!r}".format(
-                        self._modelindex_debug(parent),
-                        current_size,
-                        qt_api.extract_from_variant(next_data),
-                        qt_api.extract_from_variant(last_data)
-                    )
+        self._debug(
+            "  now in rowsInserted:        parent {}, size {}, "
+            "next data {!r}, last data {!r}".format(
+                self._modelindex_debug(parent),
+                current_size,
+                qt_api.extract_from_variant(next_data),
+                qt_api.extract_from_variant(last_data),
+            )
         )
 
-        if not qt_api.QtCore.qVersion().startswith('4.'):
+        if not qt_api.QtCore.qVersion().startswith("4."):
             # Skipping this on Qt4 as the parent changes for some reason:
             # modeltest: rows about to be inserted: [...]
             #            parent <invalid> (0x7f8f540eacf8), [...]
@@ -542,9 +570,8 @@ class ModelTester:
 
         for ii in range(start, end + 1):
             idx = self._model.index(ii, 0, parent)
-            self._debug(" item {} inserted: {}".format(ii,
-                                                       self._modelindex_debug(idx)))
-        self._debug('')
+            self._debug(" item {} inserted: {}".format(ii, self._modelindex_debug(idx)))
+        self._debug("")
 
         assert current_size == expected_size
         assert c.last == last_data
@@ -569,20 +596,23 @@ class ModelTester:
         next_index = self._model.index(end + 1, 0, parent)
         parent_rowcount = self._model.rowCount(parent)
 
-        self._debug("rows about to be removed: start {}, end {}, parent {}, "
-                    "parent row count {}, last item {}, next item {}".format(
-                        start, end,
-                        self._modelindex_debug(parent),
-                        parent_rowcount,
-                        self._modelindex_debug(last_index),
-                        self._modelindex_debug(next_index),
-                    )
+        self._debug(
+            "rows about to be removed: start {}, end {}, parent {}, "
+            "parent row count {}, last item {}, next item {}".format(
+                start,
+                end,
+                self._modelindex_debug(parent),
+                parent_rowcount,
+                self._modelindex_debug(last_index),
+                self._modelindex_debug(next_index),
+            )
         )
 
         last_data = self._model.data(last_index)
         next_data = self._model.data(next_index)
-        c = _Changing(parent=parent, old_size=parent_rowcount,
-                      last=last_data, next=next_data)
+        c = _Changing(
+            parent=parent, old_size=parent_rowcount, last=last_data, next=next_data
+        )
         self._remove.append(c)
 
     def _on_rows_removed(self, parent, start, end):
@@ -594,26 +624,29 @@ class ModelTester:
         expected_size = c.old_size - (end - start + 1)
 
         self._debug("rows removed: start {}, end {}".format(start, end))
-        self._debug("  from rowsAboutToBeRemoved: parent {}, "
-                    "size {} (-> {} expected), "
-                    "next data {!r}, last data {!r}".format(
-                        self._modelindex_debug(c.parent),
-                        c.old_size, expected_size,
-                        qt_api.extract_from_variant(c.next),
-                        qt_api.extract_from_variant(c.last)
-                    )
+        self._debug(
+            "  from rowsAboutToBeRemoved: parent {}, "
+            "size {} (-> {} expected), "
+            "next data {!r}, last data {!r}".format(
+                self._modelindex_debug(c.parent),
+                c.old_size,
+                expected_size,
+                qt_api.extract_from_variant(c.next),
+                qt_api.extract_from_variant(c.last),
+            )
         )
 
-        self._debug("  now in rowsRemoved:        parent {}, size {}, "
-                    "next data {!r}, last data {!r}".format(
-                        self._modelindex_debug(parent),
-                        current_size,
-                        qt_api.extract_from_variant(next_data),
-                        qt_api.extract_from_variant(last_data)
-                    )
+        self._debug(
+            "  now in rowsRemoved:        parent {}, size {}, "
+            "next data {!r}, last data {!r}".format(
+                self._modelindex_debug(parent),
+                current_size,
+                qt_api.extract_from_variant(next_data),
+                qt_api.extract_from_variant(last_data),
+            )
         )
 
-        if not qt_api.QtCore.qVersion().startswith('4.'):
+        if not qt_api.QtCore.qVersion().startswith("4."):
             # Skipping this on Qt4 as the parent changes for some reason
             # see _on_rows_inserted for details
             assert c.parent == parent

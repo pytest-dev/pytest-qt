@@ -23,16 +23,18 @@ def test_pep8_alias(qtbot):
     qtbot.wait_until
 
 
-@pytest.fixture(params=['predicate', 'assert'])
+@pytest.fixture(params=["predicate", "assert"])
 def wait_4_ticks_callback(request, tick_counter):
     """Parametrized fixture which returns the two possible callback methods that can be
     passed to ``waitUntil``: predicate and assertion.
     """
-    if request.param == 'predicate':
+    if request.param == "predicate":
         return lambda: tick_counter.ticks >= 4
     else:
+
         def check_ticks():
             assert tick_counter.ticks >= 4
+
         return check_ticks
 
 
@@ -44,7 +46,6 @@ def tick_counter():
     from pytestqt.qt_compat import qt_api
 
     class Counter:
-
         def __init__(self):
             self._ticks = 0
             self.timer = qt_api.QtCore.QTimer()

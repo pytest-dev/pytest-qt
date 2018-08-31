@@ -43,28 +43,30 @@ class Error(Exception):
 
 def run_py(executable, *code):
     """Run the given python code with the given executable."""
-    if os.name == 'nt' and len(code) > 1:
+    if os.name == "nt" and len(code) > 1:
         # Windows can't do newlines in arguments...
         oshandle, filename = tempfile.mkstemp()
-        with os.fdopen(oshandle, 'w') as f:
-            f.write('\n'.join(code))
+        with os.fdopen(oshandle, "w") as f:
+            f.write("\n".join(code))
         cmd = [executable, filename]
         try:
-            ret = subprocess.check_output(cmd, universal_newlines=True,
-                                          stderr=None).rstrip()
+            ret = subprocess.check_output(
+                cmd, universal_newlines=True, stderr=None
+            ).rstrip()
         finally:
             os.remove(filename)
     else:
-        cmd = [executable, '-c', '\n'.join(code)]
-        ret = subprocess.check_output(cmd, universal_newlines=True,
-                                      stderr=None).rstrip()
+        cmd = [executable, "-c", "\n".join(code)]
+        ret = subprocess.check_output(
+            cmd, universal_newlines=True, stderr=None
+        ).rstrip()
     return ret
 
 
 def get_ignored_files(directory, files):
     """Get the files which should be ignored for link_pyqt() on Windows."""
-    needed_exts = ('.py', '.dll', '.pyd', '.so')
-    ignored_dirs = ('examples', 'doc')
+    needed_exts = (".py", ".dll", ".pyd", ".so")
+    ignored_dirs = ("examples", "doc")
     filtered = []
     for f in files:
         ext = os.path.splitext(f)[1]
@@ -85,9 +87,13 @@ def needs_update(source, dest):
         diffs = filecmp.dircmp(source, dest)
         ignored = get_ignored_files(source, diffs.left_only)
         has_new_files = set(ignored) != set(diffs.left_only)
-        return (has_new_files or diffs.right_only or
-                diffs.common_funny or diffs.diff_files or
-                diffs.funny_files)
+        return (
+            has_new_files
+            or diffs.right_only
+            or diffs.common_funny
+            or diffs.diff_files
+            or diffs.funny_files
+        )
     else:
         return not filecmp.cmp(source, dest)
 
@@ -101,26 +107,27 @@ def get_lib_path(executable, name, required=True):
         required: Whether Error should be raised if the lib was not found.
     """
     code = [
-        'try:',
-        '    import {}'.format(name),
-        'except ImportError as e:',
+        "try:",
+        "    import {}".format(name),
+        "except ImportError as e:",
         '    print("ImportError: " + str(e))',
-        'else:',
-        '    print("path: " + {}.__file__)'.format(name)
+        "else:",
+        '    print("path: " + {}.__file__)'.format(name),
     ]
     output = run_py(executable, *code)
 
     try:
-        prefix, data = output.split(': ')
+        prefix, data = output.split(": ")
     except ValueError:
         raise ValueError("Unexpected output: {!r}".format(output))
 
-    if prefix == 'path':
+    if prefix == "path":
         return data
-    elif prefix == 'ImportError':
+    elif prefix == "ImportError":
         if required:
-            raise Error("Could not import {} with {}: {}!".format(
-                name, executable, data))
+            raise Error(
+                "Could not import {} with {}: {}!".format(name, executable, data)
+            )
         else:
             return None
     else:
@@ -134,9 +141,9 @@ def link_pyqt(executable, venv_path, qt_version):
         executable: The python executable where the source files are present.
         venv_path: The path to the virtualenv site-packages.
     """
-    sip_file = get_lib_path(executable, 'sip')
-    sipconfig_file = get_lib_path(executable, 'sipconfig', required=False)
-    pyqt_dir = os.path.dirname(get_lib_path(executable, 'PyQt%d' % qt_version))
+    sip_file = get_lib_path(executable, "sip")
+    sipconfig_file = get_lib_path(executable, "sipconfig", required=False)
+    pyqt_dir = os.path.dirname(get_lib_path(executable, "PyQt%d" % qt_version))
 
     for path in [sip_file, sipconfig_file, pyqt_dir]:
         if path is None:
@@ -156,15 +163,15 @@ def link_pyqt(executable, venv_path, qt_version):
 
 def copy_or_link(source, dest):
     """Copy or symlink source to dest."""
-    if os.name == 'nt':
+    if os.name == "nt":
         if os.path.isdir(source):
-            print('{} -> {}'.format(source, dest))
+            print("{} -> {}".format(source, dest))
             shutil.copytree(source, dest, ignore=get_ignored_files)
         else:
-            print('{} -> {}'.format(source, dest))
+            print("{} -> {}".format(source, dest))
             shutil.copy(source, dest)
     else:
-        print('{} -> {}'.format(source, dest))
+        print("{} -> {}".format(source, dest))
         os.symlink(source, dest)
 
 
@@ -178,30 +185,32 @@ def remove(filename):
 
 def get_venv_lib_path(path):
     """Get the library path of a virtualenv."""
-    subdir = 'Scripts' if os.name == 'nt' else 'bin'
-    executable = os.path.join(path, subdir, 'python')
-    return run_py(executable,
-                  'from distutils.sysconfig import get_python_lib',
-                  'print(get_python_lib())')
+    subdir = "Scripts" if os.name == "nt" else "bin"
+    executable = os.path.join(path, subdir, "python")
+    return run_py(
+        executable,
+        "from distutils.sysconfig import get_python_lib",
+        "print(get_python_lib())",
+    )
 
 
 def get_tox_syspython(tox_path):
     """Get the system python based on a virtualenv created by tox."""
-    path = os.path.join(tox_path, '.tox-config1')
-    with io.open(path, encoding='ascii') as f:
+    path = os.path.join(tox_path, ".tox-config1")
+    with io.open(path, encoding="ascii") as f:
         line = f.readline()
-    _md5, sys_python = line.rstrip().split(' ')
+    _md5, sys_python = line.rstrip().split(" ")
     return sys_python
 
 
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('path', help="Base path to the venv.")
-    parser.add_argument('qt_version', type=int,
-                        help="Major Qt version (5 for PyQt5, etc).")
-    parser.add_argument('--tox', help="Add when called via tox.",
-                        action='store_true')
+    parser.add_argument("path", help="Base path to the venv.")
+    parser.add_argument(
+        "qt_version", type=int, help="Major Qt version (5 for PyQt5, etc)."
+    )
+    parser.add_argument("--tox", help="Add when called via tox.", action="store_true")
     args = parser.parse_args()
 
     if args.tox:
@@ -213,7 +222,7 @@ def main():
     link_pyqt(executable, venv_path, args.qt_version)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main()
     except Error as e:

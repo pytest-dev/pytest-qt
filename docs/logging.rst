@@ -17,8 +17,10 @@ For example:
 
     from pytestqt.qt_compat import qWarning
 
+
     def do_something():
-        qWarning('this is a WARNING message')
+        qWarning("this is a WARNING message")
+
 
     def test_foo():
         do_something()
@@ -96,6 +98,7 @@ context manager, or with the ``pytest.mark.no_qt_log`` mark:
             # logging is disabled within the context manager
             do_something()
 
+
     @pytest.mark.no_qt_log
     def test_bar():
         # logging is disabled for the entire test
@@ -152,8 +155,10 @@ will fail, even if no actual asserts fail within the test:
 
     from pytestqt.qt_compat import qCritical
 
+
     def do_something():
-        qCritical('WM_PAINT failed')
+        qCritical("WM_PAINT failed")
+
 
     def test_foo(qtlog):
         do_something()
@@ -201,8 +206,9 @@ defined by ``qt_log_ignore`` make tests fail as usual:
 .. code-block:: python
 
     def do_something():
-        qCritical('WM_PAINT not handled')
-        qCritical('QObject: widget destroyed in another thread')
+        qCritical("WM_PAINT not handled")
+        qCritical("QObject: widget destroyed in another thread")
+
 
     def test_foo(qtlog):
         do_something()
@@ -226,11 +232,12 @@ with the same name:
 .. code-block:: python
 
     def do_something():
-        qCritical('WM_PAINT not handled')
-        qCritical('QObject: widget destroyed in another thread')
+        qCritical("WM_PAINT not handled")
+        qCritical("QObject: widget destroyed in another thread")
 
-    @pytest.mark.qt_log_level_fail('CRITICAL')
-    @pytest.mark.qt_log_ignore('WM_DESTROY.*sent', 'WM_PAINT failed')
+
+    @pytest.mark.qt_log_level_fail("CRITICAL")
+    @pytest.mark.qt_log_ignore("WM_DESTROY.*sent", "WM_PAINT failed")
     def test_foo(qtlog):
         do_something()
 
@@ -239,6 +246,6 @@ If you would like to override the list of ignored patterns instead, pass
 
 .. code-block:: python
 
-    @pytest.mark.qt_log_ignore('WM_DESTROY.*sent', extend=False)
+    @pytest.mark.qt_log_ignore("WM_DESTROY.*sent", extend=False)
     def test_foo(qtlog):
         do_something()

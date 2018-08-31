@@ -8,7 +8,9 @@ processes, you can use :meth:`qtbot.waitSignal <pytestqt.plugin.QtBot.waitSignal
 to block a test until a signal is emitted (such as ``QThread.finished``) or a
 timeout is reached. This makes it easy to write tests that wait until a
 computation running in another thread or process is completed before
-ensuring the results are correct::
+ensuring the results are correct:
+
+.. code-block:: python
 
     def test_long_computation(qtbot):
         app = Application()
@@ -29,7 +31,7 @@ raising parameter
 -----------------
 
 .. versionadded:: 1.4
-.. versionchanged:: 2.0                  
+.. versionchanged:: 2.0
 
 You can pass ``raising=False`` to avoid raising a
 :class:`qtbot.SignalTimeoutError <SignalTimeoutError>` if the timeout is
@@ -54,7 +56,7 @@ qt_wait_signal_raising ini option
 ---------------------------------
 
 .. versionadded:: 1.11
-.. versionchanged:: 2.0                  
+.. versionchanged:: 2.0
 
 The ``qt_wait_signal_raising`` ini option can be used to override the default
 value of the ``raising`` parameter of the ``qtbot.waitSignal`` and
@@ -73,7 +75,7 @@ check_params_cb parameter
 
 .. versionadded:: 2.0
 
-If the signal has parameters you want to compare with expected values, you can pass 
+If the signal has parameters you want to compare with expected values, you can pass
 ``check_params_cb=some_callable`` that compares the provided signal parameters to some expected parameters.
 It has to match the signature of ``signal`` (just like a slot function would) and return ``True`` if
 parameters match, ``False`` otherwise.
@@ -84,12 +86,15 @@ parameters match, ``False`` otherwise.
         """Return true if status has reached 100%."""
         return status == 100
 
+
     def test_status_complete(qtbot):
         app = Application()
-        
-        # the following raises if the worker's status signal (which has an int parameter) wasn't raised 
+
+        # the following raises if the worker's status signal (which has an int parameter) wasn't raised
         # with value=100 within the default timeout
-        with qtbot.waitSignal(app.worker.status, raising=True, check_params_cb=test_status_100) as blocker:
+        with qtbot.waitSignal(
+            app.worker.status, raising=True, check_params_cb=test_status_100
+        ) as blocker:
             app.worker.start()
 
 
@@ -108,7 +113,7 @@ of the blocker:
         ...
         with qtbot.waitSignal(app.got_cmd) as blocker:
             app.listen()
-        assert blocker.args == ['test']
+        assert blocker.args == ["test"]
 
 
 Signals without arguments will set ``args`` to an empty list. If the time out
@@ -170,16 +175,20 @@ evaluation takes place).
         """Return true if status has reached 100%."""
         return status == 100
 
+
     def test_status_50(status):
         """Return true if status has reached 50%."""
         return status == 50
 
+
     def test_status_complete(qtbot):
         app = Application()
-        
+
         signals = [app.worker.status, app.worker.status, app.worker.finished]
         callbacks = [test_status_50, test_status_100, None]
-        with qtbot.waitSignals(signals, raising=True, check_params_cbs=callbacks) as blocker:
+        with qtbot.waitSignals(
+            signals, raising=True, check_params_cbs=callbacks
+        ) as blocker:
             app.worker.start()
 
 
@@ -188,10 +197,10 @@ order parameter
 
 .. versionadded:: 2.0
 
-By default a test using ``qtbot.waitSignals`` completes successfully if *all* signals in ``signals`` 
+By default a test using ``qtbot.waitSignals`` completes successfully if *all* signals in ``signals``
 are emitted, irrespective of their exact order. The ``order`` parameter can be set to ``"strict"``
 to enforce strict signal order.
-Exemplary, this means that ``blocker.signal_triggered`` will be ``False`` if ``waitSignals`` expects 
+Exemplary, this means that ``blocker.signal_triggered`` will be ``False`` if ``waitSignals`` expects
 the signals ``[a, b]`` but the sender emitted signals ``[a, a, b]``.
 
 .. note::
@@ -201,7 +210,7 @@ the signals ``[a, b]`` but the sender emitted signals ``[a, a, b]``.
     emits signals ``[a, c, b]``, as ``c`` is not part of the observed signals.
 
 A third option is to set ``order="simple"`` which is like "strict", but signals may be emitted
-in-between the provided ones, e.g. if the expected signals are ``[a, b, c]`` and the sender 
+in-between the provided ones, e.g. if the expected signals are ``[a, b, c]`` and the sender
 actually emits ``[a, a, b, a, c]``, the test completes successfully (it would fail with ``order="strict"``).
 
 Getting emitted signals and arguments
