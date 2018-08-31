@@ -1,4 +1,4 @@
-3.0.1 (unreleased)
+3.0.1 (2018-08-30)
 ------------------
 
 - Fix handling of ``QtInfoMsg`` objects during logging (`#225`_).
