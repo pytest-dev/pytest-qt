@@ -69,6 +69,7 @@ def test_qtlog_fixture(qtlog):
     """
     Test qtlog fixture.
     """
+    # qInfo is not exposed by the bindings yet (#225)
     qt_api.qDebug('this is a DEBUG message')
     qt_api.qWarning('this is a WARNING message')
     qt_api.qCritical('this is a CRITICAL message')

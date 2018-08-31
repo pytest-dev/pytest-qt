@@ -14,7 +14,7 @@ class QtLoggingPlugin(object):
     test and augment reporting if the test failed with the messages captured.
     """
 
-    LOG_FAIL_OPTIONS = ['NO', 'CRITICAL', 'WARNING', 'DEBUG']
+    LOG_FAIL_OPTIONS = ['NO', 'CRITICAL', 'WARNING', 'DEBUG', 'INFO']
 
     def __init__(self, config):
         self.config = config
@@ -199,10 +199,10 @@ class Record(object):
 
     :ivar str message: message contents.
     :ivar Qt.QtMsgType type: enum that identifies message type
-    :ivar str type_name: ``type`` as string: ``"QtDebugMsg"``,
+    :ivar str type_name: ``type`` as string: ``"QtInfoMsg"``, ``"QtDebugMsg"``,
         ``"QtWarningMsg"`` or ``"QtCriticalMsg"``.
     :ivar str log_type_name:
-        type name similar to the logging package: ``DEBUG``,
+        type name similar to the logging package: ``INFO``, ``DEBUG``,
         ``WARNING`` and ``CRITICAL``.
     :ivar datetime.datetime when: when the message was captured
     :ivar bool ignored: If this record matches a regex from the "qt_log_ignore"
@@ -258,11 +258,15 @@ class Record(object):
                 qt_api.QtCriticalMsg: 'CRITICAL',
                 qt_api.QtFatalMsg: 'FATAL',
             }
+            if qt_api.QtInfoMsg is not None:
+                cls._log_type_name_map[qt_api.QtInfoMsg] = 'INFO'
         return cls._log_type_name_map[msg_type]
 
     def matches_level(self, level):
         assert level in QtLoggingPlugin.LOG_FAIL_OPTIONS
-        if level == 'DEBUG':
+        if level == 'INFO':
+            return self.log_type_name in ('INFO', 'DEBUG', 'WARNING', 'CRITICAL')
+        elif level == 'DEBUG':
             return self.log_type_name in ('DEBUG', 'WARNING', 'CRITICAL')
         elif level == 'WARNING':
             return self.log_type_name in ('WARNING', 'CRITICAL')
