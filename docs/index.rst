@@ -23,6 +23,3 @@ pytest-qt
     troubleshooting
     reference
     changelog
-
-
-

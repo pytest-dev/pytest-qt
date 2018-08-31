@@ -66,4 +66,3 @@ created earlier::
     assert window.filesTable.rowCount() == 2
     assert window.filesTable.item(0, 0).text() == 'video1.avi'
     assert window.filesTable.item(1, 0).text() == 'video2.avi'
-

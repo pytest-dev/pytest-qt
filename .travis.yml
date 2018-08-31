@@ -65,4 +65,3 @@ deploy:
     tags: true
     repo: pytest-dev/pytest-qt
     condition: $PYTEST_QT_API = pyqt5
-

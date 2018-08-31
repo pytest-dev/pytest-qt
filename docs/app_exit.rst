@@ -32,4 +32,3 @@ Or using the ``mock`` package:
             button = get_app_exit_button()
             qtbot.click(button)
             assert QApplication.exit.call_count == 1
-
