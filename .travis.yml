@@ -49,7 +49,7 @@ script:
  # for some reason tox doesn't get installed with a u+x flag
  - |
      chmod u+x /home/travis/miniconda/envs/test/bin/tox
-     /home/travis/miniconda/envs/test/bin/tox -e lint
+     /home/travis/miniconda/envs/test/bin/tox -e linting
 
 after_success:
  - coveralls
