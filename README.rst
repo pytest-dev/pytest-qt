@@ -136,15 +136,18 @@ fixed, and make sure to include yourself in the contributors list. :)
 Running tests
 -------------
 
-Tests are run using `tox`_. The simplest way to test is with `PySide`_, as it
-is available on pip and can be installed by ``tox`` automatically::
+Tests are run using `tox`_. It is recommended to develop locally on Python 3 because
+``PyQt5`` and ``PySide2`` are easily installable using ``pip``::
 
-    $ tox -e py34-pyside,py27-pyside,docs
+    $ tox -e py37-pyside2,py37-pyqt5
 
-If you want to test against `PyQt`_, install it into your global python
-installation and use the ``py27-pyqt4``, ``py34-pyqt4`` or ``py34-pyqt5``
-testing environments, and ``tox`` will copy the appropriate files into
-its virtual environments to ensure isolation.
+``pytest-qt`` is formatted using `black <https://github.com/ambv/black>`_ and uses
+`pre-commit <https://github.com/pre-commit/pre-commit>`_ for linting checks before commits. You
+can install ``pre-commit`` locally with::
+
+    $ pip install pre-commit
+    $ pre-commit install
+
 
 Contributors
 ------------
