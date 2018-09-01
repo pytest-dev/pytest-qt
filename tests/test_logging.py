@@ -50,7 +50,7 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
             res.stdout.fnmatch_lines(
                 [
                     "*-- Captured Qt messages --*",
-                    # qInfo is not exposed by the bindings yet (#225)
+                    # qInfo is not exposed by the bindings yet (#232)
                     # '*QtInfoMsg: this is an INFO message*',
                     "*QtDebugMsg: this is a DEBUG message*",
                     "*QtWarningMsg: this is a WARNING message*",
@@ -61,7 +61,7 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
             res.stdout.fnmatch_lines(
                 [
                     "*-- Captured stderr call --*",
-                    # qInfo is not exposed by the bindings yet (#225)
+                    # qInfo is not exposed by the bindings yet (#232)
                     # '*QtInfoMsg: this is an INFO message*',
                     # 'this is an INFO message*',
                     "this is a DEBUG message*",
@@ -71,11 +71,30 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
             )
 
 
+def test_qinfo(qtlog):
+    """Test INFO messages when we have means to do so. Should be temporary until bindings
+    catch up and expose qInfo (or at least QMessageLogger), then we should update
+    the other logging tests properly. #232
+    """
+    if qt_api.pytest_qt_api.startswith("pyside"):
+        assert (
+            qt_api.qInfo is None
+        ), "pyside does not expose qInfo. If it does, update this test."
+        return
+
+    if qt_api.pytest_qt_api.startswith("pyqt4"):
+        pytest.skip("qInfo and QtInfoMsg not supported in PyQt 4")
+
+    qt_api.qInfo("this is an INFO message")
+    records = [(m.type, m.message.strip()) for m in qtlog.records]
+    assert records == [(qt_api.QtInfoMsg, "this is an INFO message")]
+
+
 def test_qtlog_fixture(qtlog):
     """
     Test qtlog fixture.
     """
-    # qInfo is not exposed by the bindings yet (#225)
+    # qInfo is not exposed by the bindings yet (#232)
     qt_api.qDebug("this is a DEBUG message")
     qt_api.qWarning("this is a WARNING message")
     qt_api.qCritical("this is a CRITICAL message")
