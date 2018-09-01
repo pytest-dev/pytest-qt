@@ -1,4 +1,5 @@
-language: generic
+language: python
+python: "3.6"
 sudo: required
 dist: trusty
 
@@ -8,6 +9,7 @@ env:
       - CONDA_CHANNELS=conda-forge SETUP_XVFB=true  DEPS="pytest tox coveralls six"
 
   matrix:
+      - LINTING=1
       - PYTEST_QT_API=pyqt4   PYQT_PACKAGE="pyqt=4.*" PYTHON_VERSION=2.7
       - PYTEST_QT_API=pyqt4v2 PYQT_PACKAGE="pyqt=4.*" PYTHON_VERSION=2.7
       - PYTEST_QT_API=pyside  PYQT_PACKAGE="pyside=1.*" PYTHON_VERSION=2.7
@@ -29,27 +31,32 @@ matrix:
     - env: PYTEST_QT_API=pyside2   PYQT_PACKAGE="pyside2=2.*" PYTHON_VERSION=3.6
 
 install:
- - sudo apt-get update
+  - |
+    if [ $LINTING == "1" ]; then
+      pip install -U pip
+      pip install tox
+    else
+      # Xvfb / window manager
+      sudo apt-get update
+      sudo apt-get install -y xvfb herbstluftwm
 
- # Xvfb / window manager
- - sudo apt-get install -y xvfb herbstluftwm
-
- # Setup miniconda
- - git clone --depth 1 git://github.com/astropy/ci-helpers.git
- - CONDA_DEPENDENCIES="${DEPS} ${PYQT_PACKAGE}" source ci-helpers/travis/setup_conda.sh
- - source activate test && pip install -e .
-
+      # Setup miniconda
+      git clone --depth 1 git://github.com/astropy/ci-helpers.git
+      CONDA_DEPENDENCIES="${DEPS} ${PYQT_PACKAGE}" source ci-helpers/travis/setup_conda.sh
+      source activate test && pip install -e .
+    fi
 
 before_script:
  - "herbstluftwm &"
  - sleep 1
 
 script:
- - source activate test && catchsegv coverage run --source=pytestqt -m pytest -v tests
- # for some reason tox doesn't get installed with a u+x flag
- - |
-     chmod u+x /home/travis/miniconda/envs/test/bin/tox
-     /home/travis/miniconda/envs/test/bin/tox -e lint
+  - |
+    if [ $LINTING == "1" ]; then
+      tox -e linting
+    else
+      source activate test && catchsegv coverage run --source=pytestqt -m pytest -v tests
+    fi
 
 after_success:
  - coveralls
@@ -65,4 +72,3 @@ deploy:
     tags: true
     repo: pytest-dev/pytest-qt
     condition: $PYTEST_QT_API = pyqt5
-

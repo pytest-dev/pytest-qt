@@ -62,7 +62,7 @@ class _QtExceptionCaptureManager(object):
             self.finish()
             exceptions = self.exceptions
             self.exceptions = []
-            prefix = '%s ERROR: ' % when
+            prefix = "%s ERROR: " % when
             msg = prefix + format_captured_exceptions(exceptions)
             del exceptions[:]  # Don't keep exceptions alive longer.
             pytest.fail(msg, pytrace=False)
@@ -77,10 +77,10 @@ def format_captured_exceptions(exceptions):
         from StringIO import StringIO
     else:
         from io import StringIO
-    
+
     stream = StringIO()
-    stream.write('Qt exceptions in virtual methods:\n')
-    sep = '_' * 80 + '\n'
+    stream.write("Qt exceptions in virtual methods:\n")
+    sep = "_" * 80 + "\n"
     stream.write(sep)
     for (exc_type, value, tback) in exceptions:
         traceback.print_exception(exc_type, value, tback, file=stream)
@@ -91,8 +91,9 @@ def format_captured_exceptions(exceptions):
 def _is_exception_capture_enabled(item):
     """returns if exception capture is disabled for the given test item.
     """
-    disabled = get_marker(item, 'qt_no_exception_capture') or \
-               item.config.getini('qt_no_exception_capture')
+    disabled = get_marker(item, "qt_no_exception_capture") or item.config.getini(
+        "qt_no_exception_capture"
+    )
     return not disabled
 
 
@@ -106,6 +107,7 @@ class TimeoutError(Exception):
         In versions prior to ``2.1``, this exception was called ``SignalTimeoutError``.
         An alias is kept for backward compatibility.
     """
+
     pass
 
 

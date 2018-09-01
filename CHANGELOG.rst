@@ -246,7 +246,7 @@ Other Changes
   `@The-Compiler`_ for the PR (closes `107`_)!
 
 - raise ``RuntimeError`` instead of ``ImportError`` when failing to import
-  any Qt binding: raising the latter causes `pluggy` in `pytest-2.8` to
+  any Qt binding: raising the latter causes ``pluggy`` in ``pytest-2.8`` to
   generate a subtle warning instead of a full blown error.
   Thanks `@Sheeo`_ for bringing this problem to attention (closes `109`_).
 

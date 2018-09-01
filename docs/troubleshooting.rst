@@ -60,4 +60,3 @@ If you are running your code on Travis-CI make sure that your ``.travis.yml`` ha
 More details can be found in `issue #206`_.
 
 .. _issue #206: https://github.com/pytest-dev/pytest-qt/issues/206
-

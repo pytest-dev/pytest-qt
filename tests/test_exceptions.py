@@ -5,7 +5,7 @@ import pytest
 from pytestqt.exceptions import capture_exceptions, format_captured_exceptions
 
 
-@pytest.mark.parametrize('raise_error', [False, True])
+@pytest.mark.parametrize("raise_error", [False, True])
 def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
     """
     Catch exceptions that happen inside Qt virtual methods and make the
@@ -13,7 +13,8 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
 
     :type testdir: _pytest.pytester.TmpTestdir
     """
-    testdir.makepyfile('''
+    testdir.makepyfile(
+        """
         from pytestqt.qt_compat import qt_api
 
         class Receiver(qt_api.QtCore.QObject):
@@ -24,7 +25,7 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
                         raise RuntimeError('original error')
                     except RuntimeError:
                         raise ValueError('mistakes were made')
-                        
+
                 return qt_api.QtCore.QObject.event(self, ev)
 
 
@@ -35,54 +36,54 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
             app.sendEvent(v, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.User))
             app.processEvents()
 
-    '''.format(raise_error=raise_error))
+    """.format(
+            raise_error=raise_error
+        )
+    )
     result = testdir.runpytest()
     if raise_error:
-        expected_lines = ['*Qt exceptions in virtual methods:*']
+        expected_lines = ["*Qt exceptions in virtual methods:*"]
         if sys.version_info.major == 3:
-            expected_lines.append('RuntimeError: original error')
-        expected_lines.extend([
-            '*ValueError: mistakes were made*',
-            '*1 failed*'
-        ])
+            expected_lines.append("RuntimeError: original error")
+        expected_lines.extend(["*ValueError: mistakes were made*", "*1 failed*"])
         result.stdout.fnmatch_lines(expected_lines)
-        assert 'pytest.fail' not in '\n'.join(result.outlines)
+        assert "pytest.fail" not in "\n".join(result.outlines)
     else:
-        result.stdout.fnmatch_lines('*1 passed*')
+        result.stdout.fnmatch_lines("*1 passed*")
 
 
 def test_format_captured_exceptions():
     try:
-        raise ValueError('errors were made')
+        raise ValueError("errors were made")
     except ValueError:
         exceptions = [sys.exc_info()]
 
     obtained_text = format_captured_exceptions(exceptions)
     lines = obtained_text.splitlines()
 
-    assert 'Qt exceptions in virtual methods:' in lines
-    assert 'ValueError: errors were made' in lines
+    assert "Qt exceptions in virtual methods:" in lines
+    assert "ValueError: errors were made" in lines
 
 
-@pytest.mark.skipif(sys.version_info.major == 2, reason='Python 3 only')
+@pytest.mark.skipif(sys.version_info.major == 2, reason="Python 3 only")
 def test_format_captured_exceptions_chained():
     try:
         try:
-            raise ValueError('errors were made')
+            raise ValueError("errors were made")
         except ValueError:
-            raise RuntimeError('error handling value error')
+            raise RuntimeError("error handling value error")
     except RuntimeError:
         exceptions = [sys.exc_info()]
 
     obtained_text = format_captured_exceptions(exceptions)
     lines = obtained_text.splitlines()
 
-    assert 'Qt exceptions in virtual methods:' in lines
-    assert 'ValueError: errors were made' in lines
-    assert 'RuntimeError: error handling value error' in lines
+    assert "Qt exceptions in virtual methods:" in lines
+    assert "ValueError: errors were made" in lines
+    assert "RuntimeError: error handling value error" in lines
 
 
-@pytest.mark.parametrize('no_capture_by_marker', [True, False])
+@pytest.mark.parametrize("no_capture_by_marker", [True, False])
 def test_no_capture(testdir, no_capture_by_marker):
     """
     Make sure options that disable exception capture are working (either marker
@@ -91,14 +92,17 @@ def test_no_capture(testdir, no_capture_by_marker):
     :type testdir: TmpTestdir
     """
     if no_capture_by_marker:
-        marker_code = '@pytest.mark.qt_no_exception_capture'
+        marker_code = "@pytest.mark.qt_no_exception_capture"
     else:
-        marker_code = ''
-        testdir.makeini('''
+        marker_code = ""
+        testdir.makeini(
+            """
             [pytest]
             qt_no_exception_capture = 1
-        ''')
-    testdir.makepyfile('''
+        """
+        )
+    testdir.makepyfile(
+        """
         import pytest
         import sys
         from pytestqt.qt_compat import qt_api
@@ -118,9 +122,12 @@ def test_no_capture(testdir, no_capture_by_marker):
             w = MyWidget()
             qtbot.addWidget(w)
             qtbot.mouseClick(w, QtCore.Qt.LeftButton)
-    '''.format(marker_code=marker_code))
+    """.format(
+            marker_code=marker_code
+        )
+    )
     res = testdir.runpytest()
-    res.stdout.fnmatch_lines(['*1 passed*'])
+    res.stdout.fnmatch_lines(["*1 passed*"])
 
 
 def test_no_capture_preserves_custom_excepthook(testdir):
@@ -129,7 +136,8 @@ def test_no_capture_preserves_custom_excepthook(testdir):
 
     :type testdir: TmpTestdir
     """
-    testdir.makepyfile('''
+    testdir.makepyfile(
+        """
         import pytest
         import sys
         from pytestqt.qt_compat import qt_api
@@ -147,9 +155,10 @@ def test_no_capture_preserves_custom_excepthook(testdir):
 
         def test_capture(qtbot):
             assert sys.excepthook is not custom_excepthook
-    ''')
+    """
+    )
     res = testdir.runpytest()
-    res.stdout.fnmatch_lines(['*2 passed*'])
+    res.stdout.fnmatch_lines(["*2 passed*"])
 
 
 def test_exception_capture_on_call(testdir):
@@ -158,7 +167,8 @@ def test_exception_capture_on_call(testdir):
 
     :type testdir: TmpTestdir
     """
-    testdir.makepyfile('''
+    testdir.makepyfile(
+        """
         import pytest
         from pytestqt.qt_compat import qt_api
         QWidget = qt_api.QWidget
@@ -174,12 +184,10 @@ def test_exception_capture_on_call(testdir):
             w = MyWidget()
             qapp.postEvent(w, QEvent(QEvent.User))
             qapp.processEvents()
-    ''')
-    res = testdir.runpytest('-s')
-    res.stdout.fnmatch_lines([
-        "*RuntimeError('event processed')*",
-        '*1 failed*',
-    ])
+    """
+    )
+    res = testdir.runpytest("-s")
+    res.stdout.fnmatch_lines(["*RuntimeError('event processed')*", "*1 failed*"])
 
 
 def test_exception_capture_on_widget_close(testdir):
@@ -188,7 +196,8 @@ def test_exception_capture_on_widget_close(testdir):
 
     :type testdir: TmpTestdir
     """
-    testdir.makepyfile('''
+    testdir.makepyfile(
+        """
         import pytest
         from pytestqt.qt_compat import qt_api
         QWidget = qt_api.QWidget
@@ -204,15 +213,13 @@ def test_exception_capture_on_widget_close(testdir):
             w = MyWidget()
             test_widget.w = w  # keep it alive
             qtbot.addWidget(w)
-    ''')
-    res = testdir.runpytest('-s')
-    res.stdout.fnmatch_lines([
-        "*RuntimeError('close error')*",
-        '*1 error*',
-    ])
+    """
+    )
+    res = testdir.runpytest("-s")
+    res.stdout.fnmatch_lines(["*RuntimeError('close error')*", "*1 error*"])
 
 
-@pytest.mark.parametrize('mode', ['setup', 'teardown'])
+@pytest.mark.parametrize("mode", ["setup", "teardown"])
 def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
     """
     Setup/teardown exception capturing as early/late as possible to catch
@@ -220,14 +227,15 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
 
     :type testdir: TmpTestdir
     """
-    if mode == 'setup':
-        setup_code = 'send_event(w, qapp)'
-        teardown_code = ''
+    if mode == "setup":
+        setup_code = "send_event(w, qapp)"
+        teardown_code = ""
     else:
-        setup_code = ''
-        teardown_code = 'send_event(w, qapp)'
+        setup_code = ""
+        teardown_code = "send_event(w, qapp)"
 
-    testdir.makepyfile('''
+    testdir.makepyfile(
+        """
         import pytest
         from pytestqt.qt_compat import qt_api
         QWidget = qt_api.QWidget
@@ -255,13 +263,18 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
 
         def test_capture(widget):
             pass
-    '''.format(setup_code=setup_code, teardown_code=teardown_code))
-    res = testdir.runpytest('-s')
-    res.stdout.fnmatch_lines([
-        '*__ ERROR at %s of test_capture __*' % mode,
-        "*RuntimeError('event processed')*",
-        '*1 error*',
-    ])
+    """.format(
+            setup_code=setup_code, teardown_code=teardown_code
+        )
+    )
+    res = testdir.runpytest("-s")
+    res.stdout.fnmatch_lines(
+        [
+            "*__ ERROR at %s of test_capture __*" % mode,
+            "*RuntimeError('event processed')*",
+            "*1 error*",
+        ]
+    )
 
 
 @pytest.mark.qt_no_exception_capture
@@ -275,23 +288,23 @@ def test_capture_exceptions_context_manager(qapp):
     from pytestqt.plugin import capture_exceptions
 
     class Receiver(qt_api.QtCore.QObject):
-
         def event(self, ev):
-            raise ValueError('mistakes were made')
+            raise ValueError("mistakes were made")
 
     r = Receiver()
     with capture_exceptions() as exceptions:
         qapp.sendEvent(r, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.User))
         qapp.processEvents()
 
-    assert [str(e) for (t, e, tb) in exceptions] == ['mistakes were made']
+    assert [str(e) for (t, e, tb) in exceptions] == ["mistakes were made"]
 
 
 def test_capture_exceptions_qtbot_context_manager(testdir):
     """Test capturing exceptions in a block by using `capture_exceptions` method provided
     by `qtbot`.
     """
-    testdir.makepyfile('''
+    testdir.makepyfile(
+        """
         import pytest
         from pytestqt.qt_compat import qt_api
         QWidget = qt_api.QWidget
@@ -315,9 +328,10 @@ def test_capture_exceptions_qtbot_context_manager(testdir):
 
             assert len(exceptions) == 1
             assert str(exceptions[0][1]) == "error"
-    ''')
+    """
+    )
     result = testdir.runpytest()
-    result.stdout.fnmatch_lines(['*1 passed*'])
+    result.stdout.fnmatch_lines(["*1 passed*"])
 
 
 def test_exceptions_to_stderr(qapp, capsys):
@@ -328,10 +342,9 @@ def test_exceptions_to_stderr(qapp, capsys):
     from pytestqt.qt_compat import qt_api
 
     class MyWidget(qt_api.QWidget):
-
         def event(self, ev):
             called.append(1)
-            raise RuntimeError('event processed')
+            raise RuntimeError("event processed")
 
     w = MyWidget()
     with capture_exceptions() as exceptions:
@@ -340,40 +353,44 @@ def test_exceptions_to_stderr(qapp, capsys):
     assert called
     del exceptions[:]
     _out, err = capsys.readouterr()
-    assert "raise RuntimeError('event processed')" in err
+    assert 'raise RuntimeError("event processed")' in err
 
 
-@pytest.mark.xfail(condition=sys.version_info[:2] == (3, 4),
-                   reason="failing in Python 3.4, which is about to be dropped soon anyway")
+@pytest.mark.xfail(
+    condition=sys.version_info[:2] == (3, 4),
+    reason="failing in Python 3.4, which is about to be dropped soon anyway",
+)
 def test_exceptions_dont_leak(testdir):
     """
     Ensure exceptions are cleared when an exception occurs and don't leak (#187).
     """
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         from pytestqt.qt_compat import qt_api
         import gc
         import weakref
-    
+
         class MyWidget(qt_api.QWidget):
-    
+
             def event(self, ev):
                 called.append(1)
                 raise RuntimeError('event processed')
-                
+
         weak_ref = None
         called = []
-        
+
         def test_1(qapp):
             global weak_ref
             w = MyWidget()
-            weak_ref = weakref.ref(w)        
+            weak_ref = weakref.ref(w)
             qapp.postEvent(w, qt_api.QEvent(qt_api.QEvent.User))
-            qapp.processEvents()    
-            
+            qapp.processEvents()
+
         def test_2(qapp):
-            assert called     
-            gc.collect()       
+            assert called
+            gc.collect()
             assert weak_ref() is None
-    """)
+    """
+    )
     result = testdir.runpytest()
-    result.stdout.fnmatch_lines(['*1 failed, 1 passed*'])
+    result.stdout.fnmatch_lines(["*1 failed, 1 passed*"])

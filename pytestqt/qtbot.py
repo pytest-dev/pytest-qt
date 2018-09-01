@@ -4,16 +4,21 @@ import weakref
 
 from pytestqt.exceptions import SignalTimeoutError, TimeoutError
 from pytestqt.qt_compat import qt_api
-from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker, SignalEmittedSpy, SignalEmittedError
+from pytestqt.wait_signal import (
+    SignalBlocker,
+    MultiSignalBlocker,
+    SignalEmittedSpy,
+    SignalEmittedError,
+)
 
 
 def _parse_ini_boolean(value):
     if value in (True, False):
         return value
     try:
-        return {'true': True, 'false': False}[value.lower()]
+        return {"true": True, "false": False}[value.lower()]
     except KeyError:
-        raise ValueError('unknown string for bool: %r' % value)
+        raise ValueError("unknown string for bool: %r" % value)
 
 
 class QtBot(object):
@@ -107,8 +112,10 @@ class QtBot(object):
         :param Qt.MouseButton button: flags OR'ed together representing the button pressed.
             Possible flags are:
 
-            * ``Qt.NoButton``: The button state does not refer to any button (see QMouseEvent.button()).
-            * ``Qt.LeftButton``: The left button is pressed, or an event refers to the left button. (The left button may be the right button on left-handed mice.)
+            * ``Qt.NoButton``: The button state does not refer to any button
+              (see QMouseEvent.button()).
+            * ``Qt.LeftButton``: The left button is pressed, or an event refers to the left button.
+              (The left button may be the right button on left-handed mice.)
             * ``Qt.RightButton``: The right button.
             * ``Qt.MidButton``: The middle button.
             * ``Qt.MiddleButton``: The middle button.
@@ -170,7 +177,9 @@ class QtBot(object):
         .. note:: This method is also available as ``wait_active`` (pep-8 alias)
         """
         __tracebackhide__ = True
-        return _WaitWidgetContextManager('qWaitForWindowActive', 'activated', widget, timeout)
+        return _WaitWidgetContextManager(
+            "qWaitForWindowActive", "activated", widget, timeout
+        )
 
     wait_active = waitActive  # pep-8 alias
 
@@ -200,7 +209,9 @@ class QtBot(object):
         .. note:: This method is also available as ``wait_exposed`` (pep-8 alias)
         """
         __tracebackhide__ = True
-        return _WaitWidgetContextManager('qWaitForWindowExposed', 'exposed', widget, timeout)
+        return _WaitWidgetContextManager(
+            "qWaitForWindowExposed", "exposed", widget, timeout
+        )
 
     wait_exposed = waitExposed  # pep-8 alias
 
@@ -217,7 +228,7 @@ class QtBot(object):
 
         .. note:: This method is also available as ``wait_for_window_shown`` (pep-8 alias)
         """
-        if hasattr(qt_api.QtTest.QTest, 'qWaitForWindowExposed'):
+        if hasattr(qt_api.QtTest.QTest, "qWaitForWindowExposed"):
             return qt_api.QtTest.QTest.qWaitForWindowExposed(widget)
         else:
             return qt_api.QtTest.QTest.qWaitForWindowShown(widget)
@@ -304,19 +315,28 @@ class QtBot(object):
             This method is also available as ``wait_signal`` (pep-8 alias)
         """
         if raising is None:
-            raising_val = self._request.config.getini('qt_wait_signal_raising')
+            raising_val = self._request.config.getini("qt_wait_signal_raising")
             if not raising_val:
                 raising = True
             else:
                 raising = _parse_ini_boolean(raising_val)
-        blocker = SignalBlocker(timeout=timeout, raising=raising, check_params_cb=check_params_cb)
+        blocker = SignalBlocker(
+            timeout=timeout, raising=raising, check_params_cb=check_params_cb
+        )
         if signal is not None:
             blocker.connect(signal)
         return blocker
 
     wait_signal = waitSignal  # pep-8 alias
 
-    def waitSignals(self, signals=None, timeout=1000, raising=None, check_params_cbs=None, order="none"):
+    def waitSignals(
+        self,
+        signals=None,
+        timeout=1000,
+        raising=None,
+        check_params_cbs=None,
+        order="none",
+    ):
         """
         .. versionadded:: 1.4
 
@@ -380,13 +400,22 @@ class QtBot(object):
             raise ValueError("order has to be set to 'none', 'simple' or 'strict'")
 
         if raising is None:
-            raising = self._request.config.getini('qt_wait_signal_raising')
+            raising = self._request.config.getini("qt_wait_signal_raising")
 
         if check_params_cbs:
             if len(check_params_cbs) != len(signals):
-                raise ValueError("Number of callbacks ({}) does not "
-                                 "match number of signals ({})!".format(len(check_params_cbs), len(signals)))
-        blocker = MultiSignalBlocker(timeout=timeout, raising=raising, order=order, check_params_cbs=check_params_cbs)
+                raise ValueError(
+                    "Number of callbacks ({}) does not "
+                    "match number of signals ({})!".format(
+                        len(check_params_cbs), len(signals)
+                    )
+                )
+        blocker = MultiSignalBlocker(
+            timeout=timeout,
+            raising=raising,
+            order=order,
+            check_params_cbs=check_params_cbs,
+        )
         if signals is not None:
             blocker.add_signals(signals)
         return blocker
@@ -461,6 +490,7 @@ class QtBot(object):
         """
         __tracebackhide__ = True
         import time
+
         start = time.time()
 
         def timed_out():
@@ -476,7 +506,7 @@ class QtBot(object):
                     raise
             else:
                 if result not in (None, True, False):
-                    msg = 'waitUntil() callback must return None, True or False, returned %r'
+                    msg = "waitUntil() callback must return None, True or False, returned %r"
                     raise ValueError(msg % result)
 
                 # 'assert' form
@@ -487,7 +517,9 @@ class QtBot(object):
                 if result:
                     return
                 else:
-                    assert not timed_out(), 'waitUntil timed out in %s miliseconds' % timeout
+                    assert not timed_out(), (
+                        "waitUntil timed out in %s miliseconds" % timeout
+                    )
             self.wait(10)
 
     wait_until = waitUntil  # pep-8 alias
@@ -511,6 +543,7 @@ class QtBot(object):
         .. note:: This method is also available as ``capture_exceptions`` (pep-8 alias)
         """
         from pytestqt.exceptions import capture_exceptions
+
         with capture_exceptions() as exceptions:
             yield exceptions
 
@@ -538,19 +571,18 @@ class QtBot(object):
 
         # inject methods from QTest into QtBot
         method_names = [
-            'keyPress',
-            'keyClick',
-            'keyClicks',
-            'keyEvent',
-            'keyPress',
-            'keyRelease',
-            'keyToAscii',
-
-            'mouseClick',
-            'mouseDClick',
-            'mouseMove',
-            'mousePress',
-            'mouseRelease',
+            "keyPress",
+            "keyClick",
+            "keyClicks",
+            "keyEvent",
+            "keyPress",
+            "keyRelease",
+            "keyToAscii",
+            "mouseClick",
+            "mouseDClick",
+            "mouseMove",
+            "mousePress",
+            "mouseRelease",
         ]
         for method_name in method_names:
             method = create_qtest_proxy_method(method_name)
@@ -568,7 +600,7 @@ def _add_widget(item, widget):
     """
     Register a widget into the given pytest item for later closing.
     """
-    qt_widgets = getattr(item, 'qt_widgets', [])
+    qt_widgets = getattr(item, "qt_widgets", [])
     qt_widgets.append(weakref.ref(widget))
     item.qt_widgets = qt_widgets
 
@@ -577,7 +609,7 @@ def _close_widgets(item):
     """
     Close all widgets registered in the pytest item.
     """
-    widgets = getattr(item, 'qt_widgets', None)
+    widgets = getattr(item, "qt_widgets", None)
     if widgets:
         for w in item.qt_widgets:
             w = w()
@@ -591,7 +623,7 @@ def _iter_widgets(item):
     """
     Iterates over widgets registered in the given pytest item.
     """
-    return iter(getattr(item, 'qt_widgets', []))
+    return iter(getattr(item, "qt_widgets", []))
 
 
 class _WaitWidgetContextManager(object):
@@ -613,8 +645,8 @@ class _WaitWidgetContextManager(object):
 
     def __enter__(self):
         __tracebackhide__ = True
-        if qt_api.pytest_qt_api != 'pyqt5':
-            raise RuntimeError('Available in PyQt5 only')
+        if qt_api.pytest_qt_api != "pyqt5":
+            raise RuntimeError("Available in PyQt5 only")
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -624,8 +656,9 @@ class _WaitWidgetContextManager(object):
                 method = getattr(qt_api.QtTest.QTest, self._method_name)
                 r = method(self._widget, self._timeout)
                 if not r:
-                    msg = 'widget {} not {} in {} ms.'.format(self._widget, self._adjective_name, self._timeout)
+                    msg = "widget {} not {} in {} ms.".format(
+                        self._widget, self._adjective_name, self._timeout
+                    )
                     raise TimeoutError(msg)
         finally:
             self._widget = None
-

@@ -3,10 +3,10 @@ pytest-qt
 =========
 
 pytest-qt is a `pytest`_ plugin that allows programmers to write tests
-for `PySide`_, `PySide2` and `PyQt`_ applications.
+for `PySide`_, ``PySide2`` and `PyQt`_ applications.
 
-The main usage is to use the `qtbot` fixture, responsible for handling `qApp` 
-creation as needed and provides methods to simulate user interaction, 
+The main usage is to use the ``qtbot`` fixture, responsible for handling ``qApp``
+creation as needed and provides methods to simulate user interaction,
 like key presses and mouse clicks:
 
 
@@ -15,11 +15,11 @@ like key presses and mouse clicks:
     def test_hello(qtbot):
         widget = HelloWidget()
         qtbot.addWidget(widget)
-    
+
         # click in the Greet button and make sure it updates the appropriate label
         qtbot.mouseClick(widget.button_greet, QtCore.Qt.LeftButton)
-    
-        assert widget.greet_label.text() == 'Hello!'
+
+        assert widget.greet_label.text() == "Hello!"
 
 
 .. _PySide: https://pypi.python.org/pypi/PySide
@@ -31,10 +31,10 @@ This allows you to test and make sure your view layer is behaving the way you ex
 
 .. |version| image:: http://img.shields.io/pypi/v/pytest-qt.svg
   :target: https://pypi.python.org/pypi/pytest-qt
-  
+
 .. |conda-forge| image:: https://img.shields.io/conda/vn/conda-forge/pytest-qt.svg
     :target: https://anaconda.org/conda-forge/pytest-qt
-  
+
 .. |travis| image:: https://img.shields.io/travis/pytest-dev/pytest-qt/master.svg
   :target: https://travis-ci.org/pytest-dev/pytest-qt
 
@@ -51,7 +51,10 @@ This allows you to test and make sure your view layer is behaving the way you ex
   :target: https://pypi.python.org/pypi/pytest-qt/
   :alt: Supported Python versions
 
-|python| |version| |conda-forge| |travis| |appveyor| |coverage| |docs|
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+  :target: https://github.com/ambv/black
+
+|python| |version| |conda-forge| |travis| |appveyor| |coverage| |docs| |black|
 
 
 Features
@@ -133,15 +136,18 @@ fixed, and make sure to include yourself in the contributors list. :)
 Running tests
 -------------
 
-Tests are run using `tox`_. The simplest way to test is with `PySide`_, as it
-is available on pip and can be installed by ``tox`` automatically::
+Tests are run using `tox`_. It is recommended to develop locally on Python 3 because
+``PyQt5`` and ``PySide2`` are easily installable using ``pip``::
 
-    $ tox -e py34-pyside,py27-pyside,docs
+    $ tox -e py37-pyside2,py37-pyqt5
 
-If you want to test against `PyQt`_, install it into your global python
-installation and use the ``py27-pyqt4``, ``py34-pyqt4`` or ``py34-pyqt5``
-testing environments, and ``tox`` will copy the appropriate files into
-its virtual environments to ensure isolation.
+``pytest-qt`` is formatted using `black <https://github.com/ambv/black>`_ and uses
+`pre-commit <https://github.com/pre-commit/pre-commit>`_ for linting checks before commits. You
+can install ``pre-commit`` locally with::
+
+    $ pip install pre-commit
+    $ pre-commit install
+
 
 Contributors
 ------------
@@ -163,12 +169,12 @@ Many thanks to:
 
 .. |pycharm| image:: https://www.jetbrains.com/pycharm/docs/logo_pycharm.png
   :target: https://www.jetbrains.com/pycharm
-  
+
 .. |pydev| image:: http://www.pydev.org/images/pydev_banner3.png
   :target: https://www.pydev.org
-  
-|pycharm|  
 
-|pydev|  
+|pycharm|
+
+|pydev|
 
 .. _tox: https://tox.readthedocs.io

@@ -5,7 +5,7 @@ import time
 import pytest
 from pytestqt.qt_compat import qt_api
 
-pytest_plugins = 'pytester'
+pytest_plugins = "pytester"
 
 
 @pytest.fixture
@@ -15,10 +15,9 @@ def stop_watch():
     timeouts are being respected.
     """
     # time.clock() is more accurate on Windows
-    get_time = time.clock if sys.platform.startswith('win') else time.time
+    get_time = time.clock if sys.platform.startswith("win") else time.time
 
     class StopWatch:
-
         def __init__(self):
             self._start_time = None
             self.elapsed = None

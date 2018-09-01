@@ -17,10 +17,10 @@ For example:
 
     def test_validate(qtbot):
         window = MyWindow()
-        window.edit.setText('not a number')
+        window.edit.setText("not a number")
         # after focusing, should update status label
         window.edit.setFocus()
-        assert window.status.text() == 'Please input a number'
+        assert window.status.text() == "Please input a number"
 
 
 The ``window.edit.setFocus()`` may not be processed immediately, only in a future event loop, which
@@ -34,11 +34,13 @@ assertion:
 
     def test_validate(qtbot):
         window = MyWindow()
-        window.edit.setText('not a number')
+        window.edit.setText("not a number")
         # after focusing, should update status label
         window.edit.setFocus()
+
         def check_label():
-            assert window.status.text() == 'Please input a number'
+            assert window.status.text() == "Please input a number"
+
         qtbot.waitUntil(check_label)
 
 
@@ -65,8 +67,8 @@ use of ``pytest``'s assertion rewriting:
 
     def test_validate(qtbot):
         window = MyWindow()
-        window.edit.setText('not a number')
+        window.edit.setText("not a number")
         # after focusing, should update status label
         window.edit.setFocus()
         qtbot.waitUntil(lambda: window.edit.hasFocus())
-        assert window.status.text() == 'Please input a number'
+        assert window.status.text() == "Please input a number"
