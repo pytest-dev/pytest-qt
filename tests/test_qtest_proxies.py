@@ -18,7 +18,7 @@ fails_on_pyqt = pytest.mark.xfail(
         "keyEvent",
         "keyPress",
         "keyRelease",
-        fails_on_pyqt("keyToAscii"),
+        pytest.param("keyToAscii", marks=fails_on_pyqt),
         "mouseClick",
         "mouseDClick",
         "mouseMove",
