@@ -10,7 +10,6 @@ from pytestqt.wait_signal import (
     SignalEmittedSpy,
     SignalEmittedError,
     CallbackBlocker,
-    CallbackTimeoutError,
 )
 
 
@@ -553,7 +552,7 @@ class QtBot(object):
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
-            If :class:`QtBot.CallbackTimeoutError <pytestqt.plugin.CallbackTimeoutError>`
+            If :class:`QtBot.TimeoutError <pytestqt.plugin.TimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_wait_signal_raising = false``
             is set in the config.
@@ -644,7 +643,6 @@ class QtBot(object):
 QtBot.SignalTimeoutError = SignalTimeoutError
 QtBot.SignalEmittedError = SignalEmittedError
 QtBot.TimeoutError = TimeoutError
-QtBot.CallbackTimeoutError = CallbackTimeoutError
 
 
 def _add_widget(item, widget):

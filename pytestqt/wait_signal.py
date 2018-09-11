@@ -617,7 +617,7 @@ class CallbackBlocker(object):
     :ivar int timeout: maximum time to wait for the callback to be called.
 
     :ivar bool raising:
-        If :class:`CallbackTimeoutError` should be raised if a timeout occured.
+        If :class:`TimeoutError` should be raised if a timeout occured.
 
         .. note:: contrary to the parameter of same name in
             :meth:`pytestqt.qtbot.QtBot.waitCallback`, this parameter does not
@@ -667,8 +667,7 @@ class CallbackBlocker(object):
             self._timer.start()
         self._loop.exec_()
         if not self.called and self.raising:
-            raise CallbackTimeoutError("Callback wasn't called after %sms." %
-                                       self.timeout)
+            raise TimeoutError("Callback wasn't called after %sms." % self.timeout)
 
     def __call__(self, *args, **kwargs):
         try:
@@ -697,16 +696,6 @@ class SignalEmittedError(Exception):
     signal was emitted unexpectedly.
     """
 
-    pass
-
-
-class CallbackTimeoutError(Exception):
-    """
-    .. versionadded:: 2.1
-
-    The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitCallback` if there
-    was a timeout and raising was not turned off.
-    """
     pass
 
 
