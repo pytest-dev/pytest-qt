@@ -639,20 +639,12 @@ class CallbackBlocker(object):
         self.kwargs = None
         self.called = False
         self._loop = qt_api.QtCore.QEventLoop()
-        self._timer = qt_api.QtCore.QTimer(self._loop)
-        self._timer.setSingleShot(True)
-        self._timer.setInterval(timeout)
-
-    def _quit_loop_by_timeout(self):
-        try:
-            self._cleanup()
-        finally:
-            self._loop.quit()
-
-    def _cleanup(self):
-        if self._timer is not None:
-            self._timer.stop()
+        if timeout is None:
             self._timer = None
+        else:
+            self._timer = qt_api.QtCore.QTimer(self._loop)
+            self._timer.setSingleShot(True)
+            self._timer.setInterval(timeout)
 
     def wait(self):
         """
@@ -668,6 +660,18 @@ class CallbackBlocker(object):
         self._loop.exec_()
         if not self.called and self.raising:
             raise TimeoutError("Callback wasn't called after %sms." % self.timeout)
+
+    def _quit_loop_by_timeout(self):
+        try:
+            self._cleanup()
+        finally:
+            self._loop.quit()
+
+    def _cleanup(self):
+        if self._timer is not None:
+            _silent_disconnect(self._timer.timeout, self._quit_loop_by_timeout)
+            self._timer.stop()
+            self._timer = None
 
     def __call__(self, *args, **kwargs):
         try:
