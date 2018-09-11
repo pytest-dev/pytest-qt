@@ -24,6 +24,9 @@ class _QtApi:
     gets called, providing a uniform way to access the Qt classes.
     """
 
+    def __init__(self):
+        self._import_errors = {}
+
     def _get_qt_api_from_env(self):
         api = os.environ.get("PYTEST_QT_API")
         if api is not None:
@@ -44,7 +47,8 @@ class _QtApi:
             try:
                 __import__(name)
                 return True
-            except ImportError:
+            except ImportError as e:
+                self._import_errors[name] = str(e)
                 return False
 
         # Note, not importing only the root namespace because when uninstalling from conda,
@@ -62,7 +66,9 @@ class _QtApi:
     def set_qt_api(self, api):
         self.pytest_qt_api = self._get_qt_api_from_env() or api or self._guess_qt_api()
         if not self.pytest_qt_api:  # pragma: no cover
-            msg = "pytest-qt requires either PySide, PySide2, PyQt4 or PyQt5 to be installed"
+            errors = '\n'.join('  {}: {}'.format(module, reason)
+                               for module, reason in sorted(self._import_errors.items()))
+            msg = "pytest-qt requires either PySide, PySide2, PyQt4 or PyQt5 to be installed\n" + errors
             raise RuntimeError(msg)
 
         _root_modules = {
