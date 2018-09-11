@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from pytestqt.exceptions import (
@@ -102,8 +104,12 @@ def pytest_addoption(parser):
     )
     parser.addini("qt_no_exception_capture", "disable automatic exception capture")
     parser.addini(
+        "qt_default_raising",
+        "Default value for the raising parameter of qtbot.waitSignal/waitCallback",
+    )
+    parser.addini(
         "qt_wait_signal_raising",
-        "Default value for the raising parameter of qtbot.waitSignal",
+        "Default value for the raising parameter of qtbot.waitSignal (legacy alias)",
     )
 
     default_log_fail = QtLoggingPlugin.LOG_FAIL_OPTIONS[0]
@@ -210,6 +216,10 @@ def pytest_configure(config):
         config.pluginmanager.register(QtLoggingPlugin(config), "_qt_logging")
 
     qt_api.set_qt_api(config.getini("qt_api"))
+
+    if config.getini("qt_wait_signal_raising"):
+        warnings.warn("qt_wait_signal_raising is deprecated, use qt_default_raising instead.",
+                      DeprecationWarning)
 
     from .qtbot import QtBot
 

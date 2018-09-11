@@ -50,25 +50,27 @@ reached before the signal is triggered:
         # check whether the signal was triggered:
         assert blocker.signal_triggered, "process timed-out"
 
-.. _qt_wait_signal_raising:
+.. _qt_default_raising:
 
-qt_wait_signal_raising ini option
----------------------------------
+qt_default_raising ini option
+-----------------------------
 
 .. versionadded:: 1.11
 .. versionchanged:: 2.0
+.. versionchanged:: 3.1
 
-The ``qt_wait_signal_raising`` ini option can be used to override the default
+The ``qt_default_raising`` ini option can be used to override the default
 value of the ``raising`` parameter of the ``qtbot.waitSignal`` and
 ``qtbot.waitSignals`` functions when omitted:
 
 .. code-block:: ini
 
     [pytest]
-    qt_wait_signal_raising = false
+    qt_default_raising = false
 
 Calls which explicitly pass the ``raising`` parameter are not affected.
 
+This option was called ``qt_wait_signal_raising`` before 3.1.0.
 
 check_params_cb parameter
 -------------------------
