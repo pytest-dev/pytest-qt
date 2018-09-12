@@ -218,8 +218,10 @@ def pytest_configure(config):
     qt_api.set_qt_api(config.getini("qt_api"))
 
     if config.getini("qt_wait_signal_raising"):
-        warnings.warn("qt_wait_signal_raising is deprecated, use qt_default_raising instead.",
-                      DeprecationWarning)
+        warnings.warn(
+            "qt_wait_signal_raising is deprecated, use qt_default_raising instead.",
+            DeprecationWarning,
+        )
 
     from .qtbot import QtBot
 

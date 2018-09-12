@@ -5,7 +5,12 @@ import pytest
 import sys
 
 from pytestqt.qt_compat import qt_api
-from pytestqt.wait_signal import SignalEmittedError, TimeoutError, SignalAndArgs, CallbackCalledTwiceError
+from pytestqt.wait_signal import (
+    SignalEmittedError,
+    TimeoutError,
+    SignalAndArgs,
+    CallbackCalledTwiceError,
+)
 
 
 def test_signal_blocker_exception(qtbot):
@@ -114,9 +119,7 @@ def test_signal_triggered(
 @pytest.mark.parametrize(
     "configval, raises", [("false", False), ("true", True), (None, True)]
 )
-@pytest.mark.parametrize(
-    "configkey", ["qt_wait_signal_raising", "qt_default_raising"]
-)
+@pytest.mark.parametrize("configkey", ["qt_wait_signal_raising", "qt_default_raising"])
 def test_raising(qtbot, testdir, configkey, configval, raises):
     if configval is not None:
         testdir.makeini(
@@ -124,8 +127,7 @@ def test_raising(qtbot, testdir, configkey, configval, raises):
             [pytest]
             {} = {}
         """.format(
-                configkey,
-                configval
+                configkey, configval
             )
         )
 
@@ -145,7 +147,7 @@ def test_raising(qtbot, testdir, configkey, configval, raises):
     """
     )
 
-    if configkey == 'qt_wait_signal_raising' and configval is not None:
+    if configkey == "qt_wait_signal_raising" and configval is not None:
         with pytest.warns(DeprecationWarning):
             res = testdir.runpytest()
     else:
@@ -157,10 +159,8 @@ def test_raising(qtbot, testdir, configkey, configval, raises):
         res.stdout.fnmatch_lines(["*1 passed*"])
 
 
-@pytest.mark.filterwarnings('ignore:qt_wait_signal_raising is deprecated')
-@pytest.mark.parametrize(
-    "configkey", ["qt_wait_signal_raising", "qt_default_raising"]
-)
+@pytest.mark.filterwarnings("ignore:qt_wait_signal_raising is deprecated")
+@pytest.mark.parametrize("configkey", ["qt_wait_signal_raising", "qt_default_raising"])
 def test_raising_by_default_overridden(qtbot, testdir, configkey):
     testdir.makeini(
         """
@@ -332,8 +332,8 @@ def timer():
     timer.shutdown()
 
 
-@pytest.mark.parametrize('blocker', ['single', 'multiple', 'callback'])
-@pytest.mark.parametrize('raising', [True, False])
+@pytest.mark.parametrize("blocker", ["single", "multiple", "callback"])
+@pytest.mark.parametrize("raising", [True, False])
 def test_blockers_handle_exceptions(qtbot, blocker, raising, signaller):
     """
     Make sure blockers handle exceptions correctly.
@@ -342,13 +342,13 @@ def test_blockers_handle_exceptions(qtbot, blocker, raising, signaller):
     class TestException(Exception):
         pass
 
-    if blocker == 'multiple':
+    if blocker == "multiple":
         func = qtbot.waitSignals
         args = [[signaller.signal, signaller.signal_2]]
-    elif blocker == 'single':
+    elif blocker == "single":
         func = qtbot.waitSignal
         args = [signaller.signal]
-    elif blocker == 'callback':
+    elif blocker == "callback":
         func = qtbot.waitCallback
         args = []
     else:
@@ -1373,7 +1373,6 @@ class TestAssertNotEmitted:
 
 
 class TestWaitCallback:
-
     def test_immediate(self, qtbot):
         with qtbot.waitCallback() as callback:
             assert not callback.called
@@ -1393,7 +1392,7 @@ class TestWaitCallback:
         with qtbot.waitCallback() as callback:
             callback(23, answer=42)
         assert callback.args == [23]
-        assert callback.kwargs == {'answer': 42}
+        assert callback.kwargs == {"answer": 42}
 
     def test_explicit(self, qtbot):
         blocker = qtbot.waitCallback()

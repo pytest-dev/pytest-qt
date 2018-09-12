@@ -140,7 +140,7 @@ class QtBot(object):
         self._request = request
 
     def _should_raise(self, raising_arg):
-        ini_val  = self._request.config.getini("qt_default_raising")
+        ini_val = self._request.config.getini("qt_default_raising")
         legacy_ini_val = self._request.config.getini("qt_wait_signal_raising")
 
         if raising_arg is not None:
