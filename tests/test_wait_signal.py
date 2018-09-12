@@ -1407,3 +1407,16 @@ class TestWaitCallback:
             with qtbot.waitCallback() as callback:
                 callback()
                 callback()
+
+    def test_timeout_raising(self, qtbot):
+        with pytest.raises(TimeoutError):
+            with qtbot.waitCallback(timeout=10):
+                pass
+
+    def test_timeout_not_raising(self, qtbot):
+        with qtbot.waitCallback(timeout=10, raising=False) as callback:
+            pass
+
+        assert not callback.called
+        assert callback.args is None
+        assert callback.kwargs is None
