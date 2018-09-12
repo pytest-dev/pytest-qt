@@ -5,7 +5,7 @@ import pytest
 import sys
 
 from pytestqt.qt_compat import qt_api
-from pytestqt.wait_signal import SignalEmittedError, TimeoutError, SignalAndArgs
+from pytestqt.wait_signal import SignalEmittedError, TimeoutError, SignalAndArgs, CallbackCalledTwiceError
 
 
 def test_signal_blocker_exception(qtbot):
@@ -1402,4 +1402,8 @@ class TestWaitCallback:
         blocker.wait()
         assert blocker.called
 
-    # FIXME tests for timeouts
+    def test_called_twice(self, qtbot):
+        with pytest.raises(CallbackCalledTwiceError):
+            with qtbot.waitCallback() as callback:
+                callback()
+                callback()

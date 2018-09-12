@@ -10,6 +10,7 @@ from pytestqt.wait_signal import (
     SignalEmittedSpy,
     SignalEmittedError,
     CallbackBlocker,
+    CallbackCalledTwiceError,
 )
 
 
@@ -645,6 +646,7 @@ class QtBot(object):
 QtBot.SignalTimeoutError = SignalTimeoutError
 QtBot.SignalEmittedError = SignalEmittedError
 QtBot.TimeoutError = TimeoutError
+QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError
 
 
 def _add_widget(item, widget):

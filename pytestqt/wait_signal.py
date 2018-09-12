@@ -674,6 +674,10 @@ class CallbackBlocker(object):
             self._timer = None
 
     def __call__(self, *args, **kwargs):
+        # Not inside the try: block, as if self.called is True, we did quit the
+        # loop already.
+        if self.called:
+            raise CallbackCalledTwiceError("Callback called twice")
         try:
             self.args = list(args)
             self.kwargs = kwargs
@@ -698,6 +702,17 @@ class SignalEmittedError(Exception):
 
     The exception thrown by :meth:`pytestqt.qtbot.QtBot.assertNotEmitted` if a
     signal was emitted unexpectedly.
+    """
+
+    pass
+
+
+class CallbackCalledTwiceError(Exception):
+    """
+    .. versionadded:: 3.1
+
+    The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitCallback` if a
+    callback was called twice.
     """
 
     pass
