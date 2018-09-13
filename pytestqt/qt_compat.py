@@ -107,8 +107,13 @@ class _QtApi:
         self.Qt = QtCore.Qt
         self.QEvent = QtCore.QEvent
 
-        # qInfo is not exposed in PyQt5 and PySide2 bindings (#225)
+        # qInfo is not exposed in PyQt5 and PySide2 bindings (#232)
+        assert not hasattr(
+            QtCore, "qInfo"
+        )  # lets break hard so we know when qInfo gets exposed
         self.qInfo = None
+        if hasattr(QtCore, "QMessageLogger"):
+            self.qInfo = lambda msg: QtCore.QMessageLogger().info(msg)
         self.qDebug = QtCore.qDebug
         self.qWarning = QtCore.qWarning
         self.qCritical = QtCore.qCritical
