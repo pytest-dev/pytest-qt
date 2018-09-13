@@ -6,7 +6,7 @@ dist: trusty
 env:
   global:
       # used by ci-helpers
-      - DEPS="pytest>=3.8 tox coveralls six"
+      - DEPS="pytest tox coveralls six"
       - MINICONDA_VERSION=latest
       - DISPLAY=":99.0"
 
