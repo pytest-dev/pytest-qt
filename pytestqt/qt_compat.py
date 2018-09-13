@@ -70,9 +70,14 @@ class _QtApi:
     def set_qt_api(self, api):
         self.pytest_qt_api = self._get_qt_api_from_env() or api or self._guess_qt_api()
         if not self.pytest_qt_api:  # pragma: no cover
-            errors = '\n'.join('  {}: {}'.format(module, reason)
-                               for module, reason in sorted(self._import_errors.items()))
-            msg = "pytest-qt requires either PySide, PySide2, PyQt4 or PyQt5 to be installed\n" + errors
+            errors = "\n".join(
+                "  {}: {}".format(module, reason)
+                for module, reason in sorted(self._import_errors.items())
+            )
+            msg = (
+                "pytest-qt requires either PySide, PySide2, PyQt4 or PyQt5 to be installed\n"
+                + errors
+            )
             raise RuntimeError(msg)
 
         _root_modules = {
