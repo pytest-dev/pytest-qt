@@ -1,3 +1,9 @@
+3.0.3 (unreleased)
+------------------
+
+- Improve debugging output when no Qt wrapper was found.
+- Register the ``no_qt_log`` marker with pytest so ``--strict`` can be used.
+
 3.0.2 (2018-08-31)
 ------------------
 
