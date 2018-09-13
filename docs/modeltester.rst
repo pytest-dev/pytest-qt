@@ -45,10 +45,10 @@ on your model implementation:
   a bug in your implementation. Set this variable to ``True`` if this really
   is OK in your model.
 
-The source code was ported from `modeltest.cpp`_ by `Florian Bruhin`_, many
-thanks!
+The source code was ported from `qabstractitemmodeltester.cpp`_ by
+`Florian Bruhin`_, many thanks!
 
-.. _modeltest.cpp: http://code.qt.io/cgit/qt/qtbase.git/tree/tests/auto/other/modeltest/modeltest.cpp
+.. _qabstractitemmodeltester.cpp: http://code.qt.io/cgit/qt/qtbase.git/tree/src/testlib/qabstractitemmodeltester.cpp
 
 .. _Florian Bruhin: https://github.com/The-Compiler
 
