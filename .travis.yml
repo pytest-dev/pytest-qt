@@ -6,7 +6,8 @@ dist: trusty
 env:
   global:
       # used by ci-helpers
-      - CONDA_CHANNELS=conda-forge SETUP_XVFB=true  DEPS="pytest tox coveralls six"
+      - DEPS="pytest tox coveralls six"
+      - MINICONDA_VERSION=latest
 
   matrix:
       - LINTING=1
@@ -41,9 +42,14 @@ install:
       sudo apt-get install -y xvfb herbstluftwm
 
       # Setup miniconda
-      git clone --depth 1 git://github.com/astropy/ci-helpers.git
-      CONDA_DEPENDENCIES="${DEPS} ${PYQT_PACKAGE}" source ci-helpers/travis/setup_conda.sh
-      source activate test && pip install -e .
+      wget https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -O miniconda.sh
+      bash miniconda.sh -b -p $HOME/miniconda
+      export PATH="$HOME/miniconda/bin:$PATH"
+      conda config --add channels conda-forge
+      conda config --set always_yes yes --set changeps1 no
+      conda create -n test --quiet python=${PYTHON_VERSION} ${DEPS} ${PYQT_PACKAGE}
+      # pytest-xvfb installed via pip because not on conda-forge yet
+      source activate test && pip install -e . pytest-xvfb
     fi
 
 before_script:
