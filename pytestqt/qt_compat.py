@@ -16,6 +16,10 @@ import os
 VersionTuple = namedtuple("VersionTuple", "qt_api, qt_api_version, runtime, compiled")
 
 
+def _import(name):
+    __import__(name)
+
+
 class _QtApi:
     """
     Interface to the underlying Qt API currently configured for pytest-qt.
@@ -23,6 +27,9 @@ class _QtApi:
     This object lazily loads all class references and other objects when the ``set_qt_api`` method
     gets called, providing a uniform way to access the Qt classes.
     """
+
+    def __init__(self):
+        self._import_errors = {}
 
     def _get_qt_api_from_env(self):
         api = os.environ.get("PYTEST_QT_API")
@@ -42,9 +49,10 @@ class _QtApi:
     def _guess_qt_api(self):  # pragma: no cover
         def _can_import(name):
             try:
-                __import__(name)
+                _import(name)
                 return True
-            except ImportError:
+            except ImportError as e:
+                self._import_errors[name] = str(e)
                 return False
 
         # Note, not importing only the root namespace because when uninstalling from conda,
@@ -62,7 +70,14 @@ class _QtApi:
     def set_qt_api(self, api):
         self.pytest_qt_api = self._get_qt_api_from_env() or api or self._guess_qt_api()
         if not self.pytest_qt_api:  # pragma: no cover
-            msg = "pytest-qt requires either PySide, PySide2, PyQt4 or PyQt5 to be installed"
+            errors = "\n".join(
+                "  {}: {}".format(module, reason)
+                for module, reason in sorted(self._import_errors.items())
+            )
+            msg = (
+                "pytest-qt requires either PySide, PySide2, PyQt4 or PyQt5 to be installed\n"
+                + errors
+            )
             raise RuntimeError(msg)
 
         _root_modules = {

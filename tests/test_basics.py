@@ -2,6 +2,7 @@ import weakref
 
 import pytest
 
+from pytestqt import qt_compat
 from pytestqt.qt_compat import qt_api
 
 
@@ -459,3 +460,22 @@ def test_qapp_args(testdir):
     )
     result = testdir.runpytest_subprocess()
     result.stdout.fnmatch_lines(["*= 1 passed in *"])
+
+
+def test_importerror(monkeypatch):
+    def _fake_import(name, *args):
+        raise ImportError("Failed to import {}".format(name))
+
+    monkeypatch.delenv("PYTEST_QT_API", raising=False)
+    monkeypatch.setattr(qt_compat, "_import", _fake_import)
+
+    expected = (
+        "pytest-qt requires either PySide, PySide2, PyQt4 or PyQt5 to be installed\n"
+        "  PyQt4.QtCore: Failed to import PyQt4.QtCore\n"
+        "  PyQt5.QtCore: Failed to import PyQt5.QtCore\n"
+        "  PySide.QtCore: Failed to import PySide.QtCore\n"
+        "  PySide2.QtCore: Failed to import PySide2.QtCore"
+    )
+
+    with pytest.raises(RuntimeError, match=expected):
+        qt_api.set_qt_api(api=None)
