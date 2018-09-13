@@ -1,3 +1,4 @@
+# encoding: UTF-8
 # This file is based on the original C++ qabstractitemmodeltester.cpp from:
 # http://code.qt.io/cgit/qt/qtbase.git/tree/src/testlib/qabstractitemmodeltester.cpp
 # Commit 4af292fe5158c2d19e8ab1351c71c3940c7f1032
