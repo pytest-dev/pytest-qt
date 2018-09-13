@@ -13,37 +13,37 @@ environment:
   matrix:
     - PYTHON_VERSION: "2.7"
       PYTEST_QT_API: "pyqt4"
-      CONDA_DEPENDENCIES: "pytest pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest>=3.8 pyqt=4.*"
     - PYTHON_VERSION: "2.7"
       PYTEST_QT_API: "pyqt4v2"
-      CONDA_DEPENDENCIES: "pytest pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest>=3.8 pyqt=4.*"
     - PYTHON_VERSION: "2.7"
       PYTEST_QT_API: "pyside"
-      CONDA_DEPENDENCIES: "pytest pyside=1.*"
+      CONDA_DEPENDENCIES: "pytest>=3.8 pyside=1.*"
 
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyqt4"
-      CONDA_DEPENDENCIES: "pytest pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest>=3.8 pyqt=4.*"
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyqt4v2"
-      CONDA_DEPENDENCIES: "pytest pyqt=4.*"
+      CONDA_DEPENDENCIES: "pytest>=3.8 pyqt=4.*"
     - PYTHON_VERSION: "3.4"
       PYTEST_QT_API: "pyside"
-      CONDA_DEPENDENCIES: "pytest pyside=1.*"
+      CONDA_DEPENDENCIES: "pytest>=3.8 pyside=1.*"
 
     - PYTHON_VERSION: "3.5"
       PYTEST_QT_API: "pyqt5"
-      CONDA_DEPENDENCIES: "pytest pyqt=5.*"
+      CONDA_DEPENDENCIES: "pytest>=3.8 pyqt=5.*"
     - PYTHON_VERSION: "3.5"
       PYTEST_QT_API: "pyside2"
-      CONDA_DEPENDENCIES: "pytest pyside2=2.*"
+      CONDA_DEPENDENCIES: "pytest>=3.8 pyside2=2.*"
 
     - PYTHON_VERSION: "3.6"
       PYTEST_QT_API: "pyqt5"
-      CONDA_DEPENDENCIES: "pytest pyqt=5.*"
+      CONDA_DEPENDENCIES: "pytest>=3.8 pyqt=5.*"
     - PYTHON_VERSION: "3.6"
       PYTEST_QT_API: "pyside2"
-      CONDA_DEPENDENCIES: "pytest pyside2=2.*"
+      CONDA_DEPENDENCIES: "pytest>=3.8 pyside2=2.*"
 
 matrix:
   exclude:
@@ -51,7 +51,7 @@ matrix:
     - PYTEST_QT_API: "pyside2"
 
 platform:
-    -x64
+    - x64
 
 install:
     # If there is a newer build queued for the same PR, cancel this one.
@@ -70,7 +70,7 @@ install:
     - "pip install -e ."
 
 # Not a .NET project, we build in the install step instead
-build: false
+build: off
 
 test_script:
   - "%CMD_IN_ENV% python -m pytest -v tests/"
