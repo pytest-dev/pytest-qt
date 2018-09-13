@@ -16,6 +16,10 @@ import os
 VersionTuple = namedtuple("VersionTuple", "qt_api, qt_api_version, runtime, compiled")
 
 
+def _import(name):
+    __import__(name)
+
+
 class _QtApi:
     """
     Interface to the underlying Qt API currently configured for pytest-qt.
@@ -45,7 +49,7 @@ class _QtApi:
     def _guess_qt_api(self):  # pragma: no cover
         def _can_import(name):
             try:
-                __import__(name)
+                _import(name)
                 return True
             except ImportError as e:
                 self._import_errors[name] = str(e)
