@@ -36,15 +36,6 @@ items and call ``qtmodeltester.check``:
 If the tester finds a problem the test will fail with an assert pinpointing
 the issue.
 
-The following attribute may influence the outcome of the check depending
-on your model implementation:
-
-* ``data_display_may_return_none`` (default: ``False``): While you can
-  technically return ``None`` (or an invalid ``QVariant``) from ``data()``
-  for ``QtCore.Qt.DisplayRole``, this usually is a sign of
-  a bug in your implementation. Set this variable to ``True`` if this really
-  is OK in your model.
-
 The source code was ported from `qabstractitemmodeltester.cpp`_ by
 `Florian Bruhin`_, many thanks!
 
