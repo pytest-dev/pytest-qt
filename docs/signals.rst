@@ -239,3 +239,14 @@ context manager:
         ...
         with qtbot.assertNotEmitted(app.worker.error):
             app.worker.start()
+
+By default, this only catches signals emitted directly inside the block.
+You can pass ``wait=...`` to wait for a given duration (in milliseconds) for
+asynchronous signals to (not) arrive:
+
+.. code-block:: python
+
+    def test_no_error(qtbot):
+        ...
+        with qtbot.assertNotEmitted(page.loadFinished, wait=100):
+            page.runJavaScript("document.getElementById('not-a-link').click()")

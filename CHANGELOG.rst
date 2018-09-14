@@ -3,6 +3,9 @@
 
 - Improve debugging output when no Qt wrapper was found.
 - Register the ``no_qt_log`` marker with pytest so ``--strict`` can be used.
+- ``qtbot.assertNotEmitted`` now has a new ``wait`` parameter which can be used
+  to make sure asynchronous signals aren't emitted by waiting after the code in
+  the ``with`` block finished.
 
 3.0.2 (2018-08-31)
 ------------------

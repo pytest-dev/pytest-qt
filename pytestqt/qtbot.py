@@ -435,11 +435,16 @@ class QtBot(object):
         blocker.wait()
 
     @contextlib.contextmanager
-    def assertNotEmitted(self, signal):
+    def assertNotEmitted(self, signal, wait=0):
         """
         .. versionadded:: 1.11
 
         Make sure the given ``signal`` doesn't get emitted.
+
+        :param int wait:
+            How many milliseconds to wait to make sure the signal isn't emitted
+            asynchronously. By default, this method returns immediately and only
+            catches signals emitted inside the ``with``-block.
 
         This is intended to be used as a context manager.
 
@@ -449,6 +454,8 @@ class QtBot(object):
         spy = SignalEmittedSpy(signal)
         with spy:
             yield
+            if wait:
+                self.wait(wait)
         spy.assert_not_emitted()
 
     assert_not_emitted = assertNotEmitted  # pep-8 alias

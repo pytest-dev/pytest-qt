@@ -1314,3 +1314,8 @@ class TestAssertNotEmitted:
         with qtbot.assertNotEmitted(signaller.signal):
             pass
         signaller.signal.emit()
+
+    def test_emitted_late(self, qtbot, signaller, timer):
+        with pytest.raises(SignalEmittedError):
+            with qtbot.assertNotEmitted(signaller.signal, wait=100):
+                timer.single_shot(signaller.signal, 10)
