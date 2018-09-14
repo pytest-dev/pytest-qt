@@ -452,10 +452,8 @@ class QtBot(object):
                   (pep-8 alias)
         """
         spy = SignalEmittedSpy(signal)
-        with spy:
+        with spy, self.waitSignal(signal, timeout=wait, raising=False):
             yield
-            if wait:
-                self.wait(wait)
         spy.assert_not_emitted()
 
     assert_not_emitted = assertNotEmitted  # pep-8 alias

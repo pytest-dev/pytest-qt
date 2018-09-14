@@ -1319,3 +1319,12 @@ class TestAssertNotEmitted:
         with pytest.raises(SignalEmittedError):
             with qtbot.assertNotEmitted(signaller.signal, wait=100):
                 timer.single_shot(signaller.signal, 10)
+
+    def test_continues_when_emitted(self, qtbot, signaller, stop_watch):
+        stop_watch.start()
+
+        with pytest.raises(SignalEmittedError):
+            with qtbot.assertNotEmitted(signaller.signal, wait=5000):
+                signaller.signal.emit()
+
+        stop_watch.check(4000)
