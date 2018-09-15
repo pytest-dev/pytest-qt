@@ -1,6 +1,7 @@
 import pytest
 
 from pytestqt.qt_compat import qt_api
+from pytestqt import modeltest
 
 pytestmark = pytest.mark.usefixtures("qtbot")
 
@@ -36,13 +37,13 @@ def test_standard_item_model(qtmodeltester):
     items[0].setChild(0, items[4])
     items[4].setChild(0, items[5])
 
-    qtmodeltester.check(model)
+    qtmodeltester.check(model, force_py=True)
 
 
 def test_string_list_model(qtmodeltester):
     model = qt_api.QStringListModel()
     model.setStringList(["hello", "world"])
-    qtmodeltester.check(model)
+    qtmodeltester.check(model, force_py=True)
 
 
 def test_sort_filter_proxy_model(qtmodeltester):
@@ -50,7 +51,7 @@ def test_sort_filter_proxy_model(qtmodeltester):
     model.setStringList(["hello", "world"])
     proxy = qt_api.QSortFilterProxyModel()
     proxy.setSourceModel(model)
-    qtmodeltester.check(proxy)
+    qtmodeltester.check(proxy, force_py=True)
 
 
 @pytest.mark.parametrize(
@@ -145,7 +146,7 @@ def test_header_handling(check_model):
 
     model = MyModel()
     model.set_header_text("Start Header")
-    check_model(model, should_pass=1)
+    check_model(model, should_pass=True)
     model.set_header_text("New Header")
 
 
@@ -159,10 +160,10 @@ def check_model(qtmodeltester):
 
     def check(model, should_pass=True):
         if should_pass:
-            qtmodeltester.check(model)
+            qtmodeltester.check(model, force_py=True)
         else:
             with pytest.raises(AssertionError):
-                qtmodeltester.check(model)
+                qtmodeltester.check(model, force_py=True)
 
     return check
 
@@ -177,13 +178,13 @@ def test_invalid_column_count(qtmodeltester):
     model = Model()
 
     with pytest.raises(AssertionError):
-        qtmodeltester.check(model)
+        qtmodeltester.check(model, force_py=True)
 
 
 def test_changing_model_insert(qtmodeltester):
     model = qt_api.QStandardItemModel()
     item = qt_api.QStandardItem("foo")
-    qtmodeltester.check(model)
+    qtmodeltester.check(model, force_py=True)
     model.insertRow(0, item)
 
 
@@ -191,7 +192,7 @@ def test_changing_model_remove(qtmodeltester):
     model = qt_api.QStandardItemModel()
     item = qt_api.QStandardItem("foo")
     model.setItem(0, 0, item)
-    qtmodeltester.check(model)
+    qtmodeltester.check(model, force_py=True)
     model.removeRow(0)
 
 
@@ -199,7 +200,7 @@ def test_changing_model_data(qtmodeltester):
     model = qt_api.QStandardItemModel()
     item = qt_api.QStandardItem("foo")
     model.setItem(0, 0, item)
-    qtmodeltester.check(model)
+    qtmodeltester.check(model, force_py=True)
     model.setData(model.index(0, 0), "hello world")
 
 
@@ -210,7 +211,7 @@ def test_changing_model_header_data(qtmodeltester, orientation):
     model = qt_api.QStandardItemModel()
     item = qt_api.QStandardItem("foo")
     model.setItem(0, 0, item)
-    qtmodeltester.check(model)
+    qtmodeltester.check(model, force_py=True)
     model.setHeaderData(0, orientation, "blah")
 
 
@@ -219,7 +220,7 @@ def test_changing_model_sort(qtmodeltester):
     model = qt_api.QStandardItemModel()
     item = qt_api.QStandardItem("foo")
     model.setItem(0, 0, item)
-    qtmodeltester.check(model)
+    qtmodeltester.check(model, force_py=True)
     model.sort(0)
 
 
@@ -246,7 +247,7 @@ def test_overridden_methods(qtmodeltester):
 
     model = Model()
     assert not model.row_count_did_run
-    qtmodeltester.check(model)
+    qtmodeltester.check(model, force_py=True)
     assert model.row_count_did_run
 
 
@@ -262,7 +263,7 @@ def test_fetch_more(qtmodeltester):
     model = Model()
     item = qt_api.QStandardItem("foo")
     model.setItem(0, 0, item)
-    qtmodeltester.check(model)
+    qtmodeltester.check(model, force_py=True)
 
 
 def test_invalid_parent(qtmodeltester):
@@ -282,4 +283,76 @@ def test_invalid_parent(qtmodeltester):
     item2.setChild(0, item3)
 
     with pytest.raises(AssertionError):
-        qtmodeltester.check(model)
+        qtmodeltester.check(model, force_py=True)
+
+
+@pytest.mark.skipif(not modeltest.HAS_QT_TESTER, reason="No Qt modeltester available")
+def test_qt_tester_valid(testdir):
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qt_api
+        from pytestqt import modeltest
+
+        assert modeltest.HAS_QT_TESTER
+
+
+        def test_ok(qtmodeltester):
+            model = qt_api.QStandardItemModel()
+            qtmodeltester.check(model)
+        """
+    )
+    res = testdir.inline_run()
+    res.assertoutcome(passed=1, failed=0)
+
+
+@pytest.mark.skipif(not modeltest.HAS_QT_TESTER, reason="No Qt modeltester available")
+def test_qt_tester_invalid(testdir):
+    testdir.makeini(
+        """
+        [pytest]
+        qt_log_level_fail = NO
+    """
+    )
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qt_api
+        from pytestqt import modeltest
+
+        assert modeltest.HAS_QT_TESTER
+
+
+        class Model(qt_api.QtCore.QAbstractItemModel):
+            def data(self, index, role=qt_api.QtCore.Qt.DisplayRole):
+                return None
+
+            def rowCount(self, parent=qt_api.QtCore.QModelIndex()):
+                return 0
+
+            def columnCount(self, parent=qt_api.QtCore.QModelIndex()):
+                return -1
+
+            def index(self, row, column, parent=qt_api.QtCore.QModelIndex()):
+                return qt_api.QtCore.QModelIndex()
+
+            def parent(self, index):
+                return qt_api.QtCore.QModelIndex()
+
+
+        def test_ok(qtmodeltester):
+            model = Model()
+            qtmodeltester.check(model)
+        """
+    )
+    res = testdir.runpytest()
+    res.stdout.fnmatch_lines(
+        [
+            "*__ test_ok __*",
+            "test_qt_tester_invalid.py:*: Qt modeltester errors",
+            "*-- Captured Qt messages --*",
+            "* QtWarningMsg: FAIL! model->columnCount(QModelIndex()) >= 0 () returned FALSE "
+            "(qabstractitemmodeltester.cpp:*)",
+            "*-- Captured stdout call --*",
+            "modeltest: Using Qt C++ tester",
+            "*== 1 failed in * ==*",
+        ]
+    )

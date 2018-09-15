@@ -521,7 +521,7 @@ def test_context_none(testdir):
 
         def test_foo(request):
             log_capture = request.node.qt_log_capture
-            context = log_capture._Context(None, None, 0)
+            context = log_capture._Context(None, None, 0, None)
             log_capture._handle_with_context(qt_api.QtWarningMsg,
                                              context, "WARNING message")
             assert 0
