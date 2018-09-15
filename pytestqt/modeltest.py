@@ -463,6 +463,8 @@ class ModelTester:
         # General purpose roles with a fixed expected type
         for role, typ in types:
             data = self._model.data(self._model.index(0, 0), role)
+            if data is not None:
+                data = qt_api.extract_from_variant(data)
             assert data == None or isinstance(data, typ), role  # noqa
 
         # Check that the alignment is one we know about
