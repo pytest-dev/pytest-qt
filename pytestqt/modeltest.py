@@ -44,6 +44,7 @@
 
 from __future__ import print_function
 import collections
+import sys
 
 from pytestqt.qt_compat import qt_api
 
@@ -433,11 +434,13 @@ class ModelTester:
         # A valid index should have a valid QVariant data
         assert self._model.index(0, 0).isValid()
 
+        str_type = unicode if sys.version_info.major == 2 else str
+
         types = [
-            (qt_api.QtCore.Qt.DisplayRole, str),
-            (qt_api.QtCore.Qt.ToolTipRole, str),
-            (qt_api.QtCore.Qt.StatusTipRole, str),
-            (qt_api.QtCore.Qt.WhatsThisRole, str),
+            (qt_api.QtCore.Qt.DisplayRole, str_type),
+            (qt_api.QtCore.Qt.ToolTipRole, str_type),
+            (qt_api.QtCore.Qt.StatusTipRole, str_type),
+            (qt_api.QtCore.Qt.WhatsThisRole, str_type),
             (qt_api.QtCore.Qt.SizeHintRole, qt_api.QtCore.QSize),
             (qt_api.QtCore.Qt.FontRole, qt_api.QtGui.QFont),
             (
