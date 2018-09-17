@@ -160,6 +160,9 @@ class _QtApi:
             self.extract_from_variant = extract_from_variant
             self.make_variant = make_variant
 
+            # PySide never exposes QString
+            self.QString = None
+
         elif self.pytest_qt_api in ("pyqt4", "pyqt4v2", "pyqt5"):
             self.Signal = QtCore.pyqtSignal
             self.Slot = QtCore.pyqtSlot
@@ -211,6 +214,13 @@ class _QtApi:
 
             self.extract_from_variant = extract_from_variant
             self.make_variant = make_variant
+
+            # QString exposed for our model tests
+            if self.pytest_qt_api == "pyqt4":
+                self.QString = QtCore.QString
+            else:
+                # PyQt4 api v2 and pyqt5 only exposes native strings
+                self.QString = None
 
     def get_versions(self):
         if self.pytest_qt_api in ("pyside", "pyside2"):
