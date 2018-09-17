@@ -9,6 +9,8 @@ Based on from https://github.com/epage/PythonUtils.
 """
 
 from __future__ import with_statement, division
+
+import sys
 from collections import namedtuple
 import os
 
@@ -216,7 +218,7 @@ class _QtApi:
             self.make_variant = make_variant
 
             # QString exposed for our model tests
-            if self.pytest_qt_api == "pyqt4":
+            if self.pytest_qt_api == "pyqt4" and sys.version_info.major == 2:
                 self.QString = QtCore.QString
             else:
                 # PyQt4 api v2 and pyqt5 only exposes native strings

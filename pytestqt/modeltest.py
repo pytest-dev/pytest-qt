@@ -44,7 +44,6 @@
 
 from __future__ import print_function
 import collections
-import sys
 
 from pytestqt.qt_compat import qt_api
 
@@ -434,12 +433,9 @@ class ModelTester:
         # A valid index should have a valid QVariant data
         assert self._model.index(0, 0).isValid()
 
-        if sys.version_info.major == 2:
-            string_types = [unicode, str]  # noqa
-            if qt_api.QString is not None:
-                string_types.append(qt_api.QString)
-        else:
-            string_types = [str]
+        string_types = [str]
+        if qt_api.QString is not None:
+            string_types.append(qt_api.QString)
 
         string_types = tuple(string_types)
 
