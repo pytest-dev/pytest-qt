@@ -98,6 +98,17 @@ parameters match, ``False`` otherwise.
             app.worker.start()
 
 
+timeout parameter
+----------------
+
+The ``timeout`` parameter specifies how long ``waitSignal`` should wait for a
+signal to arrive. If the timeout is ``None``, there won't be any timeout, i.e.
+it'll wait indefinitely.
+
+If the timeout is set to ``0``, it's expected that the signal arrives directly
+in the code inside the ``with qtbot.waitSignal(...):`` block.
+
+
 Getting arguments of the emitted signal
 ---------------------------------------
 

@@ -6,6 +6,8 @@
 - ``qtbot.assertNotEmitted`` now has a new ``wait`` parameter which can be used
   to make sure asynchronous signals aren't emitted by waiting after the code in
   the ``with`` block finished.
+- ``qtbot.waitSignal`` with timeout ``0`` now expects the signal to arrive
+  directly in the code enclosed by it.
 
 3.0.2 (2018-08-31)
 ------------------
