@@ -44,6 +44,7 @@
 
 from __future__ import print_function
 import collections
+import sys
 
 from pytestqt.qt_compat import qt_api
 
@@ -434,6 +435,8 @@ class ModelTester:
         assert self._model.index(0, 0).isValid()
 
         string_types = [str]
+        if sys.version_info.major == 2:
+            string_types.append(unicode)  # noqa
         if qt_api.QString is not None:
             string_types.append(qt_api.QString)
 
