@@ -93,7 +93,7 @@ class QtLoggingPlugin(object):
                     for rec in item.qt_log_capture.records:
                         suffix = " (IGNORED)" if rec.ignored else ""
 
-                        if (
+                        if rec.context is not None and (                            
                             rec.context.file is not None
                             or rec.context.function is not None
                             or rec.context.line != 0
