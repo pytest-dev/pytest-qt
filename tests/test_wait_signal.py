@@ -111,6 +111,21 @@ def test_signal_triggered(
     stop_watch.check(timeout, delay)
 
 
+@pytest.mark.parametrize("delayed", [True, False])
+def test_zero_timeout(qtbot, timer, delayed, signaller):
+    """
+    With a zero timeout, we don't run a main loop, so only immediate signals are
+    processed.
+    """
+    with qtbot.waitSignal(signaller.signal, raising=False, timeout=0) as blocker:
+        if delayed:
+            timer.single_shot(signaller.signal, 0)
+        else:
+            signaller.signal.emit()
+
+    assert blocker.signal_triggered != delayed
+
+
 @pytest.mark.parametrize(
     "configval, raises", [("false", False), ("true", True), (None, True)]
 )
@@ -1314,3 +1329,17 @@ class TestAssertNotEmitted:
         with qtbot.assertNotEmitted(signaller.signal):
             pass
         signaller.signal.emit()
+
+    def test_emitted_late(self, qtbot, signaller, timer):
+        with pytest.raises(SignalEmittedError):
+            with qtbot.assertNotEmitted(signaller.signal, wait=100):
+                timer.single_shot(signaller.signal, 10)
+
+    def test_continues_when_emitted(self, qtbot, signaller, stop_watch):
+        stop_watch.start()
+
+        with pytest.raises(SignalEmittedError):
+            with qtbot.assertNotEmitted(signaller.signal, wait=5000):
+                signaller.signal.emit()
+
+        stop_watch.check(4000)

@@ -24,7 +24,7 @@ class _AbstractSignalBlocker(object):
         self.raising = raising
         self._signals = None  # will be initialized by inheriting implementations
         self._timeout_message = ""
-        if timeout is None:
+        if timeout is None or timeout == 0:
             self._timer = None
         else:
             self._timer = qt_api.QtCore.QTimer(self._loop)
@@ -46,7 +46,10 @@ class _AbstractSignalBlocker(object):
         if self._timer is not None:
             self._timer.timeout.connect(self._quit_loop_by_timeout)
             self._timer.start()
-        self._loop.exec_()
+
+        if self.timeout != 0:
+            self._loop.exec_()
+
         if not self.signal_triggered and self.raising:
             raise TimeoutError(self._timeout_message)
 
