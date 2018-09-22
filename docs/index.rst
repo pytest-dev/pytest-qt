@@ -15,6 +15,7 @@ pytest-qt
     logging
     signals
     wait_until
+    wait_callback
     virtual_methods
     modeltester
     app_exit

@@ -21,7 +21,7 @@ ensuring the results are correct:
             app.worker.start()
             # Test will block at this point until either the "finished" or the
             # "failed" signal is emitted. If 10 seconds passed without a signal,
-            # SignalTimeoutError will be raised.
+            # TimeoutError will be raised.
 
         assert_application_results(app)
 
@@ -34,7 +34,7 @@ raising parameter
 .. versionchanged:: 2.0
 
 You can pass ``raising=False`` to avoid raising a
-:class:`qtbot.SignalTimeoutError <SignalTimeoutError>` if the timeout is
+:class:`qtbot.TimeoutError <TimeoutError>` if the timeout is
 reached before the signal is triggered:
 
 .. code-block:: python
@@ -46,29 +46,31 @@ reached before the signal is triggered:
 
         assert_application_results(app)
 
-        # qtbot.SignalTimeoutError is not raised, but you can still manually
+        # qtbot.TimeoutError is not raised, but you can still manually
         # check whether the signal was triggered:
         assert blocker.signal_triggered, "process timed-out"
 
-.. _qt_wait_signal_raising:
+.. _qt_default_raising:
 
-qt_wait_signal_raising ini option
----------------------------------
+qt_default_raising ini option
+-----------------------------
 
 .. versionadded:: 1.11
 .. versionchanged:: 2.0
+.. versionchanged:: 3.1
 
-The ``qt_wait_signal_raising`` ini option can be used to override the default
+The ``qt_default_raising`` ini option can be used to override the default
 value of the ``raising`` parameter of the ``qtbot.waitSignal`` and
 ``qtbot.waitSignals`` functions when omitted:
 
 .. code-block:: ini
 
     [pytest]
-    qt_wait_signal_raising = false
+    qt_default_raising = false
 
 Calls which explicitly pass the ``raising`` parameter are not affected.
 
+This option was called ``qt_wait_signal_raising`` before 3.1.0.
 
 check_params_cb parameter
 -------------------------
@@ -158,7 +160,7 @@ the ``raising`` parameter::
                 w.start()
 
         # this will be reached after all workers emit their "finished"
-        # signal or a qtbot.SignalTimeoutError will be raised
+        # signal or a qtbot.TimeoutError will be raised
         assert_application_results(app)
 
 check_params_cbs parameter

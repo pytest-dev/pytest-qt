@@ -9,6 +9,8 @@ from pytestqt.wait_signal import (
     MultiSignalBlocker,
     SignalEmittedSpy,
     SignalEmittedError,
+    CallbackBlocker,
+    CallbackCalledTwiceError,
 )
 
 
@@ -136,6 +138,19 @@ class QtBot(object):
 
     def __init__(self, request):
         self._request = request
+
+    def _should_raise(self, raising_arg):
+        ini_val = self._request.config.getini("qt_default_raising")
+        legacy_ini_val = self._request.config.getini("qt_wait_signal_raising")
+
+        if raising_arg is not None:
+            return raising_arg
+        elif legacy_ini_val:
+            return _parse_ini_boolean(legacy_ini_val)
+        elif ini_val:
+            return _parse_ini_boolean(ini_val)
+        else:
+            return True
 
     def addWidget(self, widget):
         """
@@ -298,7 +313,7 @@ class QtBot(object):
         :param bool raising:
             If :class:`QtBot.TimeoutError <pytestqt.plugin.TimeoutError>`
             should be raised if a timeout occurred.
-            This defaults to ``True`` unless ``qt_wait_signal_raising = false``
+            This defaults to ``True`` unless ``qt_default_raising = false``
             is set in the config.
         :param Callable check_params_cb:
             Optional ``callable`` that compares the provided signal parameters to some expected parameters.
@@ -314,12 +329,7 @@ class QtBot(object):
         .. note::
             This method is also available as ``wait_signal`` (pep-8 alias)
         """
-        if raising is None:
-            raising_val = self._request.config.getini("qt_wait_signal_raising")
-            if not raising_val:
-                raising = True
-            else:
-                raising = _parse_ini_boolean(raising_val)
+        raising = self._should_raise(raising)
         blocker = SignalBlocker(
             timeout=timeout, raising=raising, check_params_cb=check_params_cb
         )
@@ -367,7 +377,7 @@ class QtBot(object):
         :param bool raising:
             If :class:`QtBot.TimeoutError <pytestqt.plugin.TimeoutError>`
             should be raised if a timeout occurred.
-            This defaults to ``True`` unless ``qt_wait_signal_raising = false``
+            This defaults to ``True`` unless ``qt_default_raising = false``
             is set in the config.
         :param list check_params_cbs:
             optional list of callables that compare the provided signal parameters to some expected parameters.
@@ -399,8 +409,7 @@ class QtBot(object):
         if order not in ["none", "simple", "strict"]:
             raise ValueError("order has to be set to 'none', 'simple' or 'strict'")
 
-        if raising is None:
-            raising = self._request.config.getini("qt_wait_signal_raising")
+        raising = self._should_raise(raising)
 
         if check_params_cbs:
             if len(check_params_cbs) != len(signals):
@@ -529,6 +538,49 @@ class QtBot(object):
 
     wait_until = waitUntil  # pep-8 alias
 
+    def waitCallback(self, timeout=1000, raising=None):
+        """
+        .. versionadded:: 3.1
+
+        Stops current test until a callback is called.
+
+        Used to stop the control flow of a test until the returned callback is
+        called, or a number of milliseconds, specified by ``timeout``, has
+        elapsed.
+
+        Best used as a context manager::
+
+           with qtbot.waitCallback() as callback:
+               function_taking_a_callback(callback)
+           assert callback.args == [True]
+
+        Also, you can use the :class:`CallbackBlocker` directly if the
+        context manager form is not convenient::
+
+           blocker = qtbot.waitCallback(timeout=1000)
+           function_calling_a_callback(blocker)
+           blocker.wait()
+
+
+        :param int timeout:
+            How many milliseconds to wait before resuming control flow.
+        :param bool raising:
+            If :class:`QtBot.TimeoutError <pytestqt.plugin.TimeoutError>`
+            should be raised if a timeout occurred.
+            This defaults to ``True`` unless ``qt_default_raising = false``
+            is set in the config.
+        :returns:
+            A ``CallbackBlocker`` object which can be used directly as a
+            callback as it implements ``__call__``.
+
+        .. note:: This method is also available as ``wait_callback`` (pep-8 alias)
+        """
+        raising = self._should_raise(raising)
+        blocker = CallbackBlocker(timeout=timeout, raising=raising)
+        return blocker
+
+    wait_callback = waitCallback  # pep-8 alias
+
     @contextlib.contextmanager
     def captureExceptions(self):
         """
@@ -599,6 +651,7 @@ class QtBot(object):
 QtBot.SignalTimeoutError = SignalTimeoutError
 QtBot.SignalEmittedError = SignalEmittedError
 QtBot.TimeoutError = TimeoutError
+QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError
 
 
 def _add_widget(item, widget):

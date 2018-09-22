@@ -1,3 +1,13 @@
+3.1.0 (unreleased)
+------------------
+
+- The ``qt_wait_signal_raising`` option was renamed to ``qt_default_raising``.
+  The old name continues to work, but is deprecated.
+- New ``qtbot.waitCallback()`` method that returns a ``CallbackBlocker``, which
+  can be used to wait for a callback to be called.
+- The docs still referred to ``SignalTimeoutError`` in some places, despite it
+  being renamed to ``TimeoutError`` in the 2.1 release. This is now corrected.
+
 3.0.3 (unreleased)
 ------------------
 
