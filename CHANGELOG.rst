@@ -1,23 +1,40 @@
-3.1.0 (unreleased)
+3.1.0 (2018-09-23)
 ------------------
 
-- The ``qt_wait_signal_raising`` option was renamed to ``qt_default_raising``.
-  The old name continues to work, but is deprecated.
+- If Qt's model tester implemented in C++ is available (PyQt5 5.11 or newer),
+  the ``qtmodeltester`` fixture now uses that instead of the Python
+  implementation. This can be turned off by passing  ``force_py=True`` to
+  ``qtmodeltester.check()``.
+
+- The Python code used by ``qtmodeltester`` is now based on the latest Qt
+  modeltester. This also means that the ``data_display_may_return_none``
+  attribute for ``qtmodeltester`` isn't used anymore.
+
 - New ``qtbot.waitCallback()`` method that returns a ``CallbackBlocker``, which
   can be used to wait for a callback to be called.
-- The docs still referred to ``SignalTimeoutError`` in some places, despite it
-  being renamed to ``TimeoutError`` in the 2.1 release. This is now corrected.
 
-3.0.3 (unreleased)
-------------------
-
-- Improve debugging output when no Qt wrapper was found.
-- Register the ``no_qt_log`` marker with pytest so ``--strict`` can be used.
 - ``qtbot.assertNotEmitted`` now has a new ``wait`` parameter which can be used
   to make sure asynchronous signals aren't emitted by waiting after the code in
   the ``with`` block finished.
+
+- The ``qt_wait_signal_raising`` option was renamed to ``qt_default_raising``.
+  The old name continues to work, but is deprecated.
+
+- The docs still referred to ``SignalTimeoutError`` in some places, despite it
+  being renamed to ``TimeoutError`` in the 2.1 release. This is now corrected.
+
+- Improve debugging output when no Qt wrapper was found.
+
+- When no context is available for warnings on Qt 5, no ``None:None:0`` line is
+  shown anymore.
+
+- The ``no_qt_log`` marker is now registered with pytest so ``--strict`` can be
+  used.
+
 - ``qtbot.waitSignal`` with timeout ``0`` now expects the signal to arrive
   directly in the code enclosed by it.
+
+Thanks `@The-Compiler`_ for the PRs.
 
 3.0.2 (2018-08-31)
 ------------------
