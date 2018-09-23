@@ -58,12 +58,21 @@ class QtLoggingPlugin(object):
 
             # make test fail if any records were captured which match
             # log_fail_level
-            if log_fail_level != "NO" and report.outcome != "failed":
+            if report.outcome != "failed":
                 for rec in item.qt_log_capture.records:
-                    if rec.matches_level(log_fail_level) and not rec.ignored:
+                    is_modeltest_error = (
+                        rec.context is not None
+                        and rec.context.category == "qt.modeltest"
+                        and rec.matches_level("WARNING")
+                    )
+                    if (
+                        rec.matches_level(log_fail_level) and not rec.ignored
+                    ) or is_modeltest_error:
                         report.outcome = "failed"
                         if report.longrepr is None:
-                            report.longrepr = _QtLogLevelErrorRepr(item, log_fail_level)
+                            report.longrepr = _QtLogLevelErrorRepr(
+                                item, log_fail_level, is_modeltest_error
+                            )
                         break
 
             # if test has failed, add recorded messages to its terminal
@@ -72,15 +81,30 @@ class QtLoggingPlugin(object):
                 long_repr = getattr(report, "longrepr", None)
                 if hasattr(long_repr, "addsection"):  # pragma: no cover
                     log_format = self.config.getoption("qt_log_format")
+                    context_format = None
                     if log_format is None:
                         if qt_api.pytest_qt_api == "pyqt5":
-                            log_format = "{rec.context.file}:{rec.context.function}:{rec.context.line}:\n"
-                            log_format += "    {rec.type_name}: {rec.message}"
+                            context_format = "{rec.context.file}:{rec.context.function}:{rec.context.line}:\n"
+                            log_format = "    {rec.type_name}: {rec.message}"
                         else:
+                            context_format = None
                             log_format = "{rec.type_name}: {rec.message}"
                     lines = []
                     for rec in item.qt_log_capture.records:
                         suffix = " (IGNORED)" if rec.ignored else ""
+
+                        if (
+                            rec.context is not None
+                            and (
+                                rec.context.file is not None
+                                or rec.context.function is not None
+                                or rec.context.line != 0
+                            )
+                            and context_format is not None
+                        ):
+                            context_line = context_format.format(rec=rec)
+                            lines.append(context_line)
+
                         line = log_format.format(rec=rec) + suffix
                         lines.append(line)
                     if lines:
@@ -139,7 +163,7 @@ class _QtMessageCapture(object):
         finally:
             self._start()
 
-    _Context = namedtuple("_Context", "file function line")
+    _Context = namedtuple("_Context", "file function line category")
 
     def _append_new_record(self, msg_type, message, context):
         """
@@ -165,7 +189,10 @@ class _QtMessageCapture(object):
 
         if context is not None:
             context = self._Context(
-                to_unicode(context.file), to_unicode(context.function), context.line
+                to_unicode(context.file),
+                to_unicode(context.function),
+                context.line,
+                to_unicode(context.category),
             )
 
         self._records.append(Record(msg_type, message, ignored, context))
@@ -263,7 +290,9 @@ class Record(object):
 
     def matches_level(self, level):
         assert level in QtLoggingPlugin.LOG_FAIL_OPTIONS
-        if level == "INFO":
+        if level == "NO":
+            return False
+        elif level == "INFO":
             return self.log_type_name in ("INFO", "DEBUG", "WARNING", "CRITICAL")
         elif level == "DEBUG":
             return self.log_type_name in ("DEBUG", "WARNING", "CRITICAL")
@@ -281,8 +310,11 @@ class _QtLogLevelErrorRepr(TerminalRepr):
     messages at or above the allowed level.
     """
 
-    def __init__(self, item, level):
-        msg = "Failure: Qt messages with level {0} or above emitted"
+    def __init__(self, item, level, is_modeltest_error):
+        if is_modeltest_error:
+            msg = "Qt modeltester errors"
+        else:
+            msg = "Failure: Qt messages with level {0} or above emitted"
         path, line_index, _ = item.location
         self.fileloc = ReprFileLocation(
             path, lineno=line_index + 1, message=msg.format(level.upper())

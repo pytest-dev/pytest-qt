@@ -36,6 +36,20 @@ items and call ``qtmodeltester.check``:
 If the tester finds a problem the test will fail with an assert pinpointing
 the issue.
 
+Qt/Python tester
+----------------
+
+Starting with PyQt5 5.11, Qt's ``QAbstractItemModelTester`` is exposed to Python.
+
+If it's available, by default, ``qtmodeltester.check`` will use the C++
+implementation and fail tests if it emits any warnings.
+
+To use the Python implementation instead, use
+``qtmodeltester.check(model, force_py=True)``.
+
+Credits
+-------
+
 The source code was ported from `qabstractitemmodeltester.cpp`_ by
 `Florian Bruhin`_, many thanks!
 

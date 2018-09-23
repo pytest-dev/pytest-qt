@@ -508,7 +508,8 @@ def test_context_none(testdir):
     Sometimes PyQt5 will emit a context with some/all attributes set as None
     instead of appropriate file, function and line number.
 
-    Test that when this happens the plugin doesn't break.
+    Test that when this happens the plugin doesn't break, and it filters
+    out the context information.
 
     :type testdir: _pytest.pytester.TmpTestdir
     """
@@ -520,14 +521,15 @@ def test_context_none(testdir):
 
         def test_foo(request):
             log_capture = request.node.qt_log_capture
-            context = log_capture._Context(None, None, None)
+            context = log_capture._Context(None, None, 0, None)
             log_capture._handle_with_context(qt_api.QtWarningMsg,
                                              context, "WARNING message")
             assert 0
         """
     )
     res = testdir.runpytest()
-    res.stdout.fnmatch_lines(["*None:None:None:*", "* QtWarningMsg: WARNING message*"])
+    assert "*None:None:0:*" not in str(res.stdout)
+    res.stdout.fnmatch_lines(["* QtWarningMsg: WARNING message*"])
 
 
 def test_logging_broken_makereport(testdir):

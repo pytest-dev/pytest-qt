@@ -52,6 +52,9 @@ from pytestqt.qt_compat import qt_api
 _Changing = collections.namedtuple("_Changing", "parent, old_size, last, next")
 
 
+HAS_QT_TESTER = hasattr(qt_api.QtTest, "QAbstractItemModelTester")
+
+
 class ModelTester:
 
     """A tester for Qt's QAbstractItemModels."""
@@ -62,6 +65,7 @@ class ModelTester:
         self._insert = None
         self._remove = None
         self._changing = []
+        self._qt_tester = None
 
     def _debug(self, text):
         print("modeltest: " + text)
@@ -81,14 +85,32 @@ class ModelTester:
                 id(index),
             )
 
-    def check(self, model):
+    def check(self, model, force_py=False):
         """Runs a series of checks in the given model.
 
         Connect to all of the models signals.
 
         Whenever anything happens recheck everything.
+
+        :param model: The ``QAbstractItemModel`` to test.
+        :param force_py:
+          Force using the Python implementation, even if the C++ implementation
+          is available.
         """
         assert model is not None
+
+        if HAS_QT_TESTER and not force_py:
+            reporting_mode = (
+                qt_api.QtTest.QAbstractItemModelTester.FailureReportingMode.Warning
+            )
+            self._qt_tester = qt_api.QtTest.QAbstractItemModelTester(
+                model, reporting_mode
+            )
+            self._debug("Using Qt C++ tester")
+            return
+
+        self._debug("Using Python tester")
+
         self._model = model
         self._fetching_more = False
         self._insert = []
