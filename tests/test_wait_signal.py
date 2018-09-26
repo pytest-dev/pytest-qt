@@ -1387,6 +1387,18 @@ class TestWaitCallback:
         assert callback.args == [23]
         assert callback.kwargs == {"answer": 42}
 
+    def test_assert_called_with(self, qtbot):
+        with qtbot.waitCallback() as callback:
+            callback(23, answer=42)
+        callback.assert_called_with(23, answer=42)
+
+    def test_assert_called_with_wrong(self, qtbot):
+        with qtbot.waitCallback() as callback:
+            callback(23, answer=42)
+
+        with pytest.raises(AssertionError):
+            callback.assert_called_with(23)
+
     def test_explicit(self, qtbot):
         blocker = qtbot.waitCallback()
         assert not blocker.called

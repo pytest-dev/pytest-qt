@@ -664,6 +664,15 @@ class CallbackBlocker(object):
         if not self.called and self.raising:
             raise TimeoutError("Callback wasn't called after %sms." % self.timeout)
 
+    def assert_called_with(self, *args, **kwargs):
+        """
+        Check that the callback was called with the same arguments as this
+        function.
+        """
+        assert self.called
+        assert self.args == list(args)
+        assert self.kwargs == kwargs
+
     def _quit_loop_by_timeout(self):
         try:
             self._cleanup()

@@ -48,3 +48,10 @@ In the example above, we could check the result via:
 
        assert cb.args == [2]
        assert cb.kwargs == {}
+
+Instead of checking the arguments by hand, you can use ``.assert_called_with()``
+to make sure the callback was called with the given arguments:
+
+.. code-block:: python
+
+       cb.assert_called_with(2)
