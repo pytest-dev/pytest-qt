@@ -1,3 +1,9 @@
+3.2.0 (unreleased)
+------------------
+
+- The ``CallbackBlocker`` returned by ``qtbot.waitCallback()`` now has a new
+  ``assert_called_with(...)`` convenience method.
+
 3.1.0 (2018-09-23)
 ------------------
 
