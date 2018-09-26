@@ -1,4 +1,4 @@
-3.2.0 (unreleased)
+3.2.0 (2018-09-26)
 ------------------
 
 - The ``CallbackBlocker`` returned by ``qtbot.waitCallback()`` now has a new
