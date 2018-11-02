@@ -546,7 +546,7 @@ class ModelTester:
             )
         )
 
-        last_data = self._model.data(last_index) if start - 1 > 0 else None
+        last_data = self._model.data(last_index) if start > 0 else None
         next_data = self._model.data(next_index) if start < parent_rowcount else None
         c = _Changing(
             parent=parent, old_size=parent_rowcount, last=last_data, next=next_data
