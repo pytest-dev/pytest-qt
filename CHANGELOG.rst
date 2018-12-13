@@ -1,3 +1,11 @@
+3.2.2 (2018-12-13)
+------------------
+
+- Fix Off-by-one error in ``modeltester`` (`#249`_). Thanks `@ext-jmmugnes`_ for the PR.
+
+.. _#249: https://github.com/pytest-dev/pytest-qt/pull/249
+
+
 3.2.1 (2018-10-01)
 ------------------
 
@@ -547,6 +555,7 @@ First working version.
 .. _@baudren: https://github.com/baudren
 .. _@billyshambrook: https://github.com/billyshambrook
 .. _@datalyze-solutions: https://github.com/datalyze-solutions
+.. _@ext-jmmugnes: https://github.com/ext-jmmugnes
 .. _@fabioz: https://github.com/fabioz
 .. _@fogo: https://github.com/fogo
 .. _@gqmelo: https://github.com/gqmelo
