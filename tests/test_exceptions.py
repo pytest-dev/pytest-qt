@@ -8,7 +8,7 @@ from pytestqt.exceptions import capture_exceptions, format_captured_exceptions
 @pytest.mark.parametrize("raise_error", [False, True])
 def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
     """
-    Catch exceptions that happen inside Qt virtual methods and make the
+    Catch exceptions that happen inside Qt's event loop and make the
     tests fail if any.
 
     :type testdir: _pytest.pytester.TmpTestdir
@@ -42,7 +42,7 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
     )
     result = testdir.runpytest()
     if raise_error:
-        expected_lines = ["*Qt exceptions in virtual methods:*"]
+        expected_lines = ["*Exceptions caught in Qt event loop:*"]
         if sys.version_info.major == 3:
             expected_lines.append("RuntimeError: original error")
         expected_lines.extend(["*ValueError: mistakes were made*", "*1 failed*"])
@@ -61,7 +61,7 @@ def test_format_captured_exceptions():
     obtained_text = format_captured_exceptions(exceptions)
     lines = obtained_text.splitlines()
 
-    assert "Qt exceptions in virtual methods:" in lines
+    assert "Exceptions caught in Qt event loop:" in lines
     assert "ValueError: errors were made" in lines
 
 
@@ -78,7 +78,7 @@ def test_format_captured_exceptions_chained():
     obtained_text = format_captured_exceptions(exceptions)
     lines = obtained_text.splitlines()
 
-    assert "Qt exceptions in virtual methods:" in lines
+    assert "Exceptions caught in Qt event loop:" in lines
     assert "ValueError: errors were made" in lines
     assert "RuntimeError: error handling value error" in lines
 

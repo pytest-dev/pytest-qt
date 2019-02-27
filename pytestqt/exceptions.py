@@ -79,7 +79,7 @@ def format_captured_exceptions(exceptions):
         from io import StringIO
 
     stream = StringIO()
-    stream.write("Qt exceptions in virtual methods:\n")
+    stream.write("Exceptions caught in Qt event loop:\n")
     sep = "_" * 80 + "\n"
     stream.write(sep)
     for (exc_type, value, tback) in exceptions:
