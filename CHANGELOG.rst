@@ -1,3 +1,11 @@
+3.2.3 (unreleased)
+------------------
+
+- Improve message in uncaught exceptions by mentioning the Qt event loop instead of
+  Qt virtual methods (`#255`_).
+
+.. _#255: https://github.com/pytest-dev/pytest-qt/pull/255
+
 3.2.2 (2018-12-13)
 ------------------
 
