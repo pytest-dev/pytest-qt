@@ -132,7 +132,7 @@ class QtBot(object):
         :param int delay: after the event, delay the test for this miliseconds (if > 0).
 
 
-    .. _QTest API: http://doc.qt.digia.com/4.8/qtest.html
+    .. _QTest API: http://doc.qt.io/qt-5/qtest.html
 
     """
 
