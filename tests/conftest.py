@@ -42,7 +42,7 @@ def stop_watch():
     return StopWatch()
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def timer():
     """
     Returns a Timer-like object which can be used to trigger signals and callbacks

@@ -28,7 +28,7 @@ Requirements
 
 Python 2.7 or later, including Python 3.4+.
 
-Requires pytest version 2.7 or later.
+Requires pytest version 3.0 or later.
 
 Works with either ``PyQt5``, ``PyQt4``, ``PySide`` or ``PySide2``, picking whichever
 is available on the system giving preference to the first one installed in

@@ -170,7 +170,7 @@ def test_event_processing_before_and_after_teardown(testdir):
 
             return EventsQueue()
 
-        @pytest.yield_fixture
+        @pytest.fixture
         def fix(events_queue, qapp):
             assert events_queue.events == []
             yield
@@ -260,7 +260,7 @@ def test_widgets_closed_before_fixtures(testdir):
                 e.accept()
                 self.closed = True
 
-        @pytest.yield_fixture
+        @pytest.fixture
         def widget(qtbot):
             w = Widget()
             qtbot.add_widget(w)
