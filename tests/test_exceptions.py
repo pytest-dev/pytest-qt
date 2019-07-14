@@ -250,7 +250,7 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
                     raise RuntimeError('event processed')
                 return True
 
-        @pytest.yield_fixture
+        @pytest.fixture
         def widget(qapp):
             w = MyWidget()
             {setup_code}

@@ -42,7 +42,7 @@ def qapp_args():
     return []
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def qapp(qapp_args):
     """
     Fixture that instantiates the QApplication instance that will be used by
@@ -55,9 +55,9 @@ def qapp(qapp_args):
     if app is None:
         global _qapp_instance
         _qapp_instance = qt_api.QApplication(qapp_args)
-        yield _qapp_instance
+        return _qapp_instance
     else:
-        yield app  # pragma: no cover
+        return app  # pragma: no cover
 
 
 # holds a global QApplication instance created in the qapp fixture; keeping
@@ -86,7 +86,7 @@ def qtlog(request):
         return _QtMessageCapture([])  # pragma: no cover
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def qtmodeltester(request):
     """
     Fixture used to create a ModelTester instance to test models.

@@ -1,8 +1,9 @@
-3.2.3 (unreleased)
+3.3.0 (unreleased)
 ------------------
 
 - Improve message in uncaught exceptions by mentioning the Qt event loop instead of
   Qt virtual methods (`#255`_).
+- ``pytest-qt`` now requires ``pytest`` version >= 3.0.
 
 .. _#255: https://github.com/pytest-dev/pytest-qt/pull/255
 

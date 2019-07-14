@@ -38,7 +38,7 @@ def wait_4_ticks_callback(request, tick_counter):
         return check_ticks
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def tick_counter():
     """
     Returns an object which counts timer "ticks" periodically.
