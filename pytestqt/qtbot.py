@@ -64,7 +64,7 @@ class QtBot(object):
     .. staticmethod:: keyPress (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
     .. staticmethod:: keyRelease (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
 
-        Sends one or more keyword events to a widget.
+        Sends one or more keyboard events to a widget.
 
         :param QWidget widget: the widget that will receive the event
 
