@@ -15,11 +15,11 @@ For example:
 
 .. code-block:: python
 
-    from pytestqt.qt_compat import qWarning
+    from pytestqt.qt_compat import qt_api
 
 
     def do_something():
-        qWarning("this is a WARNING message")
+        qt_api.qWarning("this is a WARNING message")
 
 
     def test_foo():
