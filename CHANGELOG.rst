@@ -1,4 +1,4 @@
-3.3.0 (unreleased)
+3.3.0 (2019-12-07)
 ------------------
 
 - Improve message in uncaught exceptions by mentioning the Qt event loop instead of
