@@ -14,8 +14,11 @@ def stop_watch():
     Fixture that makes it easier for tests to ensure signals emitted and
     timeouts are being respected.
     """
-    # time.clock() is more accurate on Windows
-    get_time = time.clock if sys.platform.startswith("win") else time.time
+    if sys.version_info < (3,):
+        # time.clock() is more accurate on Windows
+        get_time = time.clock if sys.platform.startswith("win") else time.time
+    else:
+        get_time = time.monotonic
 
     class StopWatch:
         def __init__(self):
