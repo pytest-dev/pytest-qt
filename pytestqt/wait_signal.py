@@ -308,14 +308,22 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
         self._order = order
         self._check_params_callbacks = check_params_cbs
-        self._signals_emitted = []  # list of booleans, indicates whether the signal was already emitted
-        self._signals_map = {}  # maps from a unique Signal to a list of indices where to expect signal instance emits
-        self._signals = []  # list of all Signals (for compatibility with _AbstractSignalBlocker)
+        self._signals_emitted = (
+            []
+        )  # list of booleans, indicates whether the signal was already emitted
+        self._signals_map = (
+            {}
+        )  # maps from a unique Signal to a list of indices where to expect signal instance emits
+        self._signals = (
+            []
+        )  # list of all Signals (for compatibility with _AbstractSignalBlocker)
         self._slots = []  # list of slot functions
         self._signal_expected_index = 0  # only used when forcing order
         self._strict_order_violated = False
         self._actual_signal_and_args_at_violation = None
-        self._signal_names = {}  # maps from the unique Signal to the name of the signal (as string)
+        self._signal_names = (
+            {}
+        )  # maps from the unique Signal to the name of the signal (as string)
         self.all_signals_and_args = []  # list of SignalAndArgs instances
 
     def add_signals(self, signals):
@@ -422,14 +430,14 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
             if not self._strict_order_violated:
                 # only do the check if the strict order has not been violated yet
                 self._strict_order_violated = (
-                    True
-                )  # assume the order has been violated this time
+                    True  # assume the order has been violated this time
+                )
                 if self._check_signal_matches_expected_index(unique_signal, *args):
                     self._signals_emitted[self._signal_expected_index] = True
                     self._signal_expected_index += 1
                     self._strict_order_violated = (
-                        False
-                    )  # order has not been violated after all!
+                        False  # order has not been violated after all!
+                    )
                 else:
                     if self._are_signal_names_available():
                         self._actual_signal_and_args_at_violation = SignalAndArgs(
