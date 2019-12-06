@@ -28,7 +28,10 @@ setup(
     packages=["pytestqt"],
     entry_points={"pytest11": ["pytest-qt = pytestqt.plugin"]},
     install_requires=["pytest>=3.0.0"],
-    extras_require={"doc": ["sphinx", "sphinx_rtd_theme"]},
+    extras_require={
+        "doc": ["sphinx", "sphinx_rtd_theme"],
+        "dev": ["pre-commit", "tox"],
+    },
     # metadata for upload to PyPI
     author="Bruno Oliveira",
     author_email="nicoddemus@gmail.com",
