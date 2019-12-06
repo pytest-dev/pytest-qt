@@ -152,7 +152,7 @@ class QtBot(object):
         else:
             return True
 
-    def addWidget(self, widget):
+    def addWidget(self, widget, **kwargs):
         """
         Adds a widget to be tracked by this bot. This is not required, but will ensure that the
         widget gets closed by the end of the test, so it is highly recommended.
@@ -160,9 +160,13 @@ class QtBot(object):
         :param QWidget widget:
             Widget to keep track of.
 
+        :kwparam before_close_func:
+            A function that receives the widget as single parameter, which is called just before
+            the ``.close()`` method gets called.
+
         .. note:: This method is also available as ``add_widget`` (pep-8 alias)
         """
-        _add_widget(self._request.node, widget)
+        _add_widget(self._request.node, widget, **kwargs)
 
     add_widget = addWidget  # pep-8 alias
 
@@ -654,12 +658,13 @@ QtBot.TimeoutError = TimeoutError
 QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError
 
 
-def _add_widget(item, widget):
+def _add_widget(item, widget, **kwargs):
     """
     Register a widget into the given pytest item for later closing.
     """
+    before_close_func = kwargs.pop("before_close_func", None)
     qt_widgets = getattr(item, "qt_widgets", [])
-    qt_widgets.append(weakref.ref(widget))
+    qt_widgets.append((weakref.ref(widget), before_close_func))
     item.qt_widgets = qt_widgets
 
 
@@ -669,9 +674,11 @@ def _close_widgets(item):
     """
     widgets = getattr(item, "qt_widgets", None)
     if widgets:
-        for w in item.qt_widgets:
+        for w, before_close_func in item.qt_widgets:
             w = w()
             if w is not None:
+                if before_close_func is not None:
+                    before_close_func(w)
                 w.close()
                 w.deleteLater()
         del item.qt_widgets
@@ -681,7 +688,8 @@ def _iter_widgets(item):
     """
     Iterates over widgets registered in the given pytest item.
     """
-    return iter(getattr(item, "qt_widgets", []))
+    qt_widgets = getattr(item, "qt_widgets", [])
+    return (w for (w, _) in qt_widgets)
 
 
 class _WaitWidgetContextManager(object):

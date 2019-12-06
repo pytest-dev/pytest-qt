@@ -3,7 +3,11 @@
 
 - Improve message in uncaught exceptions by mentioning the Qt event loop instead of
   Qt virtual methods (`#255`_).
+
 - ``pytest-qt`` now requires ``pytest`` version >= 3.0.
+
+- ``qtbot.addWiget`` now supports an optional ``before_close_func`` keyword-only argument, which if given is a function
+  which is called before the widget is closed, with the widget as first argument.
 
 .. _#255: https://github.com/pytest-dev/pytest-qt/pull/255
 
