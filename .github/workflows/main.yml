@@ -20,6 +20,10 @@ jobs:
             tox-env: "py37"
           - python-version: "3.8"
             tox-env: "py38"
+        # pyside2 doesn't seem to support Python 3.8 yet
+        exclude:
+          - python-version: "3.8"
+            qt-lib: "pyside2"
 
     steps:
     - uses: actions/checkout@v1
