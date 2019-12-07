@@ -479,3 +479,35 @@ def test_importerror(monkeypatch):
 
     with pytest.raises(RuntimeError, match=expected):
         qt_api.set_qt_api(api=None)
+
+
+def test_before_close_func(testdir):
+    """
+    Test the `before_close_func` argument of qtbot.addWidget.
+    """
+    import sys
+
+    testdir.makepyfile(
+        """
+        import sys
+        import pytest
+        from pytestqt.qt_compat import qt_api
+
+        def widget_closed(w):
+            assert w.some_id == 'my id'
+            sys.pytest_qt_widget_closed = True
+
+        @pytest.fixture
+        def widget(qtbot):
+            w = qt_api.QWidget()
+            w.some_id = 'my id'
+            qtbot.add_widget(w, before_close_func=widget_closed)
+            return w
+
+        def test_foo(widget):
+            pass
+    """
+    )
+    result = testdir.runpytest_inprocess()
+    result.stdout.fnmatch_lines(["*= 1 passed in *"])
+    assert sys.pytest_qt_widget_closed

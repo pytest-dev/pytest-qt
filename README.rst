@@ -130,6 +130,15 @@ Pull requests are highly appreciated! If you
 can, include some tests that exercise the new code or test that a bug has been
 fixed, and make sure to include yourself in the contributors list. :)
 
+To prepare your environment, create a virtual environment and install ``pytest-qt`` in editable mode with ``dev``
+extras::
+
+    $ pip install --editable .[dev]
+
+After that install ``pre-commit`` for pre-commit checks::
+
+    $ pre-commit install
+
 Running tests
 -------------
 
