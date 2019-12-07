@@ -9,16 +9,11 @@ Based on from https://github.com/epage/PythonUtils.
 """
 
 
-import sys
 from collections import namedtuple
 import os
 
 
 VersionTuple = namedtuple("VersionTuple", "qt_api, qt_api_version, runtime, compiled")
-
-
-def _import(name):
-    __import__(name)
 
 
 class _QtApi:
@@ -50,7 +45,7 @@ class _QtApi:
     def _guess_qt_api(self):  # pragma: no cover
         def _can_import(name):
             try:
-                _import(name)
+                __import__(name)
                 return True
             except ImportError as e:
                 self._import_errors[name] = str(e)
@@ -232,7 +227,7 @@ class _QtApi:
             self.make_variant = make_variant
 
             # QString exposed for our model tests
-            if self.pytest_qt_api == "pyqt4" and sys.version_info.major == 2:
+            if self.pytest_qt_api == "pyqt4":
                 self.QString = QtCore.QString
             else:
                 # PyQt4 api v2 and pyqt5 only exposes native strings
