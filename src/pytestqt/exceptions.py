@@ -28,7 +28,7 @@ def _except_hook(type_, value, tback, exceptions=None):
     sys.stderr.write(format_captured_exceptions([(type_, value, tback)]))
 
 
-class _QtExceptionCaptureManager(object):
+class _QtExceptionCaptureManager:
     """
     Manages exception capture context.
     """
@@ -73,10 +73,7 @@ def format_captured_exceptions(exceptions):
     Formats exceptions given as (type, value, traceback) into a string
     suitable to display as a test failure.
     """
-    if sys.version_info.major == 2:
-        from StringIO import StringIO
-    else:
-        from io import StringIO
+    from io import StringIO
 
     stream = StringIO()
     stream.write("Exceptions caught in Qt event loop:\n")

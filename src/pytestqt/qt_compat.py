@@ -1,6 +1,6 @@
 """
 Provide a common way to import Qt classes used by pytest-qt in a unique manner,
-abstracting API differences between PyQt4, PyQt5, PySide and PySide2.
+abstracting API differences between PyQt5 and PySide2.
 
 .. note:: This module is not part of pytest-qt public API, hence its interface
 may change between releases and users should not rely on it.
@@ -8,9 +8,7 @@ may change between releases and users should not rely on it.
 Based on from https://github.com/epage/PythonUtils.
 """
 
-from __future__ import with_statement, division
 
-import sys
 from collections import namedtuple
 import os
 
@@ -19,7 +17,8 @@ VersionTuple = namedtuple("VersionTuple", "qt_api, qt_api_version, runtime, comp
 
 
 def _import(name):
-    __import__(name)
+    """Think call so we can mock it during testing"""
+    return __import__(name)
 
 
 class _QtApi:
@@ -37,13 +36,7 @@ class _QtApi:
         api = os.environ.get("PYTEST_QT_API")
         if api is not None:
             api = api.lower()
-            if api not in (
-                "pyside",
-                "pyside2",
-                "pyqt4",
-                "pyqt4v2",
-                "pyqt5",
-            ):  # pragma: no cover
+            if api not in ("pyside2", "pyqt5",):  # pragma: no cover
                 msg = "Invalid value for $PYTEST_QT_API: %s"
                 raise RuntimeError(msg % api)
         return api
@@ -53,7 +46,7 @@ class _QtApi:
             try:
                 _import(name)
                 return True
-            except ImportError as e:
+            except ModuleNotFoundError as e:
                 self._import_errors[name] = str(e)
                 return False
 
@@ -63,30 +56,20 @@ class _QtApi:
             return "pyside2"
         elif _can_import("PyQt5.QtCore"):
             return "pyqt5"
-        elif _can_import("PySide.QtCore"):
-            return "pyside"
-        elif _can_import("PyQt4.QtCore"):
-            return "pyqt4"
         return None
 
     def set_qt_api(self, api):
         self.pytest_qt_api = self._get_qt_api_from_env() or api or self._guess_qt_api()
         if not self.pytest_qt_api:  # pragma: no cover
             errors = "\n".join(
-                "  {}: {}".format(module, reason)
+                f"  {module}: {reason}"
                 for module, reason in sorted(self._import_errors.items())
             )
-            msg = (
-                "pytest-qt requires either PySide, PySide2, PyQt4 or PyQt5 to be installed\n"
-                + errors
-            )
+            msg = "pytest-qt requires either PySide2 or PyQt5 installed.\n" + errors
             raise RuntimeError(msg)
 
         _root_modules = {
-            "pyside": "PySide",
             "pyside2": "PySide2",
-            "pyqt4": "PyQt4",
-            "pyqt4v2": "PyQt4",
             "pyqt5": "PyQt5",
         }
         _root_module = _root_modules[self.pytest_qt_api]
@@ -94,19 +77,6 @@ class _QtApi:
         def _import_module(module_name):
             m = __import__(_root_module, globals(), locals(), [module_name], 0)
             return getattr(m, module_name)
-
-        if self.pytest_qt_api == "pyqt4v2":  # pragma: no cover
-            # the v2 api in PyQt4
-            # http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
-            import sip
-
-            sip.setapi("QDate", 2)
-            sip.setapi("QDateTime", 2)
-            sip.setapi("QString", 2)
-            sip.setapi("QTextStream", 2)
-            sip.setapi("QTime", 2)
-            sip.setapi("QUrl", 2)
-            sip.setapi("QVariant", 2)
 
         self.QtCore = QtCore = _import_module("QtCore")
         self.QtGui = QtGui = _import_module("QtGui")
@@ -121,6 +91,7 @@ class _QtApi:
             self.qInfo = QtCore.qInfo
         else:
             self.qInfo = None
+
         self.qDebug = QtCore.qDebug
         self.qWarning = QtCore.qWarning
         self.qCritical = QtCore.qCritical
@@ -136,7 +107,7 @@ class _QtApi:
         self.qInstallMsgHandler = None
         self.qInstallMessageHandler = None
 
-        if self.pytest_qt_api.startswith("pyside"):
+        if self.pytest_qt_api == "pyside2":
             self.Signal = QtCore.Signal
             self.Slot = QtCore.Slot
             self.Property = QtCore.Property
@@ -150,37 +121,26 @@ class _QtApi:
             self.QAbstractListModel = QtCore.QAbstractListModel
             self.QAbstractTableModel = QtCore.QAbstractTableModel
 
-            if self.pytest_qt_api == "pyside2":
-                _QtWidgets = _import_module("QtWidgets")
-                self.QApplication = _QtWidgets.QApplication
-                self.QWidget = _QtWidgets.QWidget
-                self.QLineEdit = _QtWidgets.QLineEdit
-                self.qInstallMessageHandler = QtCore.qInstallMessageHandler
+            _QtWidgets = _import_module("QtWidgets")
+            self.QApplication = _QtWidgets.QApplication
+            self.QWidget = _QtWidgets.QWidget
+            self.QLineEdit = _QtWidgets.QLineEdit
+            self.qInstallMessageHandler = QtCore.qInstallMessageHandler
 
-                self.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
-            else:
-                self.QApplication = QtGui.QApplication
-                self.QWidget = QtGui.QWidget
-                self.QLineEdit = QtGui.QLineEdit
-                self.qInstallMsgHandler = QtCore.qInstallMsgHandler
-
-                self.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
+            self.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
 
             def extract_from_variant(variant):
-                """PySide does not expose QVariant API"""
+                """PySide2 does not expose QVariant API"""
                 return variant
 
             def make_variant(value=None):
-                """PySide does not expose QVariant API"""
+                """PySide2 does not expose QVariant API"""
                 return value
 
             self.extract_from_variant = extract_from_variant
             self.make_variant = make_variant
 
-            # PySide never exposes QString
-            self.QString = None
-
-        elif self.pytest_qt_api in ("pyqt4", "pyqt4v2", "pyqt5"):
+        elif self.pytest_qt_api == "pyqt5":
             self.Signal = QtCore.pyqtSignal
             self.Slot = QtCore.pyqtSlot
             self.Property = QtCore.pyqtProperty
@@ -200,8 +160,6 @@ class _QtApi:
 
                 def make_variant(value=None):
                     """Return a QVariant object from the given Python builtin"""
-                    # PyQt4 doesn't allow one to instantiate any QVariant at all:
-                    # QVariant represents a mapped type and cannot be instantiated
                     return QtCore.QVariant(value)
 
             else:
@@ -220,8 +178,6 @@ class _QtApi:
 
                 def make_variant(value=None):
                     """Return a QVariant object from the given Python builtin"""
-                    # PyQt4 doesn't allow one to instantiate any QVariant at all:
-                    # QVariant represents a mapped type and cannot be instantiated
                     return value
 
             self.QStandardItem = QtGui.QStandardItem
@@ -232,32 +188,18 @@ class _QtApi:
             self.extract_from_variant = extract_from_variant
             self.make_variant = make_variant
 
-            # QString exposed for our model tests
-            if self.pytest_qt_api == "pyqt4" and sys.version_info.major == 2:
-                self.QString = QtCore.QString
-            else:
-                # PyQt4 api v2 and pyqt5 only exposes native strings
-                self.QString = None
-
     def get_versions(self):
-        if self.pytest_qt_api in ("pyside", "pyside2"):
-            qt_api_name = "PySide2" if self.pytest_qt_api == "pyside2" else "PySide"
-            if self.pytest_qt_api == "pyside2":
-                import PySide2
+        if self.pytest_qt_api == "pyside2":
+            import PySide2
 
-                version = PySide2.__version__
-            else:
-                import PySide
-
-                version = PySide.__version__
+            version = PySide2.__version__
 
             return VersionTuple(
-                qt_api_name, version, self.QtCore.qVersion(), self.QtCore.__version__
+                "PySide2", version, self.QtCore.qVersion(), self.QtCore.__version__
             )
         else:
-            qt_api_name = "PyQt5" if self.pytest_qt_api == "pyqt5" else "PyQt4"
             return VersionTuple(
-                qt_api_name,
+                "PyQt5",
                 self.QtCore.PYQT_VERSION_STR,
                 self.QtCore.qVersion(),
                 self.QtCore.QT_VERSION_STR,

@@ -99,9 +99,7 @@ def qtmodeltester(request):
 
 
 def pytest_addoption(parser):
-    parser.addini(
-        "qt_api", 'Qt api version to use: "pyside", "pyqt4", "pyqt4v2", "pyqt5"'
-    )
+    parser.addini("qt_api", 'Qt api version to use: "pyside2", "pyqt5"')
     parser.addini("qt_no_exception_capture", "disable automatic exception capture")
     parser.addini(
         "qt_default_raising",
@@ -233,7 +231,7 @@ def pytest_report_header():
 
     v = qt_api.get_versions()
     fields = [
-        "%s %s" % (v.qt_api, v.qt_api_version),
+        f"{v.qt_api} {v.qt_api_version}",
         "Qt runtime %s" % v.runtime,
         "Qt compiled %s" % v.compiled,
     ]

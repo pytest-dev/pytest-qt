@@ -76,14 +76,11 @@ def test_qinfo(qtlog):
     catch up and expose qInfo (or at least QMessageLogger), then we should update
     the other logging tests properly. #232
     """
-    if qt_api.pytest_qt_api.startswith("pyside"):
+    if qt_api.pytest_qt_api == "pyside2":
         assert (
             qt_api.qInfo is None
-        ), "pyside does not expose qInfo. If it does, update this test."
+        ), "pyside2 does not expose qInfo. If it does, update this test."
         return
-
-    if qt_api.pytest_qt_api.startswith("pyqt4"):
-        pytest.skip("qInfo and QtInfoMsg not supported in PyQt 4")
 
     qt_api.qInfo("this is an INFO message")
     records = [(m.type, m.message.strip()) for m in qtlog.records]
@@ -209,12 +206,12 @@ def test_logging_formatting(testdir):
         """
     )
     f = "{rec.type_name} {rec.log_type_name} {rec.when:%Y-%m-%d}: {rec.message}"
-    res = testdir.runpytest("--qt-log-format={}".format(f))
+    res = testdir.runpytest(f"--qt-log-format={f}")
     today = "{:%Y-%m-%d}".format(datetime.datetime.now())
     res.stdout.fnmatch_lines(
         [
             "*-- Captured Qt messages --*",
-            "QtWarningMsg WARNING {}: this is a WARNING message*".format(today),
+            f"QtWarningMsg WARNING {today}: this is a WARNING message*",
         ]
     )
 
@@ -260,7 +257,7 @@ def test_logging_fails_tests(testdir, level, expect_passes):
                 "*-- Captured Qt messages --*",
             ]
         )
-    lines.append("*{} passed*".format(expect_passes))
+    lines.append(f"*{expect_passes} passed*")
     res.stdout.fnmatch_lines(lines)
 
 

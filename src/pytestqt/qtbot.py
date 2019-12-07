@@ -23,7 +23,7 @@ def _parse_ini_boolean(value):
         raise ValueError("unknown string for bool: %r" % value)
 
 
-class QtBot(object):
+class QtBot:
     """
     Instances of this class are responsible for sending events to `Qt` objects (usually widgets),
     simulating user input.
@@ -191,7 +191,7 @@ class QtBot(object):
 
         .. note::
             This function is only available in PyQt5, raising a ``RuntimeError`` if called from
-            ``PyQt4`` or ``PySide``.
+            ``PySide2``.
 
         .. note:: This method is also available as ``wait_active`` (pep-8 alias)
         """
@@ -223,7 +223,7 @@ class QtBot(object):
 
         .. note::
             This function is only available in PyQt5, raising a ``RuntimeError`` if called from
-            ``PyQt4`` or ``PySide``.
+            ``PySide2``.
 
         .. note:: This method is also available as ``wait_exposed`` (pep-8 alias)
         """
@@ -692,7 +692,7 @@ def _iter_widgets(item):
     return (w for (w, _) in qt_widgets)
 
 
-class _WaitWidgetContextManager(object):
+class _WaitWidgetContextManager:
     """
     Context manager implementation used by ``waitActive`` and ``waitExposed`` methods.
     """

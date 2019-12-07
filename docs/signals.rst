@@ -101,7 +101,7 @@ parameters match, ``False`` otherwise.
 
 
 timeout parameter
-----------------
+-----------------
 
 The ``timeout`` parameter specifies how long ``waitSignal`` should wait for a
 signal to arrive. If the timeout is ``None``, there won't be any timeout, i.e.

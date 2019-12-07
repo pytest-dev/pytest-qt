@@ -1,98 +1,95 @@
-Introduction
-============
+=========
+pytest-qt
+=========
 
-`pytest-qt` is a pytest_ plugin that provides fixtures to help programmers write tests for
-PySide_ and PyQt_.
+pytest-qt is a `pytest`_ plugin that allows programmers to write tests
+for `PyQt5`_ and `PySide2`_ applications.
 
-The main usage is to use the ``qtbot`` fixture, which provides methods to simulate user
-interaction, like key presses and mouse clicks::
+The main usage is to use the ``qtbot`` fixture, responsible for handling ``qApp``
+creation as needed and provides methods to simulate user interaction,
+like key presses and mouse clicks:
+
+
+.. code-block:: python
 
     def test_hello(qtbot):
         widget = HelloWidget()
         qtbot.addWidget(widget)
 
         # click in the Greet button and make sure it updates the appropriate label
-        qtbot.mouseClick(window.button_greet, QtCore.Qt.LeftButton)
+        qtbot.mouseClick(widget.button_greet, QtCore.Qt.LeftButton)
 
-        assert window.greet_label.text() == 'Hello!'
+        assert widget.greet_label.text() == "Hello!"
 
 
+.. _PySide2: https://pypi.org/project/PySide2/
+.. _PyQt5: https://pypi.org/project/PyQt5/
+.. _pytest: http://pytest.org
 
-.. _pytest: http://www.pytest.org
-.. _PySide: https://pypi.python.org/pypi/PySide
-.. _PyQt: http://www.riverbankcomputing.com/software/pyqt
+This allows you to test and make sure your view layer is behaving the way you expect after each code change.
 
+.. |version| image:: http://img.shields.io/pypi/v/pytest-qt.svg
+  :target: https://pypi.python.org/pypi/pytest-qt
+
+.. |conda-forge| image:: https://img.shields.io/conda/vn/conda-forge/pytest-qt.svg
+    :target: https://anaconda.org/conda-forge/pytest-qt
+
+.. |ci| image:: https://github.com/pytest-dev/pytest-qt/workflows/build/badge.svg
+  :target: https://github.com/pytest-dev/pytest-qt/actions
+
+.. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-qt.svg
+  :target: https://coveralls.io/r/pytest-dev/pytest-qt
+
+.. |docs| image:: https://readthedocs.org/projects/pytest-qt/badge/?version=latest
+  :target: https://pytest-qt.readthedocs.io
+
+.. |python| image:: https://img.shields.io/pypi/pyversions/pytest-qt.svg
+  :target: https://pypi.python.org/pypi/pytest-qt/
+  :alt: Supported Python versions
+
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+  :target: https://github.com/ambv/black
+
+|python| |version| |conda-forge| |ci| |coverage| |docs| |black|
+
+
+Features
+========
+
+- `qtbot`_ fixture to simulate user interaction with ``Qt`` widgets.
+- `Automatic capture`_ of ``qDebug``, ``qWarning`` and ``qCritical`` messages;
+- waitSignal_ and waitSignals_ functions to block test execution until specific
+  signals are emitted.
+- `Exceptions in virtual methods and slots`_ are automatically captured and
+  fail tests accordingly.
+
+.. _qtbot: https://pytest-qt.readthedocs.io/en/latest/reference.html#module-pytestqt.qtbot
+.. _Automatic capture: https://pytest-qt.readthedocs.io/en/latest/logging.html
+.. _waitSignal: https://pytest-qt.readthedocs.io/en/latest/signals.html
+.. _waitSignals: https://pytest-qt.readthedocs.io/en/latest/signals.html
+.. _Exceptions in virtual methods and slots: https://pytest-qt.readthedocs.io/en/latest/virtual_methods.html
 
 Requirements
-------------
+============
 
-Python 2.7 or later, including Python 3.4+.
+Since version 4.0.0, ``pytest-qt`` requires Python 3.6+.
 
-Requires pytest version 3.0 or later.
-
-Works with either ``PyQt5``, ``PyQt4``, ``PySide`` or ``PySide2``, picking whichever
-is available on the system giving preference to the first one installed in
+Works with either PyQt5_ or PySide2_, picking whichever
+is available on the system, giving preference to the first one installed in
 this order:
 
 - ``PySide2``
 - ``PyQt5``
-- ``PySide``
-- ``PyQt4``
 
 To force a particular API, set the configuration variable ``qt_api`` in your ``pytest.ini`` file to
-``pyqt5``, ``pyside``, ``pyside2``, ``pyqt4`` or ``pyqt4v2``. ``pyqt4v2`` sets the ``PyQt4``
-API to `version 2`_.
+``pyqt5`` or ``pyside2``:
 
 .. code-block:: ini
 
     [pytest]
     qt_api=pyqt5
 
-Alternatively, you can set the ``PYTEST_QT_API`` environment variable to the
-same values described above (the environment variable wins over the
-configuration if both are set).
 
-From ``pytest-qt`` version 2 the behaviour of ``pyqt4v2`` has changed, as
-explained in :doc:`note_pyqt4v2`.
-
-.. _version 2: http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
-
-Installation
-------------
-
-The package may be installed by running::
-
-   pip install pytest-qt
-
-Or alternatively, download the package from pypi_, extract and execute::
-
-   python setup.py install
-
-.. _pypi: http://pypi.python.org/pypi/pytest-qt/
-
-Both methods will automatically register it for usage in ``pytest``.
-
-Development
------------
-
-If you intend to develop ``pytest-qt`` itself, use virtualenv_ to
-activate a new fresh environment and execute::
-
-    git clone https://github.com/pytest-dev/pytest-qt.git
-    cd pytest-qt
-    pip install -e .  # or python setup.py develop
-    pip install pyside # or pyqt4/pyqt5
-
-If you also intend to build the documentation locally, you can make sure to have
-all the needed dependences executing::
-
-    pip install -e .[doc]
-
-.. _virtualenv: https://virtualenv.readthedocs.io/
-
-Versioning
-----------
-
-This projects follows `semantic versioning`_.
-
-.. _`semantic versioning`: http://semver.org/
+Alternatively, you can set the ``PYTEST_QT_API`` environment
+variable to the same values described above (the environment variable wins over the configuration
+if both are set).

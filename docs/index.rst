@@ -19,7 +19,6 @@ pytest-qt
     virtual_methods
     modeltester
     app_exit
-    note_pyqt4v2
     note_dialogs
     troubleshooting
     reference

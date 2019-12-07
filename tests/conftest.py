@@ -1,5 +1,4 @@
 import functools
-import sys
 import time
 
 import pytest
@@ -14,11 +13,6 @@ def stop_watch():
     Fixture that makes it easier for tests to ensure signals emitted and
     timeouts are being respected.
     """
-    if sys.version_info < (3,):
-        # time.clock() is more accurate on Windows
-        get_time = time.clock if sys.platform.startswith("win") else time.time
-    else:
-        get_time = time.monotonic
 
     class StopWatch:
         def __init__(self):
@@ -26,10 +20,10 @@ def stop_watch():
             self.elapsed = None
 
         def start(self):
-            self._start_time = get_time()
+            self._start_time = time.monotonic()
 
         def stop(self):
-            self.elapsed = (get_time() - self._start_time) * 1000.0
+            self.elapsed = (time.monotonic() - self._start_time) * 1000.0
 
         def check(self, timeout, *delays):
             """
