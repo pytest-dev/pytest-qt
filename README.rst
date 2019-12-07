@@ -35,17 +35,14 @@ This allows you to test and make sure your view layer is behaving the way you ex
 .. |conda-forge| image:: https://img.shields.io/conda/vn/conda-forge/pytest-qt.svg
     :target: https://anaconda.org/conda-forge/pytest-qt
 
-.. |travis| image:: https://img.shields.io/travis/pytest-dev/pytest-qt/master.svg
-  :target: https://travis-ci.org/pytest-dev/pytest-qt
+.. |ci| image:: https://github.com/pytest-dev/pytest-qt/workflows/build/badge.svg
+  :target: https://github.com/pytest-dev/pytest-qt/actions
 
 .. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-qt.svg
   :target: https://coveralls.io/r/pytest-dev/pytest-qt
 
 .. |docs| image:: https://readthedocs.org/projects/pytest-qt/badge/?version=latest
   :target: https://pytest-qt.readthedocs.io
-
-.. |appveyor| image:: https://img.shields.io/appveyor/ci/nicoddemus/pytest-qt/master.svg
-  :target: https://ci.appveyor.com/project/nicoddemus/pytest-qt
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/pytest-qt.svg
   :target: https://pypi.python.org/pypi/pytest-qt/
@@ -54,7 +51,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
   :target: https://github.com/ambv/black
 
-|python| |version| |conda-forge| |travis| |appveyor| |coverage| |docs| |black|
+|python| |version| |conda-forge| |ci| |coverage| |docs| |black|
 
 
 Features
