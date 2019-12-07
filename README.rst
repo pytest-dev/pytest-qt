@@ -3,7 +3,7 @@ pytest-qt
 =========
 
 pytest-qt is a `pytest`_ plugin that allows programmers to write tests
-for `PySide`_, ``PySide2`` and `PyQt`_ applications.
+for `PyQt5`_ and `PySide2`_ applications.
 
 The main usage is to use the ``qtbot`` fixture, responsible for handling ``qApp``
 creation as needed and provides methods to simulate user interaction,
@@ -22,9 +22,8 @@ like key presses and mouse clicks:
         assert widget.greet_label.text() == "Hello!"
 
 
-.. _PySide: https://pypi.python.org/pypi/PySide
-.. _PySide2: https://wiki.qt.io/PySide2
-.. _PyQt: http://www.riverbankcomputing.com/software/pyqt
+.. _PySide2: https://pypi.org/project/PySide2/
+.. _PyQt5: https://pypi.org/project/PyQt5/
 .. _pytest: http://pytest.org
 
 This allows you to test and make sure your view layer is behaving the way you expect after each code change.
@@ -73,18 +72,17 @@ Features
 Requirements
 ============
 
-Works with either PySide_, PySide2_ or PyQt_ (``PyQt5`` and ``PyQt4``) picking whichever
+Since version 4.0.0, ``pytest-qt`` requires Python 3.6+.
+
+Works with either PyQt5_ or PySide2_, picking whichever
 is available on the system, giving preference to the first one installed in
 this order:
 
 - ``PySide2``
 - ``PyQt5``
-- ``PySide``
-- ``PyQt4``
 
 To force a particular API, set the configuration variable ``qt_api`` in your ``pytest.ini`` file to
-``pyqt5``, ``pyside``, ``pyside2``, ``pyqt4`` or ``pyqt4v2``. ``pyqt4v2`` sets the ``PyQt4``
-API to `version 2`_.
+``pyqt5`` or ``pyside2``:
 
 .. code-block:: ini
 
@@ -95,8 +93,6 @@ API to `version 2`_.
 Alternatively, you can set the ``PYTEST_QT_API`` environment
 variable to the same values described above (the environment variable wins over the configuration
 if both are set).
-
-.. _version 2: http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
 
 
 Documentation
@@ -142,8 +138,7 @@ After that install ``pre-commit`` for pre-commit checks::
 Running tests
 -------------
 
-Tests are run using `tox`_. It is recommended to develop locally on Python 3 because
-``PyQt5`` and ``PySide2`` are easily installable using ``pip``::
+Tests are run using `tox`_::
 
     $ tox -e py37-pyside2,py37-pyqt5
 

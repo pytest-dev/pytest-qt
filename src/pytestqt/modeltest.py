@@ -453,17 +453,11 @@ class ModelTester:
         # A valid index should have a valid QVariant data
         assert self._model.index(0, 0).isValid()
 
-        string_types = [str]
-        if qt_api.QString is not None:
-            string_types.append(qt_api.QString)
-
-        string_types = tuple(string_types)
-
         types = [
-            (qt_api.QtCore.Qt.DisplayRole, string_types),
-            (qt_api.QtCore.Qt.ToolTipRole, string_types),
-            (qt_api.QtCore.Qt.StatusTipRole, string_types),
-            (qt_api.QtCore.Qt.WhatsThisRole, string_types),
+            (qt_api.QtCore.Qt.DisplayRole, (str,)),
+            (qt_api.QtCore.Qt.ToolTipRole, (str,)),
+            (qt_api.QtCore.Qt.StatusTipRole, (str,)),
+            (qt_api.QtCore.Qt.WhatsThisRole, (str,)),
             (qt_api.QtCore.Qt.SizeHintRole, qt_api.QtCore.QSize),
             (qt_api.QtCore.Qt.FontRole, qt_api.QtGui.QFont),
             (

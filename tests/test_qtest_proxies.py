@@ -5,7 +5,7 @@ from pytestqt.qt_compat import qt_api
 
 
 fails_on_pyqt = pytest.mark.xfail(
-    not qt_api.pytest_qt_api.startswith("pyside"), reason="fails on PyQt"
+    qt_api.pytest_qt_api == "pyqt5", reason="fails on PyQt"
 )
 
 

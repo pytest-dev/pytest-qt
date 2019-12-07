@@ -339,7 +339,7 @@ def test_parse_ini_boolean_invalid():
         pytestqt.qtbot._parse_ini_boolean("foo")
 
 
-@pytest.mark.parametrize("option_api", ["pyqt4", "pyqt5", "pyside", "pyside2"])
+@pytest.mark.parametrize("option_api", ["pyqt5", "pyside2"])
 def test_qt_api_ini_config(testdir, monkeypatch, option_api):
     """
     Test qt_api ini option handling.
@@ -380,7 +380,7 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
             result.stderr.fnmatch_lines(["*ModuleNotFoundError:*"])
 
 
-@pytest.mark.parametrize("envvar", ["pyqt4", "pyqt5", "pyside", "pyside2"])
+@pytest.mark.parametrize("envvar", ["pyqt5", "pyside2"])
 def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
     """ensure environment variable wins over config value if both are present
     """
@@ -435,10 +435,6 @@ def test_invalid_qt_api_envvar(testdir, monkeypatch):
     result.stderr.fnmatch_lines(["* Invalid value for $PYTEST_QT_API: piecute"])
 
 
-@pytest.mark.skipif(
-    qt_api.pytest_qt_api in ["pyqt4", "pyqt4v2", "pyside"],
-    reason="QApplication.arguments() doesn't return custom arguments with Qt4 and Windows",
-)
 def test_qapp_args(testdir):
     """
     Test customizing of QApplication arguments.
@@ -464,16 +460,14 @@ def test_qapp_args(testdir):
 
 def test_importerror(monkeypatch):
     def _fake_import(name, *args):
-        raise ImportError(f"Failed to import {name}")
+        raise ModuleNotFoundError(f"Failed to import {name}")
 
     monkeypatch.delenv("PYTEST_QT_API", raising=False)
     monkeypatch.setattr(qt_compat, "_import", _fake_import)
 
     expected = (
-        "pytest-qt requires either PySide, PySide2, PyQt4 or PyQt5 to be installed\n"
-        "  PyQt4.QtCore: Failed to import PyQt4.QtCore\n"
+        "pytest-qt requires either PySide2 or PyQt5 installed.\n"
         "  PyQt5.QtCore: Failed to import PyQt5.QtCore\n"
-        "  PySide.QtCore: Failed to import PySide.QtCore\n"
         "  PySide2.QtCore: Failed to import PySide2.QtCore"
     )
 

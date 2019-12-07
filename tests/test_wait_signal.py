@@ -370,11 +370,9 @@ def test_wait_signals_invalid_strict_parameter(qtbot, signaller):
 
 def test_destroyed(qtbot):
     """Test that waitSignal works with the destroyed signal (#82).
-
-    For some reason, this crashes PySide although it seems perfectly fine code.
     """
-    if qt_api.pytest_qt_api.startswith("pyside"):
-        pytest.skip("test crashes PySide and PySide2")
+    if qt_api.pytest_qt_api == "pyside2":
+        pytest.skip("test depends on sip")
 
     import sip
 
@@ -428,7 +426,7 @@ def test_signal_identity(signaller):
     """
     Tests that the identity of signals can be determined correctly, using str(signal).
 
-    Some Qt frameworks, such as PyQt4 or PyQt5, have the following issue:
+    PyQt5 has the following issue:
     x = signaller.signal
     y = signaller.signal
     x == y  # is False
@@ -883,9 +881,9 @@ class TestAllArgs:
 def get_mixed_signals_with_guaranteed_name(signaller):
     """
     Returns a list of signals with the guarantee that the signals have names (i.e. the names are
-    manually provided in case of using PySide, where the signal names cannot be determined at run-time).
+    manually provided in case of using PySide2, where the signal names cannot be determined at run-time).
     """
-    if qt_api.pytest_qt_api.startswith("pyside"):
+    if qt_api.pytest_qt_api == "pyside2":
         signals = [
             (signaller.signal, "signal()"),
             (signaller.signal_args, "signal_args(QString,int)"),
@@ -920,9 +918,9 @@ class TestAllSignalsAndArgs:
         Tests that all_signals_and_args is empty even though expected signals are emitted, but signal names aren't
         available.
         """
-        if qt_api.pytest_qt_api != "pyside":
+        if qt_api.pytest_qt_api != "pyside2":
             pytest.skip(
-                "test only makes sense for PySide, whose signals don't contain a name!"
+                "test only makes sense for PySide2, whose signals don't contain a name!"
             )
 
         with qtbot.waitSignals(
@@ -981,9 +979,6 @@ class TestAllSignalsAndArgs:
         ]
 
 
-PY_2 = sys.version_info[0] == 2
-
-
 class TestWaitSignalTimeoutErrorMessage:
     """Tests that the messages of TimeoutError are formatted correctly, for waitSignal() calls."""
 
@@ -992,7 +987,7 @@ class TestWaitSignalTimeoutErrorMessage:
         In a situation where a signal without args is expected but not emitted, tests that the TimeoutError
         message contains the name of the signal (without arguments).
         """
-        if qt_api.pytest_qt_api.startswith("pyside"):
+        if qt_api.pytest_qt_api == "pyside2":
             signal = (signaller.signal, "signal()")
         else:
             signal = signaller.signal
@@ -1017,7 +1012,7 @@ class TestWaitSignalTimeoutErrorMessage:
                 "Only on Python 3.4 and lower double-wrapped functools.partial callbacks are a problem"
             )
 
-        if qt_api.pytest_qt_api.startswith("pyside"):
+        if qt_api.pytest_qt_api == "pyside2":
             signal = (signaller.signal_single_arg, "signal_single_arg(int)")
         else:
             signal = signaller.signal_single_arg
@@ -1048,7 +1043,7 @@ class TestWaitSignalTimeoutErrorMessage:
         rejected by a callback, tests that the TimeoutError message contains the name of the signal and the
         list of non-accepted arguments.
         """
-        if qt_api.pytest_qt_api.startswith("pyside"):
+        if qt_api.pytest_qt_api == "pyside2":
             signal = (signaller.signal_single_arg, "signal_single_arg(int)")
         else:
             signal = signaller.signal_single_arg
@@ -1074,7 +1069,7 @@ class TestWaitSignalTimeoutErrorMessage:
         rejected by a callback, tests that the TimeoutError message contains the name of the signal and the
         list of tuples of the non-accepted arguments.
         """
-        if qt_api.pytest_qt_api.startswith("pyside"):
+        if qt_api.pytest_qt_api == "pyside2":
             signal = (signaller.signal_args, "signal_args(QString,int)")
         else:
             signal = signaller.signal_args
@@ -1090,12 +1085,6 @@ class TestWaitSignalTimeoutErrorMessage:
                 signaller.signal_args.emit("2", 2)
         ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         parameters = "[('1', 1), ('2', 2)]"
-        if PY_2:
-            parameters = "[(u'1', 1), (u'2', 2)]"
-            if qt_api.pytest_qt_api == "pyqt4":
-                parameters = (
-                    "[(PyQt4.QtCore.QString(u'1'), 1), (PyQt4.QtCore.QString(u'2'), 2)]"
-                )
         assert ex_msg == (
             "Signal signal_args(QString,int) emitted with parameters {} "
             "within 200 ms, but did not satisfy the arg_validator callback"
@@ -1174,10 +1163,6 @@ class TestWaitSignalsTimeoutErrorMessage:
                 signaller.signal_args.emit("1", 1)
         ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         signal_args = "'1', 1"
-        if PY_2:
-            signal_args = "u'1', 1"
-            if qt_api.pytest_qt_api == "pyqt4":
-                signal_args = "PyQt4.QtCore.QString(u'1'), 1"
         assert ex_msg == (
             "Emitted signals: [signal_args({})]. Missing: "
             "[signal(), signal_args(QString,int) (callback: my_callback_2)]"
@@ -1219,10 +1204,6 @@ class TestWaitSignalsTimeoutErrorMessage:
                 signaller.signal_args.emit("1", 1)
         ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         signal_args = "'1', 1"
-        if PY_2:
-            signal_args = "u'1', 1"
-            if qt_api.pytest_qt_api == "pyqt4":
-                signal_args = "PyQt4.QtCore.QString(u'1'), 1"
         assert ex_msg == (
             "Emitted signals: [signal_args({})]. Missing: "
             "[signal(), signal_args(QString,int), signal_args(QString,int)]"
@@ -1246,10 +1227,6 @@ class TestWaitSignalsTimeoutErrorMessage:
                 signaller.signal.emit()
         ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         signal_args = "'1', 1"
-        if PY_2:
-            signal_args = "u'1', 1"
-            if qt_api.pytest_qt_api == "pyqt4":
-                signal_args = "PyQt4.QtCore.QString(u'1'), 1"
         assert ex_msg == (
             "Signal order violated! Expected signal() as 1st signal, "
             "but received signal_args({}) instead. Emitted signals: [signal_args({}), signal]. "
@@ -1258,11 +1235,11 @@ class TestWaitSignalsTimeoutErrorMessage:
 
     def test_degenerate_error_msg(self, qtbot, signaller):
         """
-        Tests that the TimeoutError message is degenerate when using PySide signals for which no name is provided
+        Tests that the TimeoutError message is degenerate when using PySide2 signals for which no name is provided
         by the user. This degenerate messages doesn't contain the signals' names, and includes a hint to the user how
         to fix the situation.
         """
-        if not qt_api.pytest_qt_api.startswith("pyside"):
+        if qt_api.pytest_qt_api != "pyside2":
             pytest.skip(
                 "test only makes sense for PySide, whose signals don't contain a name!"
             )

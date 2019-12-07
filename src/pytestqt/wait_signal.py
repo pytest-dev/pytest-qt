@@ -265,7 +265,7 @@ class SignalAndArgs:
     def _get_readable_signal_with_optional_args(self):
         args = repr(self.args) if self.args else ""
 
-        # remove signal parameter signature, e.g. turn "some_signal(QString,int)" to "some_signal", because we're adding
+        # remove signal parameter signature, e.g. turn "some_signal(str,int)" to "some_signal", because we're adding
         # the actual parameters anyways
         signal_name = self.signal_name
         signal_name = signal_name.partition("(")[0]

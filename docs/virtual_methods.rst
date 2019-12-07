@@ -6,7 +6,7 @@ Exceptions in virtual methods
 It is common in Qt programming to override virtual C++ methods to customize
 behavior, like listening for mouse events, implement drawing routines, etc.
 
-Fortunately, both ``PyQt`` and ``PySide`` support overriding this virtual methods
+Fortunately, both ``PyQt5`` and ``PySide2`` support overriding this virtual methods
 naturally in your python code::
 
     class MyWidget(QWidget):
@@ -15,10 +15,7 @@ naturally in your python code::
         def mouseReleaseEvent(self, ev):
             print('mouse released at: %s' % ev.pos())
 
-This works fine, but if python code in Qt virtual methods raise an exception
-``PyQt4`` and ``PySide`` will just print the exception traceback to standard
-error, since this method is called deep within Qt's event loop handling and
-exceptions are not allowed at that point. In ``PyQt5.5+``, exceptions in
+In ``PyQt5`` and ``PySide2``, exceptions in
 virtual methods will by default call ``abort()``, which will crash the
 interpreter.
 
