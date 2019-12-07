@@ -8,7 +8,6 @@ may change between releases and users should not rely on it.
 Based on from https://github.com/epage/PythonUtils.
 """
 
-from __future__ import with_statement, division
 
 import sys
 from collections import namedtuple
@@ -73,7 +72,7 @@ class _QtApi:
         self.pytest_qt_api = self._get_qt_api_from_env() or api or self._guess_qt_api()
         if not self.pytest_qt_api:  # pragma: no cover
             errors = "\n".join(
-                "  {}: {}".format(module, reason)
+                f"  {module}: {reason}"
                 for module, reason in sorted(self._import_errors.items())
             )
             msg = (

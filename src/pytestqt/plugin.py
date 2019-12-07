@@ -233,7 +233,7 @@ def pytest_report_header():
 
     v = qt_api.get_versions()
     fields = [
-        "%s %s" % (v.qt_api, v.qt_api_version),
+        f"{v.qt_api} {v.qt_api_version}",
         "Qt runtime %s" % v.runtime,
         "Qt compiled %s" % v.compiled,
     ]

@@ -209,12 +209,12 @@ def test_logging_formatting(testdir):
         """
     )
     f = "{rec.type_name} {rec.log_type_name} {rec.when:%Y-%m-%d}: {rec.message}"
-    res = testdir.runpytest("--qt-log-format={}".format(f))
+    res = testdir.runpytest(f"--qt-log-format={f}")
     today = "{:%Y-%m-%d}".format(datetime.datetime.now())
     res.stdout.fnmatch_lines(
         [
             "*-- Captured Qt messages --*",
-            "QtWarningMsg WARNING {}: this is a WARNING message*".format(today),
+            f"QtWarningMsg WARNING {today}: this is a WARNING message*",
         ]
     )
 
@@ -260,7 +260,7 @@ def test_logging_fails_tests(testdir, level, expect_passes):
                 "*-- Captured Qt messages --*",
             ]
         )
-    lines.append("*{} passed*".format(expect_passes))
+    lines.append(f"*{expect_passes} passed*")
     res.stdout.fnmatch_lines(lines)
 
 

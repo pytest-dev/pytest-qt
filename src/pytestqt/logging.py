@@ -8,7 +8,7 @@ from pytestqt.qt_compat import qt_api
 from pytestqt.utils import get_marker
 
 
-class QtLoggingPlugin(object):
+class QtLoggingPlugin:
     """
     Pluging responsible for installing a QtMessageHandler before each
     test and augment reporting if the test failed with the messages captured.
@@ -114,7 +114,7 @@ class QtLoggingPlugin(object):
             del item.qt_log_capture
 
 
-class _QtMessageCapture(object):
+class _QtMessageCapture:
     """
     Captures Qt messages when its `handle` method is installed using
     qInstallMsgHandler, and stores them into `records` attribute.
@@ -220,7 +220,7 @@ class _QtMessageCapture(object):
         return self._records[:]
 
 
-class Record(object):
+class Record:
     """Hold information about a message sent by one of Qt log functions.
 
     :ivar str message: message contents.
@@ -301,7 +301,7 @@ class Record(object):
         elif level == "CRITICAL":
             return self.log_type_name in ("CRITICAL",)
         else:  # pragma: no cover
-            raise ValueError("log_fail_level unknown: {}".format(level))
+            raise ValueError(f"log_fail_level unknown: {level}")
 
 
 class _QtLogLevelErrorRepr(TerminalRepr):

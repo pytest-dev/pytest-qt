@@ -23,7 +23,7 @@ def _parse_ini_boolean(value):
         raise ValueError("unknown string for bool: %r" % value)
 
 
-class QtBot(object):
+class QtBot:
     """
     Instances of this class are responsible for sending events to `Qt` objects (usually widgets),
     simulating user input.
@@ -692,7 +692,7 @@ def _iter_widgets(item):
     return (w for (w, _) in qt_widgets)
 
 
-class _WaitWidgetContextManager(object):
+class _WaitWidgetContextManager:
     """
     Context manager implementation used by ``waitActive`` and ``waitExposed`` methods.
     """

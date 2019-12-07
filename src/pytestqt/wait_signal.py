@@ -4,7 +4,7 @@ from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
 
 
-class _AbstractSignalBlocker(object):
+class _AbstractSignalBlocker:
     """
     Base class for :class:`SignalBlocker` and :class:`MultiSignalBlocker`.
 
@@ -182,7 +182,7 @@ class SignalBlocker(_AbstractSignalBlocker):
     """
 
     def __init__(self, timeout=1000, raising=True, check_params_cb=None):
-        super(SignalBlocker, self).__init__(timeout, raising=raising)
+        super().__init__(timeout, raising=raising)
         self._signals = []
         self.args = None
         self.all_args = []
@@ -220,7 +220,7 @@ class SignalBlocker(_AbstractSignalBlocker):
             self._loop.quit()
 
     def _cleanup(self):
-        super(SignalBlocker, self)._cleanup()
+        super()._cleanup()
         for signal in self._signals:
             _silent_disconnect(signal, self._quit_loop_by_signal)
         self._signals = []
@@ -305,7 +305,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     """
 
     def __init__(self, timeout=1000, raising=True, check_params_cbs=None, order="none"):
-        super(MultiSignalBlocker, self).__init__(timeout, raising=raising)
+        super().__init__(timeout, raising=raising)
         self._order = order
         self._check_params_callbacks = check_params_cbs
         self._signals_emitted = (
@@ -559,7 +559,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
             if potential_callback:
                 callback_name = self.get_callback_name(potential_callback)
                 if callback_name:
-                    signal_str_repr += " (callback: {})".format(callback_name)
+                    signal_str_repr += f" (callback: {callback_name})"
 
         return signal_str_repr
 
@@ -569,7 +569,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
                 return signal
 
     def _cleanup(self):
-        super(MultiSignalBlocker, self)._cleanup()
+        super()._cleanup()
         for i in range(len(self._signals)):
             signal = self._signals[i]
             slot = self._slots[i]
@@ -579,7 +579,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         del self._slots[:]
 
 
-class SignalEmittedSpy(object):
+class SignalEmittedSpy:
     """
     .. versionadded:: 1.11
 
@@ -611,12 +611,10 @@ class SignalEmittedSpy(object):
                     "arguments %r" % (self.signal, list(self.args))
                 )
             else:
-                raise SignalEmittedError(
-                    "Signal %r unexpectedly emitted" % (self.signal,)
-                )
+                raise SignalEmittedError(f"Signal {self.signal!r} unexpectedly emitted")
 
 
-class CallbackBlocker(object):
+class CallbackBlocker:
 
     """
     .. versionadded:: 3.1

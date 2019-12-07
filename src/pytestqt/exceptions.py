@@ -28,7 +28,7 @@ def _except_hook(type_, value, tback, exceptions=None):
     sys.stderr.write(format_captured_exceptions([(type_, value, tback)]))
 
 
-class _QtExceptionCaptureManager(object):
+class _QtExceptionCaptureManager:
     """
     Manages exception capture context.
     """

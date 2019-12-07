@@ -464,7 +464,7 @@ def test_qapp_args(testdir):
 
 def test_importerror(monkeypatch):
     def _fake_import(name, *args):
-        raise ImportError("Failed to import {}".format(name))
+        raise ImportError(f"Failed to import {name}")
 
     monkeypatch.delenv("PYTEST_QT_API", raising=False)
     monkeypatch.setattr(qt_compat, "_import", _fake_import)

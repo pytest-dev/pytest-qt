@@ -1,4 +1,3 @@
-# encoding: UTF-8
 # This file is based on the original C++ qabstractitemmodeltester.cpp from:
 # http://code.qt.io/cgit/qt/qtbase.git/tree/src/testlib/qabstractitemmodeltester.cpp
 # Commit 4af292fe5158c2d19e8ab1351c71c3940c7f1032
@@ -42,7 +41,6 @@
 #
 # $QT_END_LICENSE$
 
-from __future__ import print_function
 import collections
 import sys
 
@@ -569,7 +567,7 @@ class ModelTester:
         expected_size = c.old_size + (end - start + 1)
         current_size = self._model.rowCount(parent)
 
-        self._debug("rows inserted: start {}, end {}".format(start, end))
+        self._debug(f"rows inserted: start {start}, end {end}")
         self._debug(
             "  from rowsAboutToBeInserted: parent {}, "
             "size {} (-> {} expected), "
@@ -675,7 +673,7 @@ class ModelTester:
         current_size = self._model.rowCount(parent)
         expected_size = c.old_size - (end - start + 1)
 
-        self._debug("rows removed: start {}, end {}".format(start, end))
+        self._debug(f"rows removed: start {start}, end {end}")
         self._debug(
             "  from rowsAboutToBeRemoved: parent {}, "
             "size {} (-> {} expected), "
