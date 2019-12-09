@@ -152,7 +152,7 @@ class QtBot:
         else:
             return True
 
-    def addWidget(self, widget, **kwargs):
+    def addWidget(self, widget, *, before_close_func=None):
         """
         Adds a widget to be tracked by this bot. This is not required, but will ensure that the
         widget gets closed by the end of the test, so it is highly recommended.
@@ -166,7 +166,7 @@ class QtBot:
 
         .. note:: This method is also available as ``add_widget`` (pep-8 alias)
         """
-        _add_widget(self._request.node, widget, **kwargs)
+        _add_widget(self._request.node, widget, before_close_func=before_close_func)
 
     add_widget = addWidget  # pep-8 alias
 
@@ -658,11 +658,10 @@ QtBot.TimeoutError = TimeoutError
 QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError
 
 
-def _add_widget(item, widget, **kwargs):
+def _add_widget(item, widget, *, before_close_func=None):
     """
     Register a widget into the given pytest item for later closing.
     """
-    before_close_func = kwargs.pop("before_close_func", None)
     qt_widgets = getattr(item, "qt_widgets", [])
     qt_widgets.append((weakref.ref(widget), before_close_func))
     item.qt_widgets = qt_widgets
