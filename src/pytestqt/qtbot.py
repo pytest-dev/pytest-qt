@@ -516,12 +516,14 @@ class QtBot:
             elapsed_ms = elapsed * 1000
             return elapsed_ms > timeout
 
+        timeout_msg = f"waitUntil timed out in {timeout} miliseconds"
+
         while True:
             try:
                 result = callback()
-            except AssertionError:
+            except AssertionError as e:
                 if timed_out():
-                    raise
+                    raise TimeoutError(timeout_msg) from e
             else:
                 if result not in (None, True, False):
                     msg = "waitUntil() callback must return None, True or False, returned %r"
@@ -534,10 +536,8 @@ class QtBot:
                 # 'True/False' form
                 if result:
                     return
-                else:
-                    assert not timed_out(), (
-                        "waitUntil timed out in %s miliseconds" % timeout
-                    )
+                if timed_out():
+                    raise TimeoutError(timeout_msg)
             self.wait(10)
 
     wait_until = waitUntil  # pep-8 alias

@@ -45,17 +45,21 @@ assertion:
 
 
 ``qtbot.waitUntil`` will periodically call ``check_label`` until it no longer raises
-``AssertionError`` or a timeout is reached. If a timeout is reached, the last assertion error
-re-raised and the test will fail:
+``AssertionError`` or a timeout is reached. If a timeout is reached, a
+:class:`qtbot.TimeoutError <TimeoutError>`
+is raised from the last assertion error and the test will fail:
 
 ::
 
     _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
         def check_label():
-    >       assert window.status.text() == 'Please input a number'
-    E       assert 'OK' == 'Please input a number'
+    >       assert window.status.text() == "Please input a number"
+    E       AssertionError: assert 'OK' == 'Please input a number'
     E         - OK
     E         + Please input a number
+    _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+    >       qtbot.waitUntil(check_label)
+    E       pytestqt.exceptions.TimeoutError: waitUntil timed out in 1000 miliseconds
 
 
 A second way to use ``qtbot.waitUntil`` is to pass a callback which returns ``True`` when the
