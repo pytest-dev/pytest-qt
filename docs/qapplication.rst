@@ -51,11 +51,12 @@ custom application like below:
 .. code-block:: python
 
     from PyQt5.QtWidgets import QApplication
-    
+
+
     class CustomQApplication(QApplication):
         def __init__(self, *argv):
             super().__init__(*argv)
-            self.custom_attr = 'xxx'
+            self.custom_attr = "xxx"
 
         def custom_function(self):
             pass
@@ -71,9 +72,10 @@ If your tests require access to app-level functions, like
     this = sys.modules[__name__]
     this.qapplication = None
 
+
     @pytest.fixture
     def qapp():
-        if (this.qapplication is None):
+        if this.qapplication is None:
             this.qapplication = CustomQApplication([])
         yield this.qapplication
 
