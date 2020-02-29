@@ -61,8 +61,9 @@ custom application like below:
             pass
 
 
-If many test require access to ``CustomQApplication.custom_function()``, you can 
-override the built-in ``qapp`` fixture to use your own app:
+If your tests require access to app-level functions, like 
+``CustomQApplication.custom_function()``, you can override the built-in 
+``qapp`` fixture to use your own app:
 
 .. code-block:: python
 
