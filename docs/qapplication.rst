@@ -44,8 +44,8 @@ Or using the ``mock`` package:
 Testing Custom QApplications
 ----------------------------
 
-It's possible to test custom ``QApplication`` classes, but you need to be 
-careful to avoid multiple app instances in the same test. Assuming to defined 
+It's possible to test custom ``QApplication`` classes, but you need to be
+careful to avoid multiple app instances in the same test. Assuming to defined
 custom application like below:
 
 .. code-block:: python
@@ -62,8 +62,8 @@ custom application like below:
             pass
 
 
-If your tests require access to app-level functions, like 
-``CustomQApplication.custom_function()``, you can override the built-in 
+If your tests require access to app-level functions, like
+``CustomQApplication.custom_function()``, you can override the built-in
 ``qapp`` fixture to use your own app:
 
 .. code-block:: python
@@ -80,4 +80,3 @@ If your tests require access to app-level functions, like
         yield this.qapplication
 
         # optional teardown for this.qapplication here
-
