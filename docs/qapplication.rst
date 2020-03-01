@@ -45,7 +45,7 @@ Testing Custom QApplications
 ----------------------------
 
 It's possible to test custom ``QApplication`` classes, but you need to be
-careful to avoid multiple app instances in the same test. Assuming to defined
+careful to avoid multiple app instances in the same test. Assuming one defines a
 custom application like below:
 
 .. code-block:: python
