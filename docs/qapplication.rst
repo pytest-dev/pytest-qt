@@ -68,15 +68,6 @@ If your tests require access to app-level functions, like
 
 .. code-block:: python
 
-    # in root conftest.py
-    this = sys.modules[__name__]
-    this.qapplication = None
-
-
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def qapp():
-        if this.qapplication is None:
-            this.qapplication = CustomQApplication([])
-        yield this.qapplication
-
-        # optional teardown for this.qapplication here
+        yield CustomQApplication([])
