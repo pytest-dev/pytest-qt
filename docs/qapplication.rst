@@ -64,7 +64,7 @@ custom application like below:
 
 If your tests require access to app-level functions, like
 ``CustomQApplication.custom_function()``, you can override the built-in
-``qapp`` fixture to use your own app:
+``qapp`` fixture in your ``conftest.py`` to use your own app:
 
 .. code-block:: python
 
