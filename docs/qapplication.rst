@@ -1,5 +1,12 @@
-A note about QApplication.exit()
-================================
+Testing QApplication
+====================
+
+If your tests need access to a full ``QApplication`` instance to e.g. test exit
+behavior or custom application classes, you can use the techniques described below:
+
+
+Testing QApplication.exit()
+--------------------------------
 
 Some ``pytest-qt`` features, most notably ``waitSignal`` and ``waitSignals``,
 depend on the Qt event loop being active. Calling ``QApplication.exit()``
@@ -32,3 +39,35 @@ Or using the ``mock`` package:
             button = get_app_exit_button()
             qtbot.click(button)
             assert QApplication.exit.call_count == 1
+
+
+Testing Custom QApplications
+----------------------------
+
+It's possible to test custom ``QApplication`` classes, but you need to be
+careful to avoid multiple app instances in the same test. Assuming one defines a
+custom application like below:
+
+.. code-block:: python
+
+    from PyQt5.QtWidgets import QApplication
+
+
+    class CustomQApplication(QApplication):
+        def __init__(self, *argv):
+            super().__init__(*argv)
+            self.custom_attr = "xxx"
+
+        def custom_function(self):
+            pass
+
+
+If your tests require access to app-level functions, like
+``CustomQApplication.custom_function()``, you can override the built-in
+``qapp`` fixture in your ``conftest.py`` to use your own app:
+
+.. code-block:: python
+
+    @pytest.fixture(scope="session")
+    def qapp():
+        yield CustomQApplication([])

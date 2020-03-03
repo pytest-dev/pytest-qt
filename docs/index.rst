@@ -18,7 +18,7 @@ pytest-qt
     wait_callback
     virtual_methods
     modeltester
-    app_exit
+    qapplication
     note_dialogs
     troubleshooting
     reference
