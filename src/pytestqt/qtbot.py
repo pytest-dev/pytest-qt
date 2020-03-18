@@ -645,6 +645,10 @@ class QtBot:
             "mousePress",
             "mouseRelease",
         ]
+        if hasattr(qt_api.QtTest.QTest, "keySequence"):
+            # Added in Qt 5.10
+            method_names.append("keySequence")
+
         for method_name in method_names:
             method = create_qtest_proxy_method(method_name)
             if method is not None:

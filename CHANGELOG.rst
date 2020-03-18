@@ -3,6 +3,7 @@
 
 - ``pytest-qt`` now requires Python 3.6+.
 - ``waitUntil`` now raises a ``TimeoutError`` when a timeout occurs to make the cause of the timeout more explict (`#222`_). Thanks `@karlch`_ for the PR.
+- The ``QtTest::keySequence`` method is now exposed (if available, with Qt >= 5.10).
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
 .. _@karlch: https://github.com/karlch
