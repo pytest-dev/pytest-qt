@@ -8,6 +8,10 @@ fails_on_pyqt = pytest.mark.xfail(
     qt_api.pytest_qt_api == "pyqt5", reason="fails on PyQt"
 )
 
+keysequence = pytest.mark.skipif(
+    not hasattr(qt_api.QtTest.QTest, "keySequence"), reason="needs Qt >= 5.10"
+)
+
 
 @pytest.mark.parametrize(
     "expected_method",
@@ -19,6 +23,7 @@ fails_on_pyqt = pytest.mark.xfail(
         "keyPress",
         "keyRelease",
         pytest.param("keyToAscii", marks=fails_on_pyqt),
+        pytest.param("keySequence", marks=keysequence),
         "mouseClick",
         "mouseDClick",
         "mouseMove",
