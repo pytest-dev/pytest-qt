@@ -505,3 +505,12 @@ def test_before_close_func(testdir):
     result = testdir.runpytest_inprocess()
     result.stdout.fnmatch_lines(["*= 1 passed in *"])
     assert sys.pytest_qt_widget_closed
+
+
+def test_addwidget_typeerror(testdir, qtbot):
+    """
+    Make sure addWidget catches type errors early.
+    """
+    obj = qt_api.QtCore.QObject()
+    with pytest.raises(TypeError):
+        qtbot.addWidget(obj)
