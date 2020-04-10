@@ -60,3 +60,37 @@ If you are running your code on Travis-CI make sure that your ``.travis.yml`` ha
 More details can be found in `issue #206`_.
 
 .. _issue #206: https://github.com/pytest-dev/pytest-qt/issues/206
+
+GitHub Actions
+----------------
+
+When using ``ubuntu-latest`` on Github Actions, the package ``libxkbcommon-x11-0`` has to be installed, ``DISPLAY`` should be set and ``xvfb`` run. More details can be found in `issue #293`_.
+
+.. _issue #293: https://github.com/pytest-dev/pytest-qt/issues/293
+
+As an example, here is a working config :
+
+.. code-block:: yaml
+
+    name: my qt ci in github actions
+    on: [push, pull_request]
+    jobs:
+      Linux:
+        runs-on: ${{ matrix.os }}
+        strategy:
+          matrix:
+            os : [ubuntu-latest]
+            python: [3.7]
+        env:
+          DISPLAY: ':99.0'
+        steps:
+        - name: get repo
+          uses: actions/checkout@v1
+        - name: Set up Python
+          uses: actions/setup-python@v1
+          with:
+            python-version: ${{ matrix.python }}
+        - name: setup ${{ matrix.os }}
+          run: |
+            sudo apt install libxkbcommon-x11-0
+            /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
