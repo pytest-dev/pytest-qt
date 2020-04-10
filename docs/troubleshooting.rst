@@ -68,7 +68,7 @@ When using ``ubuntu-latest`` on Github Actions, the package ``libxkbcommon-x11-0
 
 .. _issue #293: https://github.com/pytest-dev/pytest-qt/issues/293
 
-As an example, here is working config :
+As an example, here is a working config :
 
 .. code-block:: yaml
 
