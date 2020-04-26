@@ -172,7 +172,7 @@ class QtBot:
 
     add_widget = addWidget  # pep-8 alias
 
-    def waitActive(self, widget, timeout=1000):
+    def waitActive(self, widget, timeout=5000):
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is active.
         If window is not exposed within ``timeout`` milliseconds, raise ``TimeoutError``.
@@ -204,7 +204,7 @@ class QtBot:
 
     wait_active = waitActive  # pep-8 alias
 
-    def waitExposed(self, widget, timeout=1000):
+    def waitExposed(self, widget, timeout=5000):
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is exposed.
         If the window is not exposed within ``timeout`` milliseconds, raise ``TimeoutError``.
