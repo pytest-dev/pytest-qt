@@ -20,7 +20,7 @@ For example:
        page = QWebEnginePage()
        with qtbot.waitCallback() as cb:
            page.runJavaScript("1 + 1", cb)
-       # After callback
+       cb.assert_called_with(2)  # result of the last js statement
 
 Anything following the ``with`` block will be run only after the callback has been called.
 
