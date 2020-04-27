@@ -5,6 +5,8 @@
 - ``waitUntil`` now raises a ``TimeoutError`` when a timeout occurs to make the cause of the timeout more explict (`#222`_). Thanks `@karlch`_ for the PR.
 - The ``QtTest::keySequence`` method is now exposed (if available, with Qt >= 5.10).
 - ``addWidget`` now enforces that its argument is a ``QWidget`` in order to display a clearer error when this isn't the case.
+- ``waitExposed`` and ``waitActive`` now have a default timeout of 5s instead of 1s, in order to match the default
+  timeouts Qt uses in the underlying QTest methods.
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
 .. _@karlch: https://github.com/karlch
