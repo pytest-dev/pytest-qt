@@ -43,7 +43,7 @@ def qapp_args():
 
 
 @pytest.fixture(scope="session")
-def qapp(qapp_args):
+def qapp(qapp_args, pytestconfig):
     """
     Fixture that instantiates the QApplication instance that will be used by
     the tests.
@@ -55,6 +55,8 @@ def qapp(qapp_args):
     if app is None:
         global _qapp_instance
         _qapp_instance = qt_api.QApplication(qapp_args)
+        name = pytestconfig.getini("qt_qapp_name")
+        _qapp_instance.setApplicationName(name)
         return _qapp_instance
     else:
         return app  # pragma: no cover
@@ -108,6 +110,9 @@ def pytest_addoption(parser):
     parser.addini(
         "qt_wait_signal_raising",
         "Default value for the raising parameter of qtbot.waitSignal (legacy alias)",
+    )
+    parser.addini(
+        "qt_qapp_name", "The Qt application name to use", default="pytest-qt-qapp"
     )
 
     default_log_fail = QtLoggingPlugin.LOG_FAIL_OPTIONS[0]
