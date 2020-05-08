@@ -68,6 +68,7 @@ emitted messages directly to ``stderr``:
     ---------------------------- Captured stderr call -----------------------------
     this is a WARNING message
 
+Using pytest's ``-s`` (``--capture=no``) option will also disable Qt log capturing.
 
 qtlog fixture
 -------------

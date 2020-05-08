@@ -106,7 +106,8 @@ def test_qtlog_fixture(qtlog):
         qtlog.records = []
 
 
-def test_fixture_with_logging_disabled(testdir):
+@pytest.mark.parametrize("arg", ["--no-qt-log", "--capture=no", "-s"])
+def test_fixture_with_logging_disabled(testdir, arg):
     """
     Test that qtlog fixture doesn't capture anything if logging is disabled
     in the command line.
@@ -122,7 +123,7 @@ def test_fixture_with_logging_disabled(testdir):
             assert qtlog.records == []
         """
     )
-    res = testdir.runpytest("--no-qt-log")
+    res = testdir.runpytest(arg)
     res.stdout.fnmatch_lines("*1 passed*")
 
 
