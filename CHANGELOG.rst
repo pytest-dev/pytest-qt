@@ -7,6 +7,7 @@
 - ``addWidget`` now enforces that its argument is a ``QWidget`` in order to display a clearer error when this isn't the case.
 - ``waitExposed`` and ``waitActive`` now have a default timeout of 5s instead of 1s, in order to match the default
   timeouts Qt uses in the underlying QTest methods.
+- When the ``-s`` (``--capture=no``) argument is passed to pytest, Qt log capturing is now disabled as well.
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
 .. _@karlch: https://github.com/karlch

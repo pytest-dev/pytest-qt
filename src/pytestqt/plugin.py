@@ -210,7 +210,7 @@ def pytest_configure(config):
     )
     config.addinivalue_line("markers", "no_qt_log: Turn off Qt logging capture.")
 
-    if config.getoption("qt_log"):
+    if config.getoption("qt_log") and config.getoption("capture") != "no":
         config.pluginmanager.register(QtLoggingPlugin(config), "_qt_logging")
 
     qt_api.set_qt_api(config.getini("qt_api"))
