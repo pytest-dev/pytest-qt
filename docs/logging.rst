@@ -29,7 +29,7 @@ For example:
 
 .. code-block:: bash
 
-    $ py.test test.py -q
+    $ pytest test.py -q
     F
     ================================== FAILURES ===================================
     _________________________________ test_types __________________________________
@@ -54,7 +54,7 @@ emitted messages directly to ``stderr``:
 
 .. code-block:: bash
 
-    py.test test.py -q --no-qt-log
+    pytest test.py -q --no-qt-log
     F
     ================================== FAILURES ===================================
     _________________________________ test_types __________________________________
@@ -119,7 +119,7 @@ objects:
 
 .. code-block:: bash
 
-    $ py.test test.py --qt-log-format="{rec.when} {rec.type_name}: {rec.message}"
+    $ pytest test.py --qt-log-format="{rec.when} {rec.type_name}: {rec.message}"
 
 Keep in mind that you can make any of the options above the default
 for your project by using pytest's standard ``addopts`` option in you
@@ -167,7 +167,7 @@ will fail, even if no actual asserts fail within the test:
 
 .. code-block:: bash
 
-    >py.test test.py --color=no -q
+    >pytest test.py --color=no -q
     F
     ================================== FAILURES ===================================
     __________________________________ test_foo ___________________________________
@@ -196,7 +196,7 @@ is a list of regular expressions matched using ``re.search``:
 
 .. code-block:: bash
 
-    py.test test.py --color=no -q
+    pytest test.py --color=no -q
     .
     1 passed in 0.01 seconds
 
@@ -216,7 +216,7 @@ defined by ``qt_log_ignore`` make tests fail as usual:
 
 .. code-block:: bash
 
-    py.test test.py --color=no -q
+    pytest test.py --color=no -q
     F
     ================================== FAILURES ===================================
     __________________________________ test_foo ___________________________________
