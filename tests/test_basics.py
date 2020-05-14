@@ -21,6 +21,27 @@ def test_basics(qtbot):
     assert widget.windowTitle() == "W1"
 
 
+def test_qapp_default_name(qapp):
+    assert qapp.applicationName() == "pytest-qt-qapp"
+
+
+def test_qapp_name(testdir):
+    testdir.makepyfile(
+        """
+    def test_name(qapp):
+        assert qapp.applicationName() == "frobnicator"
+    """
+    )
+    testdir.makeini(
+        """
+        [pytest]
+        qt_qapp_name = frobnicator
+        """
+    )
+    res = testdir.runpytest_subprocess()
+    res.stdout.fnmatch_lines("*1 passed*")
+
+
 def test_key_events(qtbot, event_recorder):
     """
     Basic key events test.

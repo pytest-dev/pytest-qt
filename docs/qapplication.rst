@@ -71,3 +71,15 @@ If your tests require access to app-level functions, like
     @pytest.fixture(scope="session")
     def qapp():
         yield CustomQApplication([])
+
+Setting a QApplication name
+---------------------------
+
+By default, pytest-qt set's the ``QApplication.applicationName()`` to
+``pytest-qt-qapp``. To use a custom name, you can set the ``qt_qapp_name``
+option in ``pytest.ini``:
+
+.. code-block:: ini
+
+    [pytest]
+    qt_qapp_name = frobnicate-tests

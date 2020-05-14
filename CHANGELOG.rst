@@ -5,6 +5,7 @@
 - ``waitUntil`` now raises a ``TimeoutError`` when a timeout occurs to make the cause of the timeout more explict (`#222`_). Thanks `@karlch`_ for the PR.
 - The ``QtTest::keySequence`` method is now exposed (if available, with Qt >= 5.10).
 - ``addWidget`` now enforces that its argument is a ``QWidget`` in order to display a clearer error when this isn't the case.
+- New option ``qt_qapp_name`` can be used to set the name of the ``QApplication`` created by ``pytest-qt``, defaulting to ``"pytest-qt-qapp"``.
 - ``waitExposed`` and ``waitActive`` now have a default timeout of 5s instead of 1s, in order to match the default
   timeouts Qt uses in the underlying QTest methods.
 - When the ``-s`` (``--capture=no``) argument is passed to pytest, Qt log capturing is now disabled as well.
