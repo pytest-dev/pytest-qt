@@ -49,7 +49,7 @@ Disabling Logging Capture
 -------------------------
 
 Qt logging capture can be disabled altogether by passing the ``--no-qt-log``
-to the command line, which will fallback to the default Qt bahavior of printing
+to the command line, which will fallback to the default Qt behavior of printing
 emitted messages directly to ``stderr``:
 
 .. code-block:: bash
