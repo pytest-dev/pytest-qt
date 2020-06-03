@@ -101,4 +101,5 @@ As an example, here is a working config :
 
 pytest-xvfb
 ~~~~~~~~~~~
-instead of running Xvfb manually it is possible to use ``pytest-xvfb`` plugin
+
+Instead of running Xvfb manually it is possible to use ``pytest-xvfb`` plugin.
