@@ -68,6 +68,10 @@ When using ``ubuntu-latest`` on Github Actions, the package ``libxkbcommon-x11-0
 
 .. _issue #293: https://github.com/pytest-dev/pytest-qt/issues/293
 
+Since Qt in version 5.15 ``xcb`` libraries are not distributed with Qt so this library in version at least 1.11 on runner. See more in https://codereview.qt-project.org/c/qt/qtbase/+/253905
+
+For Github Actions and Azure pipelines it need to install ``libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0``
+
 As an example, here is a working config :
 
 .. code-block:: yaml
@@ -92,5 +96,10 @@ As an example, here is a working config :
             python-version: ${{ matrix.python }}
         - name: setup ${{ matrix.os }}
           run: |
-            sudo apt install libxkbcommon-x11-0
+            sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
             /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+
+pytest-xvfb
+~~~~~~~~~~~
+
+Instead of running Xvfb manually it is possible to use ``pytest-xvfb`` plugin.
