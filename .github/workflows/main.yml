@@ -12,7 +12,7 @@ jobs:
       matrix:
         python-version: [3.6, 3.7, 3.8]
         qt-lib: [pyqt5, pyside2]
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - python-version: "3.6"
             tox-env: "py36"
