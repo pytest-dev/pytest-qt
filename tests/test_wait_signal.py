@@ -12,6 +12,10 @@ from pytestqt.wait_signal import (
     CallbackCalledTwiceError,
 )
 
+flaky_on_macos = pytest.mark.xfail(
+    sys.platform == "darwin", run=False, reason="Flaky on macOS: #313"
+)
+
 
 def test_signal_blocker_exception(qtbot):
     """
@@ -81,6 +85,7 @@ def build_signal_tests_variants(params):
         ]
     ),
 )
+@flaky_on_macos
 def test_signal_triggered(
     qtbot,
     timer,
@@ -228,6 +233,7 @@ def test_raising_by_default_overridden(qtbot, testdir, configkey):
         ]
     ),
 )
+@flaky_on_macos
 def test_signal_triggered_multiple(
     qtbot,
     timer,
@@ -999,43 +1005,6 @@ class TestWaitSignalTimeoutErrorMessage:
                 pass  # don't emit any signals
         ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         assert ex_msg == "Signal signal() not emitted after 200 ms"
-
-    def test_unable_to_get_callback_name(self, qtbot, signaller):
-        """
-        Test that for complicated callbacks which aren't callables, but e.g. double-wrapped partials, the test code
-        is sometimes unable to determine the name of the callback.
-        Note that this behavior changes with Python 3.5, where a functools.partial() is smart enough to detect wrapped
-        calls.
-        """
-        if sys.version_info >= (3, 5):
-            pytest.skip(
-                "Only on Python 3.4 and lower double-wrapped functools.partial callbacks are a problem"
-            )
-
-        if qt_api.pytest_qt_api == "pyside2":
-            signal = (signaller.signal_single_arg, "signal_single_arg(int)")
-        else:
-            signal = signaller.signal_single_arg
-
-        def callback(int_param, unused_param1, unused_param2):
-            return int_param == 1337
-
-        wrapped_callback = functools.partial(callback, unused_param2=1)
-        double_wrapped_callback = functools.partial(wrapped_callback, unused_param1=1)
-
-        with pytest.raises(TimeoutError) as excinfo:
-            with qtbot.waitSignal(
-                signal=signal,
-                timeout=200,
-                raising=True,
-                check_params_cb=double_wrapped_callback,
-            ):
-                signaller.signal_single_arg.emit(1)
-        ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
-        assert ex_msg == (
-            "Signal signal_single_arg(int) emitted with parameters [1] within 200 ms, "
-            "but did not satisfy the  callback"
-        )
 
     def test_with_single_arg(self, qtbot, signaller):
         """
