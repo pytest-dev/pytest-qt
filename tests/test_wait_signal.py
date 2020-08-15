@@ -12,6 +12,10 @@ from pytestqt.wait_signal import (
     CallbackCalledTwiceError,
 )
 
+flaky_on_macos = pytest.mark.xfail(
+    sys.platform == "darwin", run=False, reason="Flaky on macOS: #313"
+)
+
 
 def test_signal_blocker_exception(qtbot):
     """
@@ -81,6 +85,7 @@ def build_signal_tests_variants(params):
         ]
     ),
 )
+@flaky_on_macos
 def test_signal_triggered(
     qtbot,
     timer,
@@ -228,6 +233,7 @@ def test_raising_by_default_overridden(qtbot, testdir, configkey):
         ]
     ),
 )
+@flaky_on_macos
 def test_signal_triggered_multiple(
     qtbot,
     timer,
