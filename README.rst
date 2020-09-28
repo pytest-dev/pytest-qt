@@ -149,6 +149,11 @@ can install ``pre-commit`` locally with::
     $ pip install pre-commit
     $ pre-commit install
 
+Related projects
+----------------
+
+- `pytest-xvfb <https://github.com/The-Compiler/pytest-xvfb/>`_ allows to run a virtual xserver (Xvfb) on Linux to avoid GUI elements popping up on the screen or for easy CI testing
+- `pytest-qml <https://github.com/jgirardet/pytest-qml>`_ allows running QML tests from pytest
 
 Contributors
 ------------
