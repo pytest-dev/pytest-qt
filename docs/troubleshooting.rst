@@ -70,7 +70,7 @@ When using ``ubuntu-latest`` on Github Actions, the package ``libxkbcommon-x11-0
 
 Since Qt in version 5.15 ``xcb`` libraries are not distributed with Qt so this library in version at least 1.11 on runner. See more in https://codereview.qt-project.org/c/qt/qtbase/+/253905
 
-For Github Actions and Azure pipelines it need to install ``libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0``
+For Github Actions, Azure pipelines and Travis-CI you will need to install ``libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0``
 
 As an example, here is a working config :
 
