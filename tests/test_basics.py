@@ -535,3 +535,26 @@ def test_addwidget_typeerror(testdir, qtbot):
     obj = qt_api.QtCore.QObject()
     with pytest.raises(TypeError):
         qtbot.addWidget(obj)
+
+
+def test_add_widget_calls_addWidget(request):
+    """
+    add_widget should call addWidget for subclasses too. If we had a subclass that overwrites addWidget
+    but not the add_widget, calls to it would be mapped to the super class method instead of its own.
+    """
+    from pytestqt.qtbot import QtBot
+
+    calls = []
+
+    class CustomQtBot(QtBot):
+        def addWidget(self, widget, *, before_func_close=None):
+            calls.append(True)
+
+    custom_qtbot = CustomQtBot(request)
+
+    widget = qt_api.QWidget()
+    custom_qtbot.addWidget(widget)
+    assert calls == [True]
+
+    custom_qtbot.add_widget(widget)
+    assert calls == [True, True]

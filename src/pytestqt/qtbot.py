@@ -170,7 +170,8 @@ class QtBot:
             raise TypeError("Need to pass a QWidget to addWidget!")
         _add_widget(self._request.node, widget, before_close_func=before_close_func)
 
-    add_widget = addWidget  # pep-8 alias
+    def add_widget(self, widget, **kwargs):  # pep-8 style
+        self.addWidget(widget, **kwargs)
 
     def waitActive(self, widget, timeout=5000):
         """
