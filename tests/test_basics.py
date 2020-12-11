@@ -403,8 +403,7 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
 
 @pytest.mark.parametrize("envvar", ["pyqt5", "pyside2"])
 def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
-    """ensure environment variable wins over config value if both are present
-    """
+    """ensure environment variable wins over config value if both are present"""
     testdir.makeini(
         """
         [pytest]

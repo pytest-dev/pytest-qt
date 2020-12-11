@@ -86,8 +86,7 @@ def format_captured_exceptions(exceptions):
 
 
 def _is_exception_capture_enabled(item):
-    """returns if exception capture is disabled for the given test item.
-    """
+    """returns if exception capture is disabled for the given test item."""
     disabled = get_marker(item, "qt_no_exception_capture") or item.config.getini(
         "qt_no_exception_capture"
     )

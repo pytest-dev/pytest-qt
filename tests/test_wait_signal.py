@@ -375,8 +375,7 @@ def test_wait_signals_invalid_strict_parameter(qtbot, signaller):
 
 
 def test_destroyed(qtbot):
-    """Test that waitSignal works with the destroyed signal (#82).
-    """
+    """Test that waitSignal works with the destroyed signal (#82)."""
     if qt_api.pytest_qt_api == "pyside2":
         pytest.skip("test depends on sip")
 

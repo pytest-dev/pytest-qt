@@ -35,9 +35,9 @@ def qapp_args():
 
     .. code-block:: python
 
-       @pytest.fixture(scope='session')
+       @pytest.fixture(scope="session")
        def qapp_args():
-           return ['--arg']
+           return ["--arg"]
     """
     return []
 

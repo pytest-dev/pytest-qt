@@ -36,7 +36,10 @@ class _QtApi:
         api = os.environ.get("PYTEST_QT_API")
         if api is not None:
             api = api.lower()
-            if api not in ("pyside2", "pyqt5",):  # pragma: no cover
+            if api not in (
+                "pyside2",
+                "pyqt5",
+            ):  # pragma: no cover
                 msg = "Invalid value for $PYTEST_QT_API: %s"
                 raise RuntimeError(msg % api)
         return api
