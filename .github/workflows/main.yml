@@ -60,6 +60,8 @@ jobs:
 
   deploy:
 
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+
     runs-on: ubuntu-latest
 
     needs: [build, checks]
