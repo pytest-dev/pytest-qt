@@ -170,8 +170,6 @@ class QtBot:
             raise TypeError("Need to pass a QWidget to addWidget!")
         _add_widget(self._request.node, widget, before_close_func=before_close_func)
 
-    add_widget = addWidget  # pep-8 alias
-
     def waitActive(self, widget, timeout=5000):
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is active.
@@ -201,8 +199,6 @@ class QtBot:
         return _WaitWidgetContextManager(
             "qWaitForWindowActive", "activated", widget, timeout
         )
-
-    wait_active = waitActive  # pep-8 alias
 
     def waitExposed(self, widget, timeout=5000):
         """
@@ -234,8 +230,6 @@ class QtBot:
             "qWaitForWindowExposed", "exposed", widget, timeout
         )
 
-    wait_exposed = waitExposed  # pep-8 alias
-
     def waitForWindowShown(self, widget):
         """
         Waits until the window is shown in the screen. This is mainly useful for asynchronous
@@ -253,8 +247,6 @@ class QtBot:
             return qt_api.QtTest.QTest.qWaitForWindowExposed(widget)
         else:
             return qt_api.QtTest.QTest.qWaitForWindowShown(widget)
-
-    wait_for_window_shown = waitForWindowShown  # pep-8 alias
 
     def stopForInteraction(self):
         """
@@ -342,8 +334,6 @@ class QtBot:
         if signal is not None:
             blocker.connect(signal)
         return blocker
-
-    wait_signal = waitSignal  # pep-8 alias
 
     def waitSignals(
         self,
@@ -435,8 +425,6 @@ class QtBot:
             blocker.add_signals(signals)
         return blocker
 
-    wait_signals = waitSignals  # pep-8 alias
-
     def wait(self, ms):
         """
         .. versionadded:: 1.9
@@ -470,8 +458,6 @@ class QtBot:
         with spy, self.waitSignal(signal, timeout=wait, raising=False):
             yield
         spy.assert_not_emitted()
-
-    assert_not_emitted = assertNotEmitted  # pep-8 alias
 
     def waitUntil(self, callback, timeout=1000):
         """
@@ -542,8 +528,6 @@ class QtBot:
                     raise TimeoutError(timeout_msg)
             self.wait(10)
 
-    wait_until = waitUntil  # pep-8 alias
-
     def waitCallback(self, timeout=1000, raising=None):
         """
         .. versionadded:: 3.1
@@ -584,8 +568,6 @@ class QtBot:
         raising = self._should_raise(raising)
         blocker = CallbackBlocker(timeout=timeout, raising=raising)
         return blocker
-
-    wait_callback = waitCallback  # pep-8 alias
 
     @contextlib.contextmanager
     def captureExceptions(self):
@@ -655,6 +637,35 @@ class QtBot:
             method = create_qtest_proxy_method(method_name)
             if method is not None:
                 setattr(cls, method_name, method)
+
+    # pep-8 aliases
+
+    def add_widget(self, *args, **kwargs):
+        return self.addWidget(*args, **kwargs)
+
+    def wait_active(self, *args, **kwargs):
+        return self.waitActive(*args, **kwargs)
+
+    def wait_exposed(self, *args, **kwargs):
+        return self.waitExposed(*args, **kwargs)
+
+    def wait_for_window_shown(self, *args, **kwargs):
+        return self.waitForWindowShown(*args, **kwargs)
+
+    def wait_signal(self, *args, **kwargs):
+        return self.waitSignal(*args, **kwargs)
+
+    def wait_signals(self, *args, **kwargs):
+        return self.waitSignals(*args, **kwargs)
+
+    def assert_not_emitted(self, *args, **kwargs):
+        return self.assertNotEmitted(*args, **kwargs)
+
+    def wait_until(self, *args, **kwargs):
+        return self.waitUntil(*args, **kwargs)
+
+    def wait_callback(self, *args, **kwargs):
+        return self.waitCallback(*args, **kwargs)
 
 
 # provide easy access to exceptions to qtbot fixtures

@@ -9,9 +9,15 @@
 - ``waitExposed`` and ``waitActive`` now have a default timeout of 5s instead of 1s, in order to match the default
   timeouts Qt uses in the underlying QTest methods.
 - When the ``-s`` (``--capture=no``) argument is passed to pytest, Qt log capturing is now disabled as well.
+- PEP-8 aliases (``add_widget``, ``wait_active``, etc) are no longer just simple
+  assignments to the methods, but they are real methods which call the normal
+  implementations. This makes subclasses work as expected, instead of having to
+  duplicate the assignment. Thanks `@oliveira-mauricio`_ for the PR.
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
+.. _#326: https://github.com/pytest-dev/pytest-qt/pull/326
 .. _@karlch: https://github.com/karlch
+.. _@oliveira-mauricio: https://github.com/oliveira-mauricio
 
 3.3.0 (2019-12-07)
 ------------------
