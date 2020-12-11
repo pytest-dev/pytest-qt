@@ -473,6 +473,8 @@ class QtBot:
 
             def view_updated():
                 assert view_model.count() > 10
+
+
             qtbot.waitUntil(view_updated)
 
         Another possibility is for ``callback()`` to return ``True`` when the desired condition
