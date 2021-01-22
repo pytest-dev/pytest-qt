@@ -191,7 +191,7 @@ class QtBot:
 
         .. note::
             This function is only available in PyQt5, raising a ``RuntimeError`` if called from
-            ``PySide2/6`.
+            ``PySide2/6``.
 
         .. note:: This method is also available as ``wait_active`` (pep-8 alias)
         """
