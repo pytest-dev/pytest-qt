@@ -461,11 +461,11 @@ class ModelTester:
             (qt_api.QtCore.Qt.SizeHintRole, qt_api.QtCore.QSize),
             (qt_api.QtCore.Qt.FontRole, qt_api.QtGui.QFont),
             (
-                qt_api.QtCore.Qt.BackgroundColorRole,
+                qt_api.QtCore.Qt.BackgroundRole,
                 (qt_api.QtGui.QColor, qt_api.QtGui.QBrush),
             ),
             (
-                qt_api.QtCore.Qt.TextColorRole,
+                qt_api.QtCore.Qt.ForegroundRole,
                 (qt_api.QtGui.QColor, qt_api.QtGui.QBrush),
             ),
             (
