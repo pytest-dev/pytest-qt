@@ -360,7 +360,7 @@ def test_parse_ini_boolean_invalid():
         pytestqt.qtbot._parse_ini_boolean("foo")
 
 
-@pytest.mark.parametrize("option_api", ["pyqt5", "pyside2"])
+@pytest.mark.parametrize("option_api", ["pyqt5", "pyside2", "pyside6"])
 def test_qt_api_ini_config(testdir, monkeypatch, option_api):
     """
     Test qt_api ini option handling.
@@ -401,7 +401,7 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
             result.stderr.fnmatch_lines(["*ModuleNotFoundError:*"])
 
 
-@pytest.mark.parametrize("envvar", ["pyqt5", "pyside2"])
+@pytest.mark.parametrize("envvar", ["pyqt5", "pyside2", "pyside6"])
 def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
     """ensure environment variable wins over config value if both are present"""
     testdir.makeini(
@@ -486,9 +486,10 @@ def test_importerror(monkeypatch):
     monkeypatch.setattr(qt_compat, "_import", _fake_import)
 
     expected = (
-        "pytest-qt requires either PySide2 or PyQt5 installed.\n"
+        "pytest-qt requires either PySide2, PySide6 or PyQt5 installed.\n"
         "  PyQt5.QtCore: Failed to import PyQt5.QtCore\n"
-        "  PySide2.QtCore: Failed to import PySide2.QtCore"
+        "  PySide2.QtCore: Failed to import PySide2.QtCore\n"
+        "  PySide6.QtCore: Failed to import PySide6.QtCore"
     )
 
     with pytest.raises(RuntimeError, match=expected):

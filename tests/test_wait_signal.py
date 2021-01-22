@@ -376,7 +376,7 @@ def test_wait_signals_invalid_strict_parameter(qtbot, signaller):
 
 def test_destroyed(qtbot):
     """Test that waitSignal works with the destroyed signal (#82)."""
-    if qt_api.pytest_qt_api == "pyside2":
+    if qt_api.pytest_qt_api == "pyside2" or qt_api.pytest_qt_api == "pyside6":
         pytest.skip("test depends on sip")
 
     import sip
@@ -888,7 +888,7 @@ def get_mixed_signals_with_guaranteed_name(signaller):
     Returns a list of signals with the guarantee that the signals have names (i.e. the names are
     manually provided in case of using PySide2, where the signal names cannot be determined at run-time).
     """
-    if qt_api.pytest_qt_api == "pyside2":
+    if qt_api.pytest_qt_api == "pyside2" or qt_api.pytest_qt_api == "pyside6":
         signals = [
             (signaller.signal, "signal()"),
             (signaller.signal_args, "signal_args(QString,int)"),
@@ -992,7 +992,7 @@ class TestWaitSignalTimeoutErrorMessage:
         In a situation where a signal without args is expected but not emitted, tests that the TimeoutError
         message contains the name of the signal (without arguments).
         """
-        if qt_api.pytest_qt_api == "pyside2":
+        if qt_api.pytest_qt_api == "pyside2" or qt_api.pytest_qt_api == "pyside6":
             signal = (signaller.signal, "signal()")
         else:
             signal = signaller.signal
@@ -1011,7 +1011,7 @@ class TestWaitSignalTimeoutErrorMessage:
         rejected by a callback, tests that the TimeoutError message contains the name of the signal and the
         list of non-accepted arguments.
         """
-        if qt_api.pytest_qt_api == "pyside2":
+        if qt_api.pytest_qt_api == "pyside2" or qt_api.pytest_qt_api == "pyside6":
             signal = (signaller.signal_single_arg, "signal_single_arg(int)")
         else:
             signal = signaller.signal_single_arg
@@ -1037,7 +1037,7 @@ class TestWaitSignalTimeoutErrorMessage:
         rejected by a callback, tests that the TimeoutError message contains the name of the signal and the
         list of tuples of the non-accepted arguments.
         """
-        if qt_api.pytest_qt_api == "pyside2":
+        if qt_api.pytest_qt_api == "pyside2" or qt_api.pytest_qt_api == "pyside6":
             signal = (signaller.signal_args, "signal_args(QString,int)")
         else:
             signal = signaller.signal_args
