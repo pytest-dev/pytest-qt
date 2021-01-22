@@ -11,7 +11,7 @@ jobs:
 
       matrix:
         python-version: [3.6, 3.7, 3.8, 3.9]
-        qt-lib: [pyqt5, pyside2]
+        qt-lib: [pyqt5, pyside2, pyside6]
         os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - python-version: "3.6"
