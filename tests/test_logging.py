@@ -76,7 +76,8 @@ def test_qinfo(qtlog):
     catch up and expose qInfo (or at least QMessageLogger), then we should update
     the other logging tests properly. #232
     """
-    if qt_api.pytest_qt_api == "pyside2" or qt_api.pytest_qt_api == "pyside6":
+
+    if qt_api.is_pyside:
         assert (
             qt_api.qInfo is None
         ), "pyside2/6 does not expose qInfo. If it does, update this test."

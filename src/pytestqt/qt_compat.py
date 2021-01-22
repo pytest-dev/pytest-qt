@@ -66,6 +66,16 @@ class _QtApi:
 
     def set_qt_api(self, api):
         self.pytest_qt_api = self._get_qt_api_from_env() or api or self._guess_qt_api()
+
+        _pyside_modules = [
+            "pyside2",
+            "pyside6",
+        ]
+        if self.pytest_qt_api in _pyside_modules:
+            self.is_pyside = True
+        else:
+            self.is_pyside = False
+
         if not self.pytest_qt_api:  # pragma: no cover
             errors = "\n".join(
                 f"  {module}: {reason}"
@@ -117,7 +127,7 @@ class _QtApi:
         self.qInstallMsgHandler = None
         self.qInstallMessageHandler = None
 
-        if self.pytest_qt_api == "pyside2" or self.pytest_qt_api == "pyside6":
+        if self.is_pyside:
             self.Signal = QtCore.Signal
             self.Slot = QtCore.Slot
             self.Property = QtCore.Property
