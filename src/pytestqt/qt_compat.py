@@ -67,14 +67,7 @@ class _QtApi:
     def set_qt_api(self, api):
         self.pytest_qt_api = self._get_qt_api_from_env() or api or self._guess_qt_api()
 
-        _pyside_modules = [
-            "pyside2",
-            "pyside6",
-        ]
-        if self.pytest_qt_api in _pyside_modules:
-            self.is_pyside = True
-        else:
-            self.is_pyside = False
+        self.is_pyside = self.pytest_qt_api in ["pyside2", "pyside6"]
 
         if not self.pytest_qt_api:  # pragma: no cover
             errors = "\n".join(
