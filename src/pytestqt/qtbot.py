@@ -1,5 +1,4 @@
 import contextlib
-import functools
 import weakref
 
 from pytestqt.exceptions import SignalTimeoutError, TimeoutError
@@ -59,7 +58,7 @@ class QtBot:
     Below are methods used to simulate sending key events to widgets:
 
     .. staticmethod:: keyClick (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
-    .. staticmethod:: keyClicks (widget, key sequence[, modifier=Qt.NoModifier[, delay=-1]])
+    .. staticmethod:: keyClicks (widget, key_sequence[, modifier=Qt.NoModifier[, delay=-1]])
     .. staticmethod:: keyEvent (action, widget, key[, modifier=Qt.NoModifier[, delay=-1]])
     .. staticmethod:: keyPress (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
     .. staticmethod:: keyRelease (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
@@ -83,12 +82,12 @@ class QtBot:
             * ``Qt.KeypadModifier``: A keypad button is pressed.
             * ``Qt.GroupSwitchModifier``: X11 only. A Mode_switch key on the keyboard is pressed.
 
-        :param int delay: after the event, delay the test for this miliseconds (if > 0).
+        :param int delay: after the event, delay the test for this milliseconds (if > 0).
 
 
     .. staticmethod:: keyToAscii (key)
 
-        Auxilliary method that converts the given constant ot its equivalent ascii.
+        Auxiliary method that converts the given constant ot its equivalent ascii.
 
         :param Qt.Key_* key: one of the constants for keys in the Qt namespace.
 
@@ -129,7 +128,7 @@ class QtBot:
 
         :param QPoint position: position of the mouse pointer.
 
-        :param int delay: after the event, delay the test for this miliseconds (if > 0).
+        :param int delay: after the event, delay the test for this milliseconds (if > 0).
 
 
     .. _QTest API: http://doc.qt.io/qt-5/qtest.html
@@ -506,7 +505,7 @@ class QtBot:
             elapsed_ms = elapsed * 1000
             return elapsed_ms > timeout
 
-        timeout_msg = f"waitUntil timed out in {timeout} miliseconds"
+        timeout_msg = f"waitUntil timed out in {timeout} milliseconds"
 
         while True:
             try:
@@ -596,49 +595,57 @@ class QtBot:
 
     capture_exceptions = captureExceptions
 
-    @classmethod
-    def _inject_qtest_methods(cls):
-        """
-        Injects QTest methods into the given class QtBot, so the user can access
-        them directly without having to import QTest.
-        """
+    @staticmethod
+    def keyClick(*args, **kwargs):
+        qt_api.QtTest.QTest.keyClick(*args, **kwargs)
 
-        def create_qtest_proxy_method(method_name):
+    @staticmethod
+    def keyClicks(*args, **kwargs):
+        qt_api.QtTest.QTest.keyClicks(*args, **kwargs)
 
-            if hasattr(qt_api.QtTest.QTest, method_name):
-                qtest_method = getattr(qt_api.QtTest.QTest, method_name)
+    @staticmethod
+    def keyEvent(*args, **kwargs):
+        qt_api.QtTest.QTest.keyEvent(*args, **kwargs)
 
-                def result(*args, **kwargs):
-                    return qtest_method(*args, **kwargs)
+    @staticmethod
+    def keyPress(*args, **kwargs):
+        qt_api.QtTest.QTest.keyPress(*args, **kwargs)
 
-                functools.update_wrapper(result, qtest_method)
-                return staticmethod(result)
-            else:
-                return None  # pragma: no cover
+    @staticmethod
+    def keyRelease(*args, **kwargs):
+        qt_api.QtTest.QTest.keyRelease(*args, **kwargs)
 
-        # inject methods from QTest into QtBot
-        method_names = [
-            "keyPress",
-            "keyClick",
-            "keyClicks",
-            "keyEvent",
-            "keyPress",
-            "keyRelease",
-            "keyToAscii",
-            "mouseClick",
-            "mouseDClick",
-            "mouseMove",
-            "mousePress",
-            "mouseRelease",
-        ]
-        if hasattr(qt_api.QtTest.QTest, "keySequence"):
-            # Added in Qt 5.10
-            method_names.append("keySequence")
+    @staticmethod
+    def keySequence(widget, key_sequence):
+        if not hasattr(qt_api.QtTest.QTest, "keySequence"):
+            raise NotImplementedError("This method is available from Qt 5.10 upwards.")
+        qt_api.QtTest.QTest.keySequence(widget, key_sequence)
 
-        for method_name in method_names:
-            method = create_qtest_proxy_method(method_name)
-            if method is not None:
-                setattr(cls, method_name, method)
+    @staticmethod
+    def keyToAscii(key):
+        if qt_api.pytest_qt_api == "pyqt5":
+            raise NotImplementedError("This method isn't available on PyQt5.")
+        qt_api.QtTest.QTest.keyToAscii(key)
+
+    @staticmethod
+    def mouseClick(*args, **kwargs):
+        qt_api.QtTest.QTest.mouseClick(*args, **kwargs)
+
+    @staticmethod
+    def mouseDClick(*args, **kwargs):
+        qt_api.QtTest.QTest.mouseDClick(*args, **kwargs)
+
+    @staticmethod
+    def mouseMove(*args, **kwargs):
+        qt_api.QtTest.QTest.mouseMove(*args, **kwargs)
+
+    @staticmethod
+    def mousePress(*args, **kwargs):
+        qt_api.QtTest.QTest.mousePress(*args, **kwargs)
+
+    @staticmethod
+    def mouseRelease(*args, **kwargs):
+        qt_api.QtTest.QTest.mouseRelease(*args, **kwargs)
 
     # pep-8 aliases
 
