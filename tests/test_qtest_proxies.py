@@ -1,16 +1,6 @@
 import pytest
 
-# noinspection PyUnresolvedReferences
 from pytestqt.qt_compat import qt_api
-
-
-fails_on_pyqt = pytest.mark.xfail(
-    qt_api.pytest_qt_api == "pyqt5", reason="fails on PyQt"
-)
-
-keysequence = pytest.mark.skipif(
-    not hasattr(qt_api.QtTest.QTest, "keySequence"), reason="needs Qt >= 5.10"
-)
 
 
 @pytest.mark.parametrize(
@@ -22,8 +12,8 @@ keysequence = pytest.mark.skipif(
         "keyEvent",
         "keyPress",
         "keyRelease",
-        pytest.param("keyToAscii", marks=fails_on_pyqt),
-        pytest.param("keySequence", marks=keysequence),
+        "keyToAscii",
+        "keySequence",
         "mouseClick",
         "mouseDClick",
         "mouseMove",
@@ -33,7 +23,30 @@ keysequence = pytest.mark.skipif(
 )
 def test_expected_qtest_proxies(qtbot, expected_method):
     """
-    Ensure that we are exporting expected QTest API methods.
+    This test originates from the implementation where QTest
+    API methods were exported on runtime.
     """
     assert hasattr(qtbot, expected_method)
     assert getattr(qtbot, expected_method).__name__ == expected_method
+
+
+@pytest.mark.skipif(qt_api.pytest_qt_api == "pyside2", reason="PyQt test only")
+def test_keyToAscii_not_available_on_pyqt(testdir):
+    """
+    Test that qtbot.keyToAscii() is not available on PyQt5 and
+    calling the method raises a NotImplementedError.
+    """
+    testdir.makepyfile(
+        """
+        import pytest
+        from pytestqt.qt_compat import qt_api
+
+        def test_foo(qtbot):
+            widget = qt_api.QWidget()
+            qtbot.add_widget(widget)
+            with pytest.raises(NotImplementedError):
+                qtbot.keyToAscii(qt_api.Qt.Key_Escape)
+        """
+    )
+    result = testdir.runpytest()
+    result.stdout.fnmatch_lines(["*= 1 passed in *"])

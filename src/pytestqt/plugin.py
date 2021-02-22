@@ -226,10 +226,6 @@ def pytest_configure(config):
             DeprecationWarning,
         )
 
-    from .qtbot import QtBot
-
-    QtBot._inject_qtest_methods()
-
 
 def pytest_report_header():
     from pytestqt.qt_compat import qt_api
