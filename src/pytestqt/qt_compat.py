@@ -1,6 +1,6 @@
 """
 Provide a common way to import Qt classes used by pytest-qt in a unique manner,
-abstracting API differences between PyQt5 and PySide2.
+abstracting API differences between PyQt5 and PySide2/6.
 
 .. note:: This module is not part of pytest-qt public API, hence its interface
 may change between releases and users should not rely on it.
@@ -37,6 +37,7 @@ class _QtApi:
         if api is not None:
             api = api.lower()
             if api not in (
+                "pyside6",
                 "pyside2",
                 "pyqt5",
             ):  # pragma: no cover
@@ -55,7 +56,9 @@ class _QtApi:
 
         # Note, not importing only the root namespace because when uninstalling from conda,
         # the namespace can still be there.
-        if _can_import("PySide2.QtCore"):
+        if _can_import("PySide6.QtCore"):
+            return "pyside6"
+        elif _can_import("PySide2.QtCore"):
             return "pyside2"
         elif _can_import("PyQt5.QtCore"):
             return "pyqt5"
@@ -63,15 +66,22 @@ class _QtApi:
 
     def set_qt_api(self, api):
         self.pytest_qt_api = self._get_qt_api_from_env() or api or self._guess_qt_api()
+
+        self.is_pyside = self.pytest_qt_api in ["pyside2", "pyside6"]
+
         if not self.pytest_qt_api:  # pragma: no cover
             errors = "\n".join(
                 f"  {module}: {reason}"
                 for module, reason in sorted(self._import_errors.items())
             )
-            msg = "pytest-qt requires either PySide2 or PyQt5 installed.\n" + errors
+            msg = (
+                "pytest-qt requires either PySide2, PySide6 or PyQt5 installed.\n"
+                + errors
+            )
             raise RuntimeError(msg)
 
         _root_modules = {
+            "pyside6": "PySide6",
             "pyside2": "PySide2",
             "pyqt5": "PyQt5",
         }
@@ -87,7 +97,7 @@ class _QtApi:
         self.Qt = QtCore.Qt
         self.QEvent = QtCore.QEvent
 
-        # qInfo is not exposed in PySide2 (#232)
+        # qInfo is not exposed in PySide2/6 (#232)
         if hasattr(QtCore, "QMessageLogger"):
             self.qInfo = lambda msg: QtCore.QMessageLogger().info(msg)
         elif hasattr(QtCore, "qInfo"):
@@ -110,7 +120,7 @@ class _QtApi:
         self.qInstallMsgHandler = None
         self.qInstallMessageHandler = None
 
-        if self.pytest_qt_api == "pyside2":
+        if self.is_pyside:
             self.Signal = QtCore.Signal
             self.Slot = QtCore.Slot
             self.Property = QtCore.Property
@@ -133,11 +143,11 @@ class _QtApi:
             self.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
 
             def extract_from_variant(variant):
-                """PySide2 does not expose QVariant API"""
+                """PySide2/6 does not expose QVariant API"""
                 return variant
 
             def make_variant(value=None):
-                """PySide2 does not expose QVariant API"""
+                """PySide2/6 does not expose QVariant API"""
                 return value
 
             self.extract_from_variant = extract_from_variant
@@ -192,7 +202,16 @@ class _QtApi:
             self.make_variant = make_variant
 
     def get_versions(self):
-        if self.pytest_qt_api == "pyside2":
+        if self.pytest_qt_api == "pyside6":
+            import PySide6
+
+            version = PySide6.__version__
+
+            return VersionTuple(
+                "PySide6", version, self.QtCore.qVersion(), self.QtCore.__version__
+            )
+            pass
+        elif self.pytest_qt_api == "pyside2":
             import PySide2
 
             version = PySide2.__version__
