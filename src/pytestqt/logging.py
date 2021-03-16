@@ -117,7 +117,7 @@ class QtLoggingPlugin:
 class _QtMessageCapture:
     """
     Captures Qt messages when its `handle` method is installed using
-    qInstallMsgHandler, and stores them into `records` attribute.
+    qInstallMessageHandler, and stores them into `records` attribute.
 
     :attr _records: list of Record instances.
     :attr _ignore_regexes: list of regexes (as strings) that define if a record
@@ -133,11 +133,7 @@ class _QtMessageCapture:
         """
         Start receiving messages from Qt.
         """
-        if qt_api.qInstallMsgHandler:
-            previous_handler = qt_api.qInstallMsgHandler(self._handle_no_context)
-        else:
-            assert qt_api.qInstallMessageHandler
-            previous_handler = qt_api.qInstallMessageHandler(self._handle_with_context)
+        previous_handler = qt_api.qInstallMessageHandler(self._handle_with_context)
         self._previous_handler = previous_handler
 
     def _stop(self):
@@ -145,11 +141,7 @@ class _QtMessageCapture:
         Stop receiving messages from Qt, restoring the previously installed
         handler.
         """
-        if qt_api.qInstallMsgHandler:
-            qt_api.qInstallMsgHandler(self._previous_handler)
-        else:
-            assert qt_api.qInstallMessageHandler
-            qt_api.qInstallMessageHandler(self._previous_handler)
+        qt_api.qInstallMessageHandler(self._previous_handler)
 
     @contextmanager
     def disabled(self):
@@ -197,16 +189,9 @@ class _QtMessageCapture:
 
         self._records.append(Record(msg_type, message, ignored, context))
 
-    def _handle_no_context(self, msg_type, message):
-        """
-        Method to be installed using qInstallMsgHandler (Qt4),
-        stores each message into the `_records` attribute.
-        """
-        self._append_new_record(msg_type, message, context=None)
-
     def _handle_with_context(self, msg_type, context, message):
         """
-        Method to be installed using qInstallMessageHandler (Qt5),
+        Method to be installed using qInstallMessageHandler,
         stores each message into the `_records` attribute.
         """
         self._append_new_record(msg_type, message, context=context)

@@ -248,19 +248,17 @@ def test_public_api_backward_compatibility():
 
 
 def test_qvariant(tmpdir):
-    """Test that make_variant and extract_from_variant work in the same way
-    across all supported Qt bindings.
-    """
+    """Test that QVariant works in the same way across all supported Qt bindings."""
     settings = qt_api.QtCore.QSettings(
         str(tmpdir / "foo.ini"), qt_api.QtCore.QSettings.IniFormat
     )
-    settings.setValue("int", qt_api.make_variant(42))
-    settings.setValue("str", qt_api.make_variant("Hello"))
-    settings.setValue("empty", qt_api.make_variant())
+    settings.setValue("int", 42)
+    settings.setValue("str", "Hello")
+    settings.setValue("empty", None)
 
-    assert qt_api.extract_from_variant(settings.value("int")) == 42
-    assert qt_api.extract_from_variant(settings.value("str")) == "Hello"
-    assert qt_api.extract_from_variant(settings.value("empty")) is None
+    assert settings.value("int") == 42
+    assert settings.value("str") == "Hello"
+    assert settings.value("empty") is None
 
 
 def test_widgets_closed_before_fixtures(testdir):
@@ -388,7 +386,7 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
     )
 
     result = testdir.runpytest_subprocess()
-    if qt_api.pytest_qt_api.replace("v2", "") == option_api:  # handle pyqt4v2
+    if qt_api.pytest_qt_api == option_api:
         result.stdout.fnmatch_lines(["* 1 passed in *"])
     else:
         try:
@@ -425,7 +423,7 @@ def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
     )
 
     result = testdir.runpytest_subprocess()
-    if qt_api.pytest_qt_api.replace("v2", "") == envvar:
+    if qt_api.pytest_qt_api == envvar:
         result.stdout.fnmatch_lines(["* 1 passed in *"])
     else:
         try:

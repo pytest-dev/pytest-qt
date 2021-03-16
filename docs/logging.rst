@@ -3,10 +3,9 @@ Qt Logging Capture
 
 .. versionadded:: 1.4
 
-Qt features its own logging mechanism through ``qInstallMessageHandler``
-(``qInstallMsgHandler`` on Qt4) and ``qDebug``, ``qWarning``, ``qCritical``
-functions. These are used by Qt to print warning messages when internal errors
-occur.
+Qt features its own logging mechanism through ``qInstallMessageHandler`` and
+``qDebug``, ``qWarning``, ``qCritical`` functions. These are used by Qt to
+print warning messages when internal errors occur.
 
 ``pytest-qt`` automatically captures these messages and displays them when a
 test fails, similar to what ``pytest`` does for ``stderr``  and ``stdout`` and

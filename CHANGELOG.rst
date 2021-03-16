@@ -14,6 +14,8 @@
   assignments to the methods, but they are real methods which call the normal
   implementations. This makes subclasses work as expected, instead of having to
   duplicate the assignment. Thanks `@oliveira-mauricio`_ for the PR.
+- The ``qt_api.extract_from_variant`` and ``qt_api.make_variant`` functions
+  (which were never intended for public usage) are now removed.
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
 .. _#326: https://github.com/pytest-dev/pytest-qt/pull/326

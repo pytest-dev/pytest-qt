@@ -21,14 +21,9 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
         def to_unicode(s):
             return s.decode('utf-8', 'replace') if isinstance(s, bytes) else s
 
-        if qt_api.qInstallMessageHandler:
-            def print_msg(msg_type, context, message):
-                sys.stderr.write(to_unicode(message) + '\\n')
-            qt_api.qInstallMessageHandler(print_msg)
-        else:
-            def print_msg(msg_type, message):
-                sys.stderr.write(to_unicode(message) + '\\n')
-            qt_api.qInstallMsgHandler(print_msg)
+        def print_msg(msg_type, context, message):
+            sys.stderr.write(to_unicode(message) + '\\n')
+        qt_api.qInstallMessageHandler(print_msg)
 
         def test_types():
             # qInfo is not exposed by the bindings yet (#225)
