@@ -115,11 +115,6 @@ class _QtApi:
         self.QtCriticalMsg = QtCore.QtCriticalMsg
         self.QtFatalMsg = QtCore.QtFatalMsg
 
-        # Qt4 and Qt5 have different functions to install a message handler;
-        # the plugin will try to use the one that is not None
-        self.qInstallMsgHandler = None
-        self.qInstallMessageHandler = None
-
         if self.is_pyside:
             self.Signal = QtCore.Signal
             self.Slot = QtCore.Slot
@@ -141,65 +136,23 @@ class _QtApi:
             self.qInstallMessageHandler = QtCore.qInstallMessageHandler
 
             self.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
-
-            def extract_from_variant(variant):
-                """PySide2/6 does not expose QVariant API"""
-                return variant
-
-            def make_variant(value=None):
-                """PySide2/6 does not expose QVariant API"""
-                return value
-
-            self.extract_from_variant = extract_from_variant
-            self.make_variant = make_variant
-
         elif self.pytest_qt_api == "pyqt5":
             self.Signal = QtCore.pyqtSignal
             self.Slot = QtCore.pyqtSlot
             self.Property = QtCore.pyqtProperty
 
-            if self.pytest_qt_api == "pyqt5":
-                _QtWidgets = _import_module("QtWidgets")
-                self.QApplication = _QtWidgets.QApplication
-                self.QWidget = _QtWidgets.QWidget
-                self.qInstallMessageHandler = QtCore.qInstallMessageHandler
+            _QtWidgets = _import_module("QtWidgets")
+            self.QApplication = _QtWidgets.QApplication
+            self.QWidget = _QtWidgets.QWidget
+            self.qInstallMessageHandler = QtCore.qInstallMessageHandler
 
-                self.QStringListModel = QtCore.QStringListModel
-                self.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
-
-                def extract_from_variant(variant):
-                    """not needed in PyQt5: Qt API always returns pure python objects"""
-                    return variant
-
-                def make_variant(value=None):
-                    """Return a QVariant object from the given Python builtin"""
-                    return QtCore.QVariant(value)
-
-            else:
-                self.QApplication = QtGui.QApplication
-                self.QWidget = QtGui.QWidget
-                self.qInstallMsgHandler = QtCore.qInstallMsgHandler
-
-                self.QStringListModel = QtGui.QStringListModel
-                self.QSortFilterProxyModel = QtGui.QSortFilterProxyModel
-
-                def extract_from_variant(variant):
-                    """returns python object from the given QVariant"""
-                    if isinstance(variant, QtCore.QVariant):
-                        return variant.toPyObject()
-                    return variant
-
-                def make_variant(value=None):
-                    """Return a QVariant object from the given Python builtin"""
-                    return value
+            self.QStringListModel = QtCore.QStringListModel
+            self.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
 
             self.QStandardItem = QtGui.QStandardItem
             self.QStandardItemModel = QtGui.QStandardItemModel
             self.QAbstractListModel = QtCore.QAbstractListModel
             self.QAbstractTableModel = QtCore.QAbstractTableModel
-
-            self.extract_from_variant = extract_from_variant
-            self.make_variant = make_variant
 
     def get_versions(self):
         if self.pytest_qt_api == "pyside6":

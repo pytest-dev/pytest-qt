@@ -78,7 +78,7 @@ class ModelTester:
             return "{}/{} {!r} (0x{:x})".format(
                 index.row(),
                 index.column(),
-                qt_api.extract_from_variant(data),
+                data,
                 id(index),
             )
 
@@ -483,15 +483,12 @@ class ModelTester:
         # General purpose roles with a fixed expected type
         for role, typ in types:
             data = self._model.data(self._model.index(0, 0), role)
-            if data is not None:
-                data = qt_api.extract_from_variant(data)
-            assert data == None or isinstance(data, typ), role  # noqa
+            assert data is None or isinstance(data, typ), role  # noqa
 
         # Check that the alignment is one we know about
         alignment = self._model.data(
             self._model.index(0, 0), qt_api.QtCore.Qt.TextAlignmentRole
         )
-        alignment = qt_api.extract_from_variant(alignment)
         if alignment is not None:
             try:
                 alignment = int(alignment)
@@ -566,8 +563,8 @@ class ModelTester:
                 self._modelindex_debug(c.parent),
                 c.old_size,
                 expected_size,
-                qt_api.extract_from_variant(c.next),
-                qt_api.extract_from_variant(c.last),
+                c.next,
+                c.last,
             )
         )
 
@@ -576,21 +573,12 @@ class ModelTester:
             "next data {!r}, last data {!r}".format(
                 self._modelindex_debug(parent),
                 current_size,
-                qt_api.extract_from_variant(next_data),
-                qt_api.extract_from_variant(last_data),
+                next_data,
+                last_data,
             )
         )
 
-        if not qt_api.QtCore.qVersion().startswith("4."):
-            # Skipping this on Qt4 as the parent changes for some reason:
-            # modeltest: rows about to be inserted: [...]
-            #            parent <invalid> (0x7f8f540eacf8), [...]
-            # [...]
-            # modeltest: from rowsAboutToBeInserted:
-            #            parent 0/0 None (0x7f8f540eacf8), [...]
-            # modeltest: now in rowsInserted:
-            #            parent <invalid> (0x7f8f60a96cf8) [...]
-            assert c.parent == parent
+        assert c.parent == parent
 
         for ii in range(start, end + 1):
             idx = self._model.index(ii, 0, parent)
@@ -672,8 +660,8 @@ class ModelTester:
                 self._modelindex_debug(c.parent),
                 c.old_size,
                 expected_size,
-                qt_api.extract_from_variant(c.next),
-                qt_api.extract_from_variant(c.last),
+                c.next,
+                c.last,
             )
         )
 
@@ -682,15 +670,12 @@ class ModelTester:
             "next data {!r}, last data {!r}".format(
                 self._modelindex_debug(parent),
                 current_size,
-                qt_api.extract_from_variant(next_data),
-                qt_api.extract_from_variant(last_data),
+                next_data,
+                last_data,
             )
         )
 
-        if not qt_api.QtCore.qVersion().startswith("4."):
-            # Skipping this on Qt4 as the parent changes for some reason
-            # see _on_rows_inserted for details
-            assert c.parent == parent
+        assert c.parent == parent
 
         assert current_size == expected_size
         if last_data is not None:
