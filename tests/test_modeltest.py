@@ -349,7 +349,7 @@ def test_qt_tester_invalid(testdir):
             "*__ test_ok __*",
             "test_qt_tester_invalid.py:*: Qt modeltester errors",
             "*-- Captured Qt messages --*",
-            "* QtWarningMsg: FAIL! model->columnCount(QModelIndex()) >= 0 () returned FALSE "
+            "*QtWarningMsg: FAIL! model->columnCount(QModelIndex()) >= 0 () returned FALSE "
             "(*qabstractitemmodeltester.cpp:*)",
             "*-- Captured stdout call --*",
             "modeltest: Using Qt C++ tester",
