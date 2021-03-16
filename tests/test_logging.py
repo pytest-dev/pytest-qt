@@ -80,7 +80,7 @@ def test_qinfo(qtlog):
 
     qt_api.qInfo("this is an INFO message")
     records = [(m.type, m.message.strip()) for m in qtlog.records]
-    assert records == [(qt_api.QtInfoMsg, "this is an INFO message")]
+    assert records == [(qt_api.QtCore.QtMsgType.QtInfoMsg, "this is an INFO message")]
 
 
 def test_qtlog_fixture(qtlog):
@@ -93,9 +93,9 @@ def test_qtlog_fixture(qtlog):
     qt_api.qCritical("this is a CRITICAL message")
     records = [(m.type, m.message.strip()) for m in qtlog.records]
     assert records == [
-        (qt_api.QtDebugMsg, "this is a DEBUG message"),
-        (qt_api.QtWarningMsg, "this is a WARNING message"),
-        (qt_api.QtCriticalMsg, "this is a CRITICAL message"),
+        (qt_api.QtCore.QtMsgType.QtDebugMsg, "this is a DEBUG message"),
+        (qt_api.QtCore.QtMsgType.QtWarningMsg, "this is a WARNING message"),
+        (qt_api.QtCore.QtMsgType.QtCriticalMsg, "this is a CRITICAL message"),
     ]
     # `records` attribute is read-only
     with pytest.raises(AttributeError):
@@ -516,7 +516,7 @@ def test_context_none(testdir):
         def test_foo(request):
             log_capture = request.node.qt_log_capture
             context = log_capture._Context(None, None, 0, None)
-            log_capture._handle_with_context(qt_api.QtWarningMsg,
+            log_capture._handle_with_context(qt_api.QtCore.QtMsgType.QtWarningMsg,
                                              context, "WARNING message")
             assert 0
         """

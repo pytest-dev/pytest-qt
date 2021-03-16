@@ -7,7 +7,7 @@ pytestmark = pytest.mark.usefixtures("qtbot")
 
 
 class BasicModel(qt_api.QtCore.QAbstractItemModel):
-    def data(self, index, role=qt_api.QtCore.Qt.DisplayRole):
+    def data(self, index, role=qt_api.QtCore.Qt.ItemDataRole.DisplayRole):
         return None
 
     def rowCount(self, parent=qt_api.QtCore.QModelIndex()):
@@ -57,15 +57,15 @@ def test_sort_filter_proxy_model(qtmodeltester):
 @pytest.mark.parametrize(
     "broken_role",
     [
-        qt_api.QtCore.Qt.ToolTipRole,
-        qt_api.QtCore.Qt.StatusTipRole,
-        qt_api.QtCore.Qt.WhatsThisRole,
-        qt_api.QtCore.Qt.SizeHintRole,
-        qt_api.QtCore.Qt.FontRole,
-        qt_api.QtCore.Qt.BackgroundRole,
-        qt_api.QtCore.Qt.ForegroundRole,
-        qt_api.QtCore.Qt.TextAlignmentRole,
-        qt_api.QtCore.Qt.CheckStateRole,
+        qt_api.QtCore.Qt.ItemDataRole.ToolTipRole,
+        qt_api.QtCore.Qt.ItemDataRole.StatusTipRole,
+        qt_api.QtCore.Qt.ItemDataRole.WhatsThisRole,
+        qt_api.QtCore.Qt.ItemDataRole.SizeHintRole,
+        qt_api.QtCore.Qt.ItemDataRole.FontRole,
+        qt_api.QtCore.Qt.ItemDataRole.BackgroundRole,
+        qt_api.QtCore.Qt.ItemDataRole.ForegroundRole,
+        qt_api.QtCore.Qt.ItemDataRole.TextAlignmentRole,
+        qt_api.QtCore.Qt.ItemDataRole.CheckStateRole,
     ],
 )
 def test_broken_types(check_model, broken_role):
@@ -82,7 +82,9 @@ def test_broken_types(check_model, broken_role):
                 return 0
 
         def data(
-            self, index=qt_api.QtCore.QModelIndex(), role=qt_api.QtCore.Qt.DisplayRole
+            self,
+            index=qt_api.QtCore.QModelIndex(),
+            role=qt_api.QtCore.Qt.ItemDataRole.DisplayRole,
         ):
             if role == broken_role:
                 return object()  # This will fail the type check for any role
@@ -95,8 +97,8 @@ def test_broken_types(check_model, broken_role):
 @pytest.mark.parametrize(
     "role_value, should_pass",
     [
-        (qt_api.QtCore.Qt.AlignLeft, True),
-        (qt_api.QtCore.Qt.AlignRight, True),
+        (qt_api.AlignmentFlag.AlignLeft, True),
+        (qt_api.AlignmentFlag.AlignRight, True),
         (0xFFFFFF, False),
         ("foo", False),
         (object(), False),
@@ -112,11 +114,13 @@ def test_data_alignment(role_value, should_pass, check_model):
             return 1 if parent == qt_api.QtCore.QModelIndex() else 0
 
         def data(
-            self, index=qt_api.QtCore.QModelIndex(), role=qt_api.QtCore.Qt.DisplayRole
+            self,
+            index=qt_api.QtCore.QModelIndex(),
+            role=qt_api.QtCore.Qt.ItemDataRole.DisplayRole,
         ):
-            if role == qt_api.QtCore.Qt.TextAlignmentRole:
+            if role == qt_api.QtCore.Qt.ItemDataRole.TextAlignmentRole:
                 return role_value
-            elif role == qt_api.QtCore.Qt.DisplayRole:
+            elif role == qt_api.QtCore.Qt.ItemDataRole.DisplayRole:
                 if index == self.index(0, 0):
                     return "Hello"
             return None
@@ -131,16 +135,23 @@ def test_header_handling(check_model):
 
         def set_header_text(self, header):
             self._header_text = header
-            self.headerDataChanged.emit(qt_api.QtCore.Qt.Vertical, 0, 0)
-            self.headerDataChanged.emit(qt_api.QtCore.Qt.Horizontal, 0, 0)
+            self.headerDataChanged.emit(qt_api.Orientation.Vertical, 0, 0)
+            self.headerDataChanged.emit(qt_api.Orientation.Horizontal, 0, 0)
 
-        def headerData(self, section, orientation, role=qt_api.QtCore.Qt.DisplayRole):
+        def headerData(
+            self, section, orientation, role=qt_api.QtCore.Qt.ItemDataRole.DisplayRole
+        ):
             return self._header_text
 
         def data(
-            self, index=qt_api.QtCore.QModelIndex(), role=qt_api.QtCore.Qt.DisplayRole
+            self,
+            index=qt_api.QtCore.QModelIndex(),
+            role=qt_api.QtCore.Qt.ItemDataRole.DisplayRole,
         ):
-            if role == qt_api.QtCore.Qt.DisplayRole and index == self.index(0, 0):
+            if (
+                role == qt_api.QtCore.Qt.ItemDataRole.DisplayRole
+                and index == self.index(0, 0)
+            ):
                 return "Contents"
             return None
 
@@ -205,7 +216,8 @@ def test_changing_model_data(qtmodeltester):
 
 
 @pytest.mark.parametrize(
-    "orientation", [qt_api.QtCore.Qt.Horizontal, qt_api.QtCore.Qt.Vertical]
+    "orientation",
+    [qt_api.Orientation.Horizontal, qt_api.Orientation.Vertical],
 )
 def test_changing_model_header_data(qtmodeltester, orientation):
     model = qt_api.QStandardItemModel()
@@ -322,7 +334,7 @@ def test_qt_tester_invalid(testdir):
 
 
         class Model(qt_api.QtCore.QAbstractItemModel):
-            def data(self, index, role=qt_api.QtCore.Qt.DisplayRole):
+            def data(self, index, role=qt_api.QtCore.Qt.ItemDataRole.DisplayRole):
                 return None
 
             def rowCount(self, parent=qt_api.QtCore.QModelIndex()):

@@ -113,15 +113,15 @@ class QtBot:
         :param Qt.MouseButton button: flags OR'ed together representing the button pressed.
             Possible flags are:
 
-            * ``Qt.NoButton``: The button state does not refer to any button
+            * ``Qt.MouseButton.NoButton``: The button state does not refer to any button
               (see QMouseEvent.button()).
-            * ``Qt.LeftButton``: The left button is pressed, or an event refers to the left button.
+            * ``Qt.MouseButton.LeftButton``: The left button is pressed, or an event refers to the left button.
               (The left button may be the right button on left-handed mice.)
-            * ``Qt.RightButton``: The right button.
-            * ``Qt.MidButton``: The middle button.
-            * ``Qt.MiddleButton``: The middle button.
-            * ``Qt.XButton1``: The first X button.
-            * ``Qt.XButton2``: The second X button.
+            * ``Qt.MouseButton.RightButton``: The right button.
+            * ``Qt.MouseButton.MidButton``: The middle button.
+            * ``Qt.MouseButton.MiddleButton``: The middle button.
+            * ``Qt.MouseButton.XButton1``: The first X button.
+            * ``Qt.MouseButton.XButton2``: The second X button.
 
         :param Qt.KeyboardModifier modifier: flags OR'ed together representing other modifier keys
             also pressed. See `keyboard modifiers`_.

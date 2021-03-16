@@ -48,21 +48,21 @@ def test_key_events(qtbot, event_recorder):
     """
 
     def extract(key_event):
-        return (key_event.type(), key_event.key(), key_event.text())
+        return (key_event.type(), qt_api.Qt.Key(key_event.key()), key_event.text())
 
     event_recorder.registerEvent(qt_api.QtGui.QKeyEvent, extract)
 
     qtbot.keyPress(event_recorder, "a")
     assert event_recorder.event_data == (
-        qt_api.QEvent.KeyPress,
-        int(qt_api.Qt.Key_A),
+        qt_api.QEvent.Type.KeyPress,
+        qt_api.Qt.Key.Key_A,
         "a",
     )
 
     qtbot.keyRelease(event_recorder, "a")
     assert event_recorder.event_data == (
-        qt_api.QEvent.KeyRelease,
-        int(qt_api.Qt.Key_A),
+        qt_api.QEvent.Type.KeyRelease,
+        qt_api.Qt.Key.Key_A,
         "a",
     )
 
@@ -77,18 +77,22 @@ def test_mouse_events(qtbot, event_recorder):
 
     event_recorder.registerEvent(qt_api.QtGui.QMouseEvent, extract)
 
-    qtbot.mousePress(event_recorder, qt_api.Qt.LeftButton)
+    qtbot.mousePress(event_recorder, qt_api.MouseButton.LeftButton)
     assert event_recorder.event_data == (
-        qt_api.QEvent.MouseButtonPress,
-        qt_api.Qt.LeftButton,
-        qt_api.Qt.NoModifier,
+        qt_api.QEvent.Type.MouseButtonPress,
+        qt_api.MouseButton.LeftButton,
+        qt_api.KeyboardModifier.NoModifier,
     )
 
-    qtbot.mousePress(event_recorder, qt_api.Qt.RightButton, qt_api.Qt.AltModifier)
+    qtbot.mousePress(
+        event_recorder,
+        qt_api.MouseButton.RightButton,
+        qt_api.KeyboardModifier.AltModifier,
+    )
     assert event_recorder.event_data == (
-        qt_api.QEvent.MouseButtonPress,
-        qt_api.Qt.RightButton,
-        qt_api.Qt.AltModifier,
+        qt_api.QEvent.Type.MouseButtonPress,
+        qt_api.MouseButton.RightButton,
+        qt_api.KeyboardModifier.AltModifier,
     )
 
 
@@ -157,6 +161,7 @@ def test_widget_kept_as_weakref(qtbot):
     assert widget() is None
 
 
+@pytest.mark.skipif(qt_api.pytest_qt_api == "pyqt6", reason="FIXME segfaults")
 def test_event_processing_before_and_after_teardown(testdir):
     """
     Make sure events are processed before and after fixtures are torn down.
@@ -182,10 +187,10 @@ def test_event_processing_before_and_after_teardown(testdir):
                     self.events = []
 
                 def pop_later(self):
-                    qapp.postEvent(self, qt_api.QEvent(qt_api.QEvent.User))
+                    qapp.postEvent(self, qt_api.QEvent(qt_api.QEvent.Type.User))
 
                 def event(self, ev):
-                    if ev.type() == qt_api.QEvent.User:
+                    if ev.type() == qt_api.QEvent.Type.User:
                         self.events.pop(-1)
                     return qt_api.QtCore.QObject.event(self, ev)
 
@@ -250,7 +255,7 @@ def test_public_api_backward_compatibility():
 def test_qvariant(tmpdir):
     """Test that QVariant works in the same way across all supported Qt bindings."""
     settings = qt_api.QtCore.QSettings(
-        str(tmpdir / "foo.ini"), qt_api.QtCore.QSettings.IniFormat
+        str(tmpdir / "foo.ini"), qt_api.QtCore.QSettings.Format.IniFormat
     )
     settings.setValue("int", 42)
     settings.setValue("str", "Hello")
@@ -358,7 +363,7 @@ def test_parse_ini_boolean_invalid():
         pytestqt.qtbot._parse_ini_boolean("foo")
 
 
-@pytest.mark.parametrize("option_api", ["pyqt5", "pyside2", "pyside6"])
+@pytest.mark.parametrize("option_api", ["pyqt5", "pyqt6", "pyside2", "pyside6"])
 def test_qt_api_ini_config(testdir, monkeypatch, option_api):
     """
     Test qt_api ini option handling.
@@ -399,7 +404,7 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
             result.stderr.fnmatch_lines(["*ModuleNotFoundError:*"])
 
 
-@pytest.mark.parametrize("envvar", ["pyqt5", "pyside2", "pyside6"])
+@pytest.mark.parametrize("envvar", ["pyqt5", "pyqt6", "pyside2", "pyside6"])
 def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
     """ensure environment variable wins over config value if both are present"""
     testdir.makeini(
@@ -484,8 +489,9 @@ def test_importerror(monkeypatch):
     monkeypatch.setattr(qt_compat, "_import", _fake_import)
 
     expected = (
-        "pytest-qt requires either PySide2, PySide6 or PyQt5 installed.\n"
+        "pytest-qt requires either PySide2, PySide6, PyQt5 or PyQt6 installed.\n"
         "  PyQt5.QtCore: Failed to import PyQt5.QtCore\n"
+        "  PyQt6.QtCore: Failed to import PyQt6.QtCore\n"
         "  PySide2.QtCore: Failed to import PySide2.QtCore\n"
         "  PySide6.QtCore: Failed to import PySide6.QtCore"
     )
