@@ -623,7 +623,7 @@ class QtBot:
 
     @staticmethod
     def keyToAscii(key):
-        if qt_api.pytest_qt_api == "pyqt5":
+        if not hasattr(qt_api.QtTest.QTest, "keyToAscii"):
             raise NotImplementedError("This method isn't available on PyQt5.")
         qt_api.QtTest.QTest.keyToAscii(key)
 
