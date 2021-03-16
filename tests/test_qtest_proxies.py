@@ -30,7 +30,7 @@ def test_expected_qtest_proxies(qtbot, expected_method):
     assert getattr(qtbot, expected_method).__name__ == expected_method
 
 
-@pytest.mark.skipif(qt_api.pytest_qt_api == "pyside2", reason="PyQt test only")
+@pytest.mark.skipif(qt_api.is_pyside, reason="PyQt test only")
 def test_keyToAscii_not_available_on_pyqt(testdir):
     """
     Test that qtbot.keyToAscii() is not available on PyQt5 and
