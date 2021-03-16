@@ -376,10 +376,6 @@ def test_wait_signals_invalid_strict_parameter(qtbot, signaller):
 
 def test_destroyed(qtbot):
     """Test that waitSignal works with the destroyed signal (#82)."""
-    if qt_api.is_pyside:
-        pytest.skip("test depends on sip")
-
-    import sip
 
     class Obj(qt_api.QtCore.QObject):
         pass
@@ -388,7 +384,7 @@ def test_destroyed(qtbot):
     with qtbot.waitSignal(obj.destroyed):
         obj.deleteLater()
 
-    assert sip.isdeleted(obj)
+    assert qt_api.isdeleted(obj)
 
 
 class TestArgs:

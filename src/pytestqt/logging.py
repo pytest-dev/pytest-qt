@@ -247,13 +247,12 @@ class Record:
         """
         if not getattr(cls, "_type_name_map", None):
             cls._type_name_map = {
-                qt_api.QtDebugMsg: "QtDebugMsg",
-                qt_api.QtWarningMsg: "QtWarningMsg",
-                qt_api.QtCriticalMsg: "QtCriticalMsg",
-                qt_api.QtFatalMsg: "QtFatalMsg",
+                qt_api.QtCore.QtMsgType.QtDebugMsg: "QtDebugMsg",
+                qt_api.QtCore.QtMsgType.QtWarningMsg: "QtWarningMsg",
+                qt_api.QtCore.QtMsgType.QtCriticalMsg: "QtCriticalMsg",
+                qt_api.QtCore.QtMsgType.QtFatalMsg: "QtFatalMsg",
+                qt_api.QtCore.QtMsgType.QtInfoMsg: "QtInfoMsg",
             }
-            if qt_api.QtInfoMsg is not None:
-                cls._type_name_map[qt_api.QtInfoMsg] = "QtInfoMsg"
         return cls._type_name_map[msg_type]
 
     @classmethod
@@ -264,13 +263,12 @@ class Record:
         """
         if not getattr(cls, "_log_type_name_map", None):
             cls._log_type_name_map = {
-                qt_api.QtDebugMsg: "DEBUG",
-                qt_api.QtWarningMsg: "WARNING",
-                qt_api.QtCriticalMsg: "CRITICAL",
-                qt_api.QtFatalMsg: "FATAL",
+                qt_api.QtCore.QtMsgType.QtDebugMsg: "DEBUG",
+                qt_api.QtCore.QtMsgType.QtWarningMsg: "WARNING",
+                qt_api.QtCore.QtMsgType.QtCriticalMsg: "CRITICAL",
+                qt_api.QtCore.QtMsgType.QtFatalMsg: "FATAL",
+                qt_api.QtCore.QtMsgType.QtInfoMsg: "INFO",
             }
-            if qt_api.QtInfoMsg is not None:
-                cls._log_type_name_map[qt_api.QtInfoMsg] = "INFO"
         return cls._log_type_name_map[msg_type]
 
     def matches_level(self, level):

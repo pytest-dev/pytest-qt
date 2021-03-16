@@ -74,7 +74,7 @@ class ModelTester:
         elif not index.isValid():
             return "<invalid> (0x{:x})".format(id(index))
         else:
-            data = self._model.data(index, qt_api.QtCore.Qt.DisplayRole)
+            data = self._model.data(index, qt_api.QtCore.Qt.ItemDataRole.DisplayRole)
             return "{}/{} {!r} (0x{:x})".format(
                 index.row(),
                 index.column(),
@@ -196,7 +196,7 @@ class ModelTester:
         assert self._column_count(qt_api.QtCore.QModelIndex()) >= 0
         self._fetch_more(qt_api.QtCore.QModelIndex())
         flags = self._model.flags(qt_api.QtCore.QModelIndex())
-        assert flags == qt_api.QtCore.Qt.ItemIsDropEnabled or not flags
+        assert flags == qt_api.ItemFlag.ItemIsDropEnabled or not flags
         self._has_children(qt_api.QtCore.QModelIndex())
 
         has_row = self._model.hasIndex(0, 0)
@@ -454,22 +454,22 @@ class ModelTester:
         assert self._model.index(0, 0).isValid()
 
         types = [
-            (qt_api.QtCore.Qt.DisplayRole, (str,)),
-            (qt_api.QtCore.Qt.ToolTipRole, (str,)),
-            (qt_api.QtCore.Qt.StatusTipRole, (str,)),
-            (qt_api.QtCore.Qt.WhatsThisRole, (str,)),
-            (qt_api.QtCore.Qt.SizeHintRole, qt_api.QtCore.QSize),
-            (qt_api.QtCore.Qt.FontRole, qt_api.QtGui.QFont),
+            (qt_api.QtCore.Qt.ItemDataRole.DisplayRole, (str,)),
+            (qt_api.QtCore.Qt.ItemDataRole.ToolTipRole, (str,)),
+            (qt_api.QtCore.Qt.ItemDataRole.StatusTipRole, (str,)),
+            (qt_api.QtCore.Qt.ItemDataRole.WhatsThisRole, (str,)),
+            (qt_api.QtCore.Qt.ItemDataRole.SizeHintRole, qt_api.QtCore.QSize),
+            (qt_api.QtCore.Qt.ItemDataRole.FontRole, qt_api.QtGui.QFont),
             (
-                qt_api.QtCore.Qt.BackgroundRole,
+                qt_api.QtCore.Qt.ItemDataRole.BackgroundRole,
                 (qt_api.QtGui.QColor, qt_api.QtGui.QBrush),
             ),
             (
-                qt_api.QtCore.Qt.ForegroundRole,
+                qt_api.QtCore.Qt.ItemDataRole.ForegroundRole,
                 (qt_api.QtGui.QColor, qt_api.QtGui.QBrush),
             ),
             (
-                qt_api.QtCore.Qt.DecorationRole,
+                qt_api.QtCore.Qt.ItemDataRole.DecorationRole,
                 (
                     qt_api.QtGui.QPixmap,
                     qt_api.QtGui.QImage,
@@ -487,7 +487,7 @@ class ModelTester:
 
         # Check that the alignment is one we know about
         alignment = self._model.data(
-            self._model.index(0, 0), qt_api.QtCore.Qt.TextAlignmentRole
+            self._model.index(0, 0), qt_api.QtCore.Qt.ItemDataRole.TextAlignmentRole
         )
         if alignment is not None:
             try:
@@ -495,20 +495,20 @@ class ModelTester:
             except (TypeError, ValueError):
                 assert 0, "%r should be a TextAlignmentRole enum" % alignment
             mask = int(
-                qt_api.QtCore.Qt.AlignHorizontal_Mask
-                | qt_api.QtCore.Qt.AlignVertical_Mask
+                qt_api.AlignmentFlag.AlignHorizontal_Mask
+                | qt_api.AlignmentFlag.AlignVertical_Mask
             )
             assert alignment == alignment & mask
 
         # Check that the "check state" is one we know about.
         state = self._model.data(
-            self._model.index(0, 0), qt_api.QtCore.Qt.CheckStateRole
+            self._model.index(0, 0), qt_api.QtCore.Qt.ItemDataRole.CheckStateRole
         )
         assert state in [
             None,
-            qt_api.QtCore.Qt.Unchecked,
-            qt_api.QtCore.Qt.PartiallyChecked,
-            qt_api.QtCore.Qt.Checked,
+            qt_api.QtCore.Qt.CheckState.Unchecked,
+            qt_api.QtCore.Qt.CheckState.PartiallyChecked,
+            qt_api.QtCore.Qt.CheckState.Checked,
         ]
 
     def _on_rows_about_to_be_inserted(self, parent, start, end):
@@ -696,11 +696,14 @@ class ModelTester:
         assert bottom_right.column() < column_count
 
     def _on_header_data_changed(self, orientation, start, end):
-        assert orientation in [qt_api.QtCore.Qt.Horizontal, qt_api.QtCore.Qt.Vertical]
+        assert orientation in [
+            qt_api.Orientation.Horizontal,
+            qt_api.Orientation.Vertical,
+        ]
         assert start >= 0
         assert end >= 0
         assert start <= end
-        if orientation == qt_api.QtCore.Qt.Vertical:
+        if orientation == qt_api.Orientation.Vertical:
             item_count = self._model.rowCount()
         else:
             item_count = self._column_count()
