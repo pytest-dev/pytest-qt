@@ -2,6 +2,7 @@
 ------------------
 
 - `PySide6 <https://pypi.org/project/PySide6>`__ is now supported. Thanks `@jensheilman`_ for the PR.
+- Support for Qt4 (i.e. ``PyQt4`` and ``PySide``) is now dropped.
 - ``pytest-qt`` now requires Python 3.6+.
 - ``waitUntil`` now raises a ``TimeoutError`` when a timeout occurs to make the cause of the timeout more explict (`#222`_). Thanks `@karlch`_ for the PR.
 - The ``QtTest::keySequence`` method is now exposed (if available, with Qt >= 5.10).
