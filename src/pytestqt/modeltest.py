@@ -196,7 +196,7 @@ class ModelTester:
         assert self._column_count(qt_api.QtCore.QModelIndex()) >= 0
         self._fetch_more(qt_api.QtCore.QModelIndex())
         flags = self._model.flags(qt_api.QtCore.QModelIndex())
-        assert flags == qt_api.ItemFlag.ItemIsDropEnabled or not flags
+        assert flags == qt_api.QtCore.Qt.ItemFlag.ItemIsDropEnabled or not flags
         self._has_children(qt_api.QtCore.QModelIndex())
 
         has_row = self._model.hasIndex(0, 0)
@@ -495,8 +495,8 @@ class ModelTester:
             except (TypeError, ValueError):
                 assert 0, "%r should be a TextAlignmentRole enum" % alignment
             mask = int(
-                qt_api.AlignmentFlag.AlignHorizontal_Mask
-                | qt_api.AlignmentFlag.AlignVertical_Mask
+                qt_api.QtCore.Qt.AlignmentFlag.AlignHorizontal_Mask
+                | qt_api.QtCore.Qt.AlignmentFlag.AlignVertical_Mask
             )
             assert alignment == alignment & mask
 
@@ -697,13 +697,13 @@ class ModelTester:
 
     def _on_header_data_changed(self, orientation, start, end):
         assert orientation in [
-            qt_api.Orientation.Horizontal,
-            qt_api.Orientation.Vertical,
+            qt_api.QtCore.Qt.Orientation.Horizontal,
+            qt_api.QtCore.Qt.Orientation.Vertical,
         ]
         assert start >= 0
         assert end >= 0
         assert start <= end
-        if orientation == qt_api.Orientation.Vertical:
+        if orientation == qt_api.QtCore.Qt.Orientation.Vertical:
             item_count = self._model.rowCount()
         else:
             item_count = self._column_count()
