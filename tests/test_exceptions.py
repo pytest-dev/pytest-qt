@@ -3,7 +3,6 @@ import sys
 import pytest
 
 from pytestqt.exceptions import capture_exceptions, format_captured_exceptions
-from pytestqt.qt_compat import qt_api
 
 
 @pytest.mark.parametrize("raise_error", [False, True])
@@ -122,7 +121,7 @@ def test_no_capture(testdir, no_capture_by_marker):
         def test_widget(qtbot):
             w = MyWidget()
             qtbot.addWidget(w)
-            qtbot.mouseClick(w, qt_api.MouseButton.LeftButton)
+            qtbot.mouseClick(w, qt_api.QtCore.Qt.MouseButton.LeftButton)
     """.format(
             marker_code=marker_code
         )
@@ -162,7 +161,6 @@ def test_no_capture_preserves_custom_excepthook(testdir):
     res.stdout.fnmatch_lines(["*2 passed*"])
 
 
-@pytest.mark.skipif(qt_api.pytest_qt_api == "pyqt6", reason="FIXME aborts")
 def test_exception_capture_on_call(testdir):
     """
     Exceptions should also be captured during test execution.
@@ -222,7 +220,6 @@ def test_exception_capture_on_widget_close(testdir):
 
 
 @pytest.mark.parametrize("mode", ["setup", "teardown"])
-@pytest.mark.skipif(qt_api.pytest_qt_api == "pyqt6", reason="FIXME aborts")
 def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
     """
     Setup/teardown exception capturing as early/late as possible to catch
@@ -337,7 +334,6 @@ def test_capture_exceptions_qtbot_context_manager(testdir):
     result.stdout.fnmatch_lines(["*1 passed*"])
 
 
-@pytest.mark.skipif(qt_api.pytest_qt_api == "pyqt6", reason="FIXME aborts")
 def test_exceptions_to_stderr(qapp, capsys):
     """
     Exceptions should still be reported to stderr.
@@ -364,7 +360,6 @@ def test_exceptions_to_stderr(qapp, capsys):
     condition=sys.version_info[:2] == (3, 4),
     reason="failing in Python 3.4, which is about to be dropped soon anyway",
 )
-@pytest.mark.skipif(qt_api.pytest_qt_api == "pyqt6", reason="FIXME aborts")
 def test_exceptions_dont_leak(testdir):
     """
     Ensure exceptions are cleared when an exception occurs and don't leak (#187).

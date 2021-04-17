@@ -77,22 +77,22 @@ def test_mouse_events(qtbot, event_recorder):
 
     event_recorder.registerEvent(qt_api.QtGui.QMouseEvent, extract)
 
-    qtbot.mousePress(event_recorder, qt_api.MouseButton.LeftButton)
+    qtbot.mousePress(event_recorder, qt_api.QtCore.Qt.MouseButton.LeftButton)
     assert event_recorder.event_data == (
         qt_api.QEvent.Type.MouseButtonPress,
-        qt_api.MouseButton.LeftButton,
-        qt_api.KeyboardModifier.NoModifier,
+        qt_api.QtCore.Qt.MouseButton.LeftButton,
+        qt_api.QtCore.Qt.KeyboardModifier.NoModifier,
     )
 
     qtbot.mousePress(
         event_recorder,
-        qt_api.MouseButton.RightButton,
-        qt_api.KeyboardModifier.AltModifier,
+        qt_api.QtCore.Qt.MouseButton.RightButton,
+        qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
     )
     assert event_recorder.event_data == (
         qt_api.QEvent.Type.MouseButtonPress,
-        qt_api.MouseButton.RightButton,
-        qt_api.KeyboardModifier.AltModifier,
+        qt_api.QtCore.Qt.MouseButton.RightButton,
+        qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
     )
 
 
@@ -161,7 +161,6 @@ def test_widget_kept_as_weakref(qtbot):
     assert widget() is None
 
 
-@pytest.mark.skipif(qt_api.pytest_qt_api == "pyqt6", reason="FIXME segfaults")
 def test_event_processing_before_and_after_teardown(testdir):
     """
     Make sure events are processed before and after fixtures are torn down.

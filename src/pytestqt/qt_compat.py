@@ -84,6 +84,8 @@ class _QtApi:
             )
             raise RuntimeError(msg)
 
+        # FIXME check minimum supported versions?
+
         _root_modules = {
             "pyside6": "PySide6",
             "pyside2": "PySide2",
@@ -168,17 +170,7 @@ class _QtApi:
             assert self.is_pyqt
             self.isdeleted = _import_module("sip").isdeleted
 
-        # PyQt6 only allows flag access via the flag type (usually plural),
-        # while PyQt5/PySide2/PySide6 only allow such access via the enum type
-        # (usually singular):
-        # https://www.riverbankcomputing.com/pipermail/pyqt/2021-March/043709.html
         if self.pytest_qt_api == "pyqt6":
-            self.AlignmentFlag = self.Qt.Alignment
-            self.Orientation = self.Qt.Orientations
-            self.MouseButton = self.Qt.MouseButtons
-            self.KeyboardModifier = self.Qt.KeyboardModifiers
-            self.ItemFlag = self.Qt.ItemFlags
-
             # exec was a keyword in Python 2, PyQt6 dropped the .exec_ alias but
             # PySide2/PySide6 still name it "exec_" only.
             self.QtCore.QCoreApplication.exec_ = (
@@ -190,12 +182,6 @@ class _QtApi:
             _QtWidgets.QDialog.exec_ = lambda _self, *args, **kwargs: _self.exec(
                 *args, **kwargs
             )
-        else:
-            self.AlignmentFlag = self.Qt.AlignmentFlag
-            self.Orientation = self.Qt.Orientation
-            self.MouseButton = self.Qt.MouseButton
-            self.KeyboardModifier = self.Qt.KeyboardModifier
-            self.ItemFlag = self.Qt.ItemFlag
 
     def get_versions(self):
         if self.pytest_qt_api == "pyside6":

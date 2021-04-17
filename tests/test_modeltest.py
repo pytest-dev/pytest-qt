@@ -97,8 +97,8 @@ def test_broken_types(check_model, broken_role):
 @pytest.mark.parametrize(
     "role_value, should_pass",
     [
-        (qt_api.AlignmentFlag.AlignLeft, True),
-        (qt_api.AlignmentFlag.AlignRight, True),
+        (qt_api.QtCore.Qt.AlignmentFlag.AlignLeft, True),
+        (qt_api.QtCore.Qt.AlignmentFlag.AlignRight, True),
         (0xFFFFFF, False),
         ("foo", False),
         (object(), False),
@@ -135,8 +135,8 @@ def test_header_handling(check_model):
 
         def set_header_text(self, header):
             self._header_text = header
-            self.headerDataChanged.emit(qt_api.Orientation.Vertical, 0, 0)
-            self.headerDataChanged.emit(qt_api.Orientation.Horizontal, 0, 0)
+            self.headerDataChanged.emit(qt_api.QtCore.Qt.Orientation.Vertical, 0, 0)
+            self.headerDataChanged.emit(qt_api.QtCore.Qt.Orientation.Horizontal, 0, 0)
 
         def headerData(
             self, section, orientation, role=qt_api.QtCore.Qt.ItemDataRole.DisplayRole
@@ -217,7 +217,7 @@ def test_changing_model_data(qtmodeltester):
 
 @pytest.mark.parametrize(
     "orientation",
-    [qt_api.Orientation.Horizontal, qt_api.Orientation.Vertical],
+    [qt_api.QtCore.Qt.Orientation.Horizontal, qt_api.QtCore.Qt.Orientation.Vertical],
 )
 def test_changing_model_header_data(qtmodeltester, orientation):
     model = qt_api.QStandardItemModel()
