@@ -1,3 +1,4 @@
+import gc
 import warnings
 
 import pytest
@@ -42,7 +43,7 @@ def qapp_args():
     return []
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def qapp(qapp_args, pytestconfig):
     """
     Fixture that instantiates the QApplication instance that will be used by
@@ -57,9 +58,10 @@ def qapp(qapp_args, pytestconfig):
         _qapp_instance = qt_api.QApplication(qapp_args)
         name = pytestconfig.getini("qt_qapp_name")
         _qapp_instance.setApplicationName(name)
-        return _qapp_instance
+        yield _qapp_instance
     else:
-        return app  # pragma: no cover
+        yield app  # pragma: no cover
+    gc.collect()
 
 
 # holds a global QApplication instance created in the qapp fixture; keeping
