@@ -18,7 +18,9 @@
   implementations. This makes subclasses work as expected, instead of having to
   duplicate the assignment. Thanks `@oliveira-mauricio`_ for the PR.
 - The ``qt_api.extract_from_variant`` and ``qt_api.make_variant`` functions
-  (which were never intended for public usage) are now removed.
+  (which were never intended for public usage) as well as all class aliases
+  (such as ``qt_bot.QWidget`` or ``qt_bot.QEvent``, among others) are now
+  removed.
 - Errors related to the ``qt_compat`` module (such as an invalid
   ``PYTEST_QT_API`` setting or missing Qt API wrappers) are now shown as a more
   human-readable error message rather than an internal pytest error. Thanks

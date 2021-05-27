@@ -133,7 +133,9 @@ class _QtMessageCapture:
         """
         Start receiving messages from Qt.
         """
-        previous_handler = qt_api.qInstallMessageHandler(self._handle_with_context)
+        previous_handler = qt_api.QtCore.qInstallMessageHandler(
+            self._handle_with_context
+        )
         self._previous_handler = previous_handler
 
     def _stop(self):
@@ -141,7 +143,7 @@ class _QtMessageCapture:
         Stop receiving messages from Qt, restoring the previously installed
         handler.
         """
-        qt_api.qInstallMessageHandler(self._previous_handler)
+        qt_api.QtCore.qInstallMessageHandler(self._previous_handler)
 
     @contextmanager
     def disabled(self):

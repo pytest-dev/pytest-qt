@@ -715,7 +715,7 @@ class ModelTester:
         Workaround for the fact that ``columnCount`` is a private method in
         QAbstractListModel/QAbstractTableModel subclasses.
         """
-        if isinstance(self._model, qt_api.QAbstractListModel):
+        if isinstance(self._model, qt_api.QtCore.QAbstractListModel):
             return 1 if parent == qt_api.QtCore.QModelIndex() else 0
         else:
             return self._model.columnCount(parent)
@@ -724,7 +724,10 @@ class ModelTester:
         """
         .. see:: ``_column_count``
         """
-        model_types = (qt_api.QAbstractListModel, qt_api.QAbstractTableModel)
+        model_types = (
+            qt_api.QtCore.QAbstractListModel,
+            qt_api.QtCore.QAbstractTableModel,
+        )
         if isinstance(self._model, model_types):
             return qt_api.QtCore.QModelIndex()
         else:
@@ -734,7 +737,10 @@ class ModelTester:
         """
         .. see:: ``_column_count``
         """
-        model_types = (qt_api.QAbstractListModel, qt_api.QAbstractTableModel)
+        model_types = (
+            qt_api.QtCore.QAbstractListModel,
+            qt_api.QtCore.QAbstractTableModel,
+        )
         if isinstance(self._model, model_types):
             return parent == qt_api.QtCore.QModelIndex() and self._model.rowCount() > 0
         else:

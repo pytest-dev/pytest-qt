@@ -23,7 +23,7 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
 
         def print_msg(msg_type, context, message):
             sys.stderr.write(to_unicode(message) + '\\n')
-        qt_api.qInstallMessageHandler(print_msg)
+        qt_api.QtCore.qInstallMessageHandler(print_msg)
 
         def test_types():
             # qInfo is not exposed by the bindings yet (#225)

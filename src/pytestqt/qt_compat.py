@@ -101,10 +101,9 @@ class _QtApi:
             return getattr(m, module_name)
 
         self.QtCore = QtCore = _import_module("QtCore")
-        self.QtGui = QtGui = _import_module("QtGui")
+        self.QtGui = _import_module("QtGui")
         self.QtTest = _import_module("QtTest")
-        self.Qt = QtCore.Qt
-        self.QEvent = QtCore.QEvent
+        self.QtWidgets = _import_module("QtWidgets")
 
         self._check_qt_api_version()
 
@@ -121,44 +120,14 @@ class _QtApi:
         self.qCritical = QtCore.qCritical
         self.qFatal = QtCore.qFatal
 
-        _QtWidgets = _import_module("QtWidgets")
-
         if self.is_pyside:
             self.Signal = QtCore.Signal
             self.Slot = QtCore.Slot
             self.Property = QtCore.Property
-            if hasattr(QtGui, "QStringListModel"):
-                self.QStringListModel = QtGui.QStringListModel
-            else:
-                self.QStringListModel = QtCore.QStringListModel
-
-            self.QStandardItem = QtGui.QStandardItem
-            self.QStandardItemModel = QtGui.QStandardItemModel
-            self.QAbstractListModel = QtCore.QAbstractListModel
-            self.QAbstractTableModel = QtCore.QAbstractTableModel
-
-            self.QApplication = _QtWidgets.QApplication
-            self.QWidget = _QtWidgets.QWidget
-            self.QLineEdit = _QtWidgets.QLineEdit
-            self.qInstallMessageHandler = QtCore.qInstallMessageHandler
-
-            self.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
         elif self.is_pyqt:
             self.Signal = QtCore.pyqtSignal
             self.Slot = QtCore.pyqtSlot
             self.Property = QtCore.pyqtProperty
-
-            self.QApplication = _QtWidgets.QApplication
-            self.QWidget = _QtWidgets.QWidget
-            self.qInstallMessageHandler = QtCore.qInstallMessageHandler
-
-            self.QStringListModel = QtCore.QStringListModel
-            self.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
-
-            self.QStandardItem = QtGui.QStandardItem
-            self.QStandardItemModel = QtGui.QStandardItemModel
-            self.QAbstractListModel = QtCore.QAbstractListModel
-            self.QAbstractTableModel = QtCore.QAbstractTableModel
         else:
             assert False, "Expected either is_pyqt or is_pyside"
 

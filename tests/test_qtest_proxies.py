@@ -42,10 +42,10 @@ def test_keyToAscii_not_available_on_pyqt(testdir):
         from pytestqt.qt_compat import qt_api
 
         def test_foo(qtbot):
-            widget = qt_api.QWidget()
+            widget = qt_api.QtWidgets.QWidget()
             qtbot.add_widget(widget)
             with pytest.raises(NotImplementedError):
-                qtbot.keyToAscii(qt_api.Qt.Key.Key_Escape)
+                qtbot.keyToAscii(qt_api.QtCore.Qt.Key.Key_Escape)
         """
     )
     result = testdir.runpytest()

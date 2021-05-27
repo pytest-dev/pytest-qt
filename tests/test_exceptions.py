@@ -31,7 +31,7 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
 
         def test_exceptions(qtbot):
             v = Receiver()
-            app = qt_api.QApplication.instance()
+            app = qt_api.QtWidgets.QApplication.instance()
             app.sendEvent(v, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.Type.User))
             app.sendEvent(v, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.Type.User))
             app.processEvents()
@@ -106,13 +106,11 @@ def test_no_capture(testdir, no_capture_by_marker):
         import pytest
         import sys
         from pytestqt.qt_compat import qt_api
-        QWidget = qt_api.QWidget
-        QtCore = qt_api.QtCore
 
         # PyQt 5.5+ will crash if there's no custom exception handler installed
         sys.excepthook = lambda *args: None
 
-        class MyWidget(QWidget):
+        class MyWidget(qt_api.QtWidgets.QWidget):
 
             def mouseReleaseEvent(self, ev):
                 raise RuntimeError
@@ -141,8 +139,6 @@ def test_no_capture_preserves_custom_excepthook(testdir):
         import pytest
         import sys
         from pytestqt.qt_compat import qt_api
-        QWidget = qt_api.QWidget
-        QtCore = qt_api.QtCore
 
         def custom_excepthook(*args):
             sys.__excepthook__(*args)
@@ -171,18 +167,15 @@ def test_exception_capture_on_call(testdir):
         """
         import pytest
         from pytestqt.qt_compat import qt_api
-        QWidget = qt_api.QWidget
-        QtCore = qt_api.QtCore
-        QEvent = qt_api.QtCore.QEvent
 
-        class MyWidget(QWidget):
+        class MyWidget(qt_api.QtWidgets.QWidget):
 
             def event(self, ev):
                 raise RuntimeError('event processed')
 
         def test_widget(qtbot, qapp):
             w = MyWidget()
-            qapp.postEvent(w, QEvent(QEvent.Type.User))
+            qapp.postEvent(w, qt_api.QtCore.QEvent(QEvent.Type.User))
             qapp.processEvents()
     """
     )
@@ -200,11 +193,8 @@ def test_exception_capture_on_widget_close(testdir):
         """
         import pytest
         from pytestqt.qt_compat import qt_api
-        QWidget = qt_api.QWidget
-        QtCore = qt_api.QtCore
-        QEvent = qt_api.QtCore.QEvent
 
-        class MyWidget(QWidget):
+        class MyWidget(qt_api.QtWidgets.QWidget):
 
             def closeEvent(self, ev):
                 raise RuntimeError('close error')
@@ -238,15 +228,11 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
         """
         import pytest
         from pytestqt.qt_compat import qt_api
-        QWidget = qt_api.QWidget
-        QtCore = qt_api.QtCore
-        QEvent = qt_api.QtCore.QEvent
-        QApplication = qt_api.QApplication
 
-        class MyWidget(QWidget):
+        class MyWidget(qt_api.QtWidgets.QWidget):
 
             def event(self, ev):
-                if ev.type() == QEvent.Type.User:
+                if ev.type() == qt_api.QtCore.QEvent.Type.User:
                     raise RuntimeError('event processed')
                 return True
 
@@ -258,7 +244,8 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
             {teardown_code}
 
         def send_event(w, qapp):
-            qapp.postEvent(w, QEvent(QEvent.Type.User))
+            qapp.postEvent(w, qt_api.QtCore.QEvent(
+                qt_api.QtCore.QEvent.Type.User))
             qapp.processEvents()
 
         def test_capture(widget):
@@ -307,12 +294,10 @@ def test_capture_exceptions_qtbot_context_manager(testdir):
         """
         import pytest
         from pytestqt.qt_compat import qt_api
-        QWidget = qt_api.QWidget
-        Signal = qt_api.Signal
 
-        class MyWidget(QWidget):
+        class MyWidget(qt_api.QtWidgets.QWidget):
 
-            on_event = Signal()
+            on_event = qt_api.Signal()
 
         def test_widget(qtbot):
             widget = MyWidget()
@@ -341,14 +326,14 @@ def test_exceptions_to_stderr(qapp, capsys):
     called = []
     from pytestqt.qt_compat import qt_api
 
-    class MyWidget(qt_api.QWidget):
+    class MyWidget(qt_api.QtWidgets.QWidget):
         def event(self, ev):
             called.append(1)
             raise RuntimeError("event processed")
 
     w = MyWidget()
     with capture_exceptions() as exceptions:
-        qapp.postEvent(w, qt_api.QEvent(qt_api.QEvent.Type.User))
+        qapp.postEvent(w, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.Type.User))
         qapp.processEvents()
     assert called
     del exceptions[:]
@@ -370,7 +355,7 @@ def test_exceptions_dont_leak(testdir):
         import gc
         import weakref
 
-        class MyWidget(qt_api.QWidget):
+        class MyWidget(qt_api.QtWidgets.QWidget):
 
             def event(self, ev):
                 called.append(1)
@@ -383,7 +368,7 @@ def test_exceptions_dont_leak(testdir):
             global weak_ref
             w = MyWidget()
             weak_ref = weakref.ref(w)
-            qapp.postEvent(w, qt_api.QEvent(qt_api.QEvent.Type.User))
+            qapp.postEvent(w, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.Type.User))
             qapp.processEvents()
 
         def test_2(qapp):
