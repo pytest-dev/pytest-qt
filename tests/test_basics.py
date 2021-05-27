@@ -454,7 +454,7 @@ def test_invalid_qt_api_envvar(testdir, monkeypatch):
     )
     monkeypatch.setenv("PYTEST_QT_API", "piecute")
     result = testdir.runpytest_subprocess()
-    result.stderr.fnmatch_lines(["* Invalid value for $PYTEST_QT_API: piecute"])
+    result.stderr.fnmatch_lines(["* Invalid value for $PYTEST_QT_API: piecute, expected one of *"])
 
 
 def test_qapp_args(testdir):
@@ -495,7 +495,7 @@ def test_importerror(monkeypatch):
         "  PySide6.QtCore: Failed to import PySide6.QtCore"
     )
 
-    with pytest.raises(RuntimeError, match=expected):
+    with pytest.raises(pytest.UsageError, match=expected):
         qt_api.set_qt_api(api=None)
 
 
