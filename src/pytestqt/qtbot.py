@@ -226,7 +226,7 @@ class QtBot:
             "qWaitForWindowExposed", "exposed", widget, timeout
         )
 
-    def waitForWindowShown(self, widget):
+    def waitForWindowShown(self, widget, timeout=5000):
         """
         Waits until the window is shown in the screen. This is mainly useful for asynchronous
         systems like X11, where a window will be mapped to screen some time after being asked to
@@ -235,14 +235,17 @@ class QtBot:
         :param QWidget widget:
             Widget to wait on.
 
+        :param int|None timeout:
+            How many milliseconds to wait for.
+
         .. note:: In ``PyQt5`` this function is considered deprecated in favor of :meth:`waitExposed`.
 
         .. note:: This method is also available as ``wait_for_window_shown`` (pep-8 alias)
         """
         if hasattr(qt_api.QtTest.QTest, "qWaitForWindowExposed"):
-            return qt_api.QtTest.QTest.qWaitForWindowExposed(widget)
+            return qt_api.QtTest.QTest.qWaitForWindowExposed(widget, timeout)
         else:
-            return qt_api.QtTest.QTest.qWaitForWindowShown(widget)
+            return qt_api.QtTest.QTest.qWaitForWindowShown(widget, timeout)
 
     def stop(self):
         """
