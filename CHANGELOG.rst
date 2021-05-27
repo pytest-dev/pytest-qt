@@ -47,6 +47,8 @@
   with the existing ``waitActive`` and ``waitExposed`` timeouts, as well as the
   default timeout used by Qt's ``QSignalSpy::wait``. To get the old behavior
   back, explicitly pass ``timeout=1000`` to those functions.
+- The ``qtbot.waitForWindowShown`` now supports a ``timeout`` argument which is
+  passed through to Qt.
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
 .. _#326: https://github.com/pytest-dev/pytest-qt/pull/326
