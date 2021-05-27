@@ -23,6 +23,8 @@
   ``PYTEST_QT_API`` setting or missing Qt API wrappers) are now shown as a more
   human-readable error message rather than an internal pytest error. Thanks
   `@The-Compiler`_ for the PR.
+- The old ``qtbot.stopForInteraction()`` name is now removed as it was
+  cumbersome and rarely used. Use ``qtbot.stop()`` (added in 1.1.1) instead.
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
 .. _#326: https://github.com/pytest-dev/pytest-qt/pull/326
