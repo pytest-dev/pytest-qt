@@ -17,7 +17,7 @@ class _AbstractSignalBlocker:
 
     """
 
-    def __init__(self, timeout=1000, raising=True):
+    def __init__(self, timeout=5000, raising=True):
         self._loop = qt_api.QtCore.QEventLoop()
         self.timeout = timeout
         self.signal_triggered = False
@@ -181,7 +181,7 @@ class SignalBlocker(_AbstractSignalBlocker):
     .. automethod:: connect
     """
 
-    def __init__(self, timeout=1000, raising=True, check_params_cb=None):
+    def __init__(self, timeout=5000, raising=True, check_params_cb=None):
         super().__init__(timeout, raising=raising)
         self._signals = []
         self.args = None
@@ -304,7 +304,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
     .. automethod:: wait
     """
 
-    def __init__(self, timeout=1000, raising=True, check_params_cbs=None, order="none"):
+    def __init__(self, timeout=5000, raising=True, check_params_cbs=None, order="none"):
         super().__init__(timeout, raising=raising)
         self._order = order
         self._check_params_callbacks = check_params_cbs
@@ -641,7 +641,7 @@ class CallbackBlocker:
         the callback wasn't called at all.
     """
 
-    def __init__(self, timeout=1000, raising=True):
+    def __init__(self, timeout=5000, raising=True):
         self.timeout = timeout
         self.raising = raising
         self.args = None

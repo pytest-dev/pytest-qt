@@ -44,6 +44,11 @@
   * ``pytestqt.plugin.Record`` -> ``pytestqt.logging.Record``
   * ``pytestqt.plugin.capture_exceptions`` -> ``pytestqt.exceptions.capture_exceptions`` (but consider using ``qtbot.capture_exceptions`` instead)
   * ``pytestqt.plugin.format_captured_exceptions`` -> ``pytestqt.exceptions.format_captured_exceptions``
+- The default timeouts for ``qtbot.waitSignal``, ``waitSignals``, ``waitUntil``
+  and ``waitCallback`` have been raised from 1s to 5s. This makes them in line
+  with the existing ``waitActive`` and ``waitExposed`` timeouts, as well as the
+  default timeout used by Qt's ``QSignalSpy::wait``. To get the old behavior
+  back, explicitly pass ``timeout=1000`` to those functions.
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
 .. _#326: https://github.com/pytest-dev/pytest-qt/pull/326
