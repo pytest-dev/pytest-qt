@@ -185,9 +185,13 @@ class _QtApi:
             )
 
     def exec(self, obj, *args, **kwargs):
-        if self.pytest_qt_api == "pyqt6":
-            # exec was a keyword in Python 2, PyQt6 dropped the .exec_ alias but
-            # PySide2/PySide6 still name it "exec_" only.
+        # exec was a keyword in Python 2, so PySide2 (and also PySide6 6.0)
+        # name the corresponding method "exec_" instead.
+        #
+        # The old _exec() alias is removed in PyQt6 and also deprecated as of
+        # PySide 6.1:
+        # https://codereview.qt-project.org/c/pyside/pyside-setup/+/342095
+        if hasattr(obj, "exec"):
             return obj.exec(*args, **kwargs)
         return obj.exec_(*args, **kwargs)
 
