@@ -27,6 +27,8 @@
   `@The-Compiler`_ for the PR.
 - The old ``qtbot.stopForInteraction()`` name is now removed as it was
   cumbersome and rarely used. Use ``qtbot.stop()`` (added in 1.1.1) instead.
+- The old ``SignalTimeoutError`` exception alias is now removed, as it was renamed to
+  ``TimeoutError`` in 2.1.
 - ``qtbot.waitSignal`` and ``waitSignals`` (as well as their PEP-8 aliases)
   supported passing ``None`` as signal, making them wait for the given timeout
   instead. This is not supported anymore, use ``qtbot.wait(ms)`` instead.

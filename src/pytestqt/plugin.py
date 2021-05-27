@@ -7,7 +7,6 @@ from pytestqt.exceptions import (
     format_captured_exceptions,
     _is_exception_capture_enabled,
     _QtExceptionCaptureManager,
-    SignalTimeoutError,
 )
 from pytestqt.logging import QtLoggingPlugin, _QtMessageCapture, Record
 from pytestqt.qt_compat import qt_api
@@ -19,7 +18,6 @@ from pytestqt.wait_signal import SignalBlocker, MultiSignalBlocker
 assert QtBot
 assert SignalBlocker
 assert MultiSignalBlocker
-assert SignalTimeoutError
 assert Record
 assert capture_exceptions
 assert format_captured_exceptions
