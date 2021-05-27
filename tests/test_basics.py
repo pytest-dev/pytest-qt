@@ -244,7 +244,6 @@ def test_public_api_backward_compatibility():
     assert pytestqt.plugin.QtBot
     assert pytestqt.plugin.SignalBlocker
     assert pytestqt.plugin.MultiSignalBlocker
-    assert pytestqt.plugin.SignalTimeoutError
     assert pytestqt.plugin.format_captured_exceptions
     assert pytestqt.plugin.capture_exceptions
     assert pytestqt.plugin.QtLoggingPlugin

@@ -1,7 +1,7 @@
 import contextlib
 import weakref
 
-from pytestqt.exceptions import SignalTimeoutError, TimeoutError
+from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
 from pytestqt.wait_signal import (
     SignalBlocker,
@@ -672,7 +672,6 @@ class QtBot:
 
 
 # provide easy access to exceptions to qtbot fixtures
-QtBot.SignalTimeoutError = SignalTimeoutError
 QtBot.SignalEmittedError = SignalEmittedError
 QtBot.TimeoutError = TimeoutError
 QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError

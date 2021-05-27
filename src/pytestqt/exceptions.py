@@ -98,14 +98,6 @@ class TimeoutError(Exception):
     .. versionadded:: 2.1
 
     Exception thrown by :class:`pytestqt.qtbot.QtBot` methods.
-
-    .. note::
-        In versions prior to ``2.1``, this exception was called ``SignalTimeoutError``.
-        An alias is kept for backward compatibility.
     """
 
     pass
-
-
-# backward compatibility alias
-SignalTimeoutError = TimeoutError
