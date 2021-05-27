@@ -84,8 +84,6 @@ class _QtApi:
             )
             raise RuntimeError(msg)
 
-        # FIXME check minimum supported versions?
-
         _root_modules = {
             "pyside6": "PySide6",
             "pyside2": "PySide2",
@@ -103,6 +101,8 @@ class _QtApi:
         self.QtTest = _import_module("QtTest")
         self.Qt = QtCore.Qt
         self.QEvent = QtCore.QEvent
+
+        self._check_qt_api_version()
 
         # qInfo is not exposed in PySide2/6 (#232)
         if hasattr(QtCore, "QMessageLogger"):
@@ -169,6 +169,20 @@ class _QtApi:
         else:
             assert self.is_pyqt
             self.isdeleted = _import_module("sip").isdeleted
+
+    def _check_qt_api_version(self):
+        if not self.is_pyqt:
+            # We support all PySide versions
+            return
+
+        if self.QtCore.PYQT_VERSION == 0x060000:  # 6.0.0
+            raise RuntimeError(
+                "PyQt 6.0 is not supported by pytest-qt, use 6.1+ instead."
+            )
+        elif self.QtCore.PYQT_VERSION < 0x050B00:  # 5.11.0
+            raise RuntimeError(
+                "PyQt < 5.11 is not supported by pytest-qt, use 5.11+ instead."
+            )
 
     def exec(self, obj, *args, **kwargs):
         if self.pytest_qt_api == "pyqt6":
