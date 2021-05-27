@@ -268,7 +268,7 @@ class QtBot:
         for widget, visible in widget_and_visibility:
             widget.setVisible(visible)
 
-    def waitSignal(self, signal=None, timeout=1000, raising=None, check_params_cb=None):
+    def waitSignal(self, signal, timeout=1000, raising=None, check_params_cb=None):
         """
         .. versionadded:: 1.2
 
@@ -300,7 +300,7 @@ class QtBot:
 
         :param Signal signal:
             A signal to wait for, or a tuple ``(signal, signal_name_as_str)`` to improve the error message that is part
-            of ``TimeoutError``. Set to ``None`` to just use timeout.
+            of ``TimeoutError``.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
@@ -316,23 +316,22 @@ class QtBot:
             ``SignalBlocker`` object. Call ``SignalBlocker.wait()`` to wait.
 
         .. note::
-            Cannot have both ``signals`` and ``timeout`` equal ``None``, or
-            else you will block indefinitely. We throw an error if this occurs.
-
-        .. note::
             This method is also available as ``wait_signal`` (pep-8 alias)
         """
+        if signal is None:
+            raise ValueError(
+                f"Passing None as signal isn't supported anymore, use qt_bot.wait({timeout}) instead."
+            )
         raising = self._should_raise(raising)
         blocker = SignalBlocker(
             timeout=timeout, raising=raising, check_params_cb=check_params_cb
         )
-        if signal is not None:
-            blocker.connect(signal)
+        blocker.connect(signal)
         return blocker
 
     def waitSignals(
         self,
-        signals=None,
+        signals,
         timeout=1000,
         raising=None,
         check_params_cbs=None,
@@ -362,7 +361,6 @@ class QtBot:
         :param list signals:
             A list of :class:`Signal` objects to wait for. Alternatively: a list of (``Signal, str``) tuples of the form
             ``(signal, signal_name_as_str)`` to improve the error message that is part of ``TimeoutError``.
-            Set to ``None`` to just use timeout.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
@@ -391,14 +389,15 @@ class QtBot:
             ``MultiSignalBlocker`` object. Call ``MultiSignalBlocker.wait()``
             to wait.
 
-        .. note::
-           Cannot have both ``signals`` and ``timeout`` equal ``None``, or
-           else you will block indefinitely. We throw an error if this occurs.
-
         .. note:: This method is also available as ``wait_signals`` (pep-8 alias)
         """
         if order not in ["none", "simple", "strict"]:
             raise ValueError("order has to be set to 'none', 'simple' or 'strict'")
+
+        if not signals:
+            raise ValueError(
+                f"Passing {signals} as signals isn't supported anymore, consider using qt_bot.wait({timeout}) instead."
+            )
 
         raising = self._should_raise(raising)
 
@@ -416,8 +415,7 @@ class QtBot:
             order=order,
             check_params_cbs=check_params_cbs,
         )
-        if signals is not None:
-            blocker.add_signals(signals)
+        blocker.add_signals(signals)
         return blocker
 
     def wait(self, ms):
