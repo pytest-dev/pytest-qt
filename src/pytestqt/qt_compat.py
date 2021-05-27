@@ -170,18 +170,12 @@ class _QtApi:
             assert self.is_pyqt
             self.isdeleted = _import_module("sip").isdeleted
 
+    def exec(self, obj, *args, **kwargs):
         if self.pytest_qt_api == "pyqt6":
             # exec was a keyword in Python 2, PyQt6 dropped the .exec_ alias but
             # PySide2/PySide6 still name it "exec_" only.
-            self.QtCore.QCoreApplication.exec_ = (
-                lambda _self, *args, **kwargs: _self.exec(*args, **kwargs)
-            )
-            self.QtCore.QEventLoop.exec_ = lambda _self, *args, **kwargs: _self.exec(
-                *args, **kwargs
-            )
-            _QtWidgets.QDialog.exec_ = lambda _self, *args, **kwargs: _self.exec(
-                *args, **kwargs
-            )
+            return obj.exec(*args, **kwargs)
+        return obj.exec_(*args, **kwargs)
 
     def get_versions(self):
         if self.pytest_qt_api == "pyside6":
