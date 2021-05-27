@@ -454,7 +454,9 @@ def test_invalid_qt_api_envvar(testdir, monkeypatch):
     )
     monkeypatch.setenv("PYTEST_QT_API", "piecute")
     result = testdir.runpytest_subprocess()
-    result.stderr.fnmatch_lines(["* Invalid value for $PYTEST_QT_API: piecute, expected one of *"])
+    result.stderr.fnmatch_lines(
+        ["* Invalid value for $PYTEST_QT_API: piecute, expected one of *"]
+    )
 
 
 def test_qapp_args(testdir):
