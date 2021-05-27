@@ -37,7 +37,7 @@ class QtBot:
     .. automethod:: waitActive
     .. automethod:: waitExposed
     .. automethod:: waitForWindowShown
-    .. automethod:: stopForInteraction
+    .. automethod:: stop
     .. automethod:: wait
 
     **Signals and Events**
@@ -247,7 +247,7 @@ class QtBot:
         else:
             return qt_api.QtTest.QTest.qWaitForWindowShown(widget)
 
-    def stopForInteraction(self):
+    def stop(self):
         """
         Stops the current test flow, letting the user interact with any visible widget.
 
@@ -256,8 +256,6 @@ class QtBot:
 
         Closing the windows should resume the test run, with ``qtbot`` attempting to restore visibility
         of the widgets as they were before this call.
-
-        .. note:: As a convenience, it is also aliased as `stop`.
         """
         widget_and_visibility = []
         for weak_widget in _iter_widgets(self._request.node):
@@ -269,8 +267,6 @@ class QtBot:
 
         for widget, visible in widget_and_visibility:
             widget.setVisible(visible)
-
-    stop = stopForInteraction
 
     def waitSignal(self, signal=None, timeout=1000, raising=None, check_params_cb=None):
         """

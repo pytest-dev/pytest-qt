@@ -100,15 +100,15 @@ def test_mouse_events(qtbot, event_recorder):
     )
 
 
-def test_stop_for_interaction(qtbot, timer):
+def test_stop(qtbot, timer):
     """
-    Test qtbot.stopForInteraction()
+    Test qtbot.stop()
     """
     widget = qt_api.QtWidgets.QWidget()
     qtbot.addWidget(widget)
     qtbot.waitForWindowShown(widget)
     timer.single_shot_callback(widget.close, 0)
-    qtbot.stopForInteraction()
+    qtbot.stop()
 
 
 @pytest.mark.parametrize("show", [True, False])
