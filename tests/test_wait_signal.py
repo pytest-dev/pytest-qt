@@ -17,15 +17,24 @@ flaky_on_macos = pytest.mark.xfail(
 )
 
 
-def test_signal_blocker_exception(qtbot):
+@pytest.mark.parametrize(
+    "method, signal, timeout",
+    [
+        ("waitSignal", None, None),
+        ("waitSignal", None, 1000),
+        ("waitSignals", [], None),
+        ("waitSignals", [], 1000),
+        ("waitSignals", None, None),
+        ("waitSignals", None, 1000),
+    ],
+)
+def test_signal_blocker_none(qtbot, method, signal, timeout):
     """
-    Make sure waitSignal without signals and timeout doesn't hang, but raises
-    ValueError instead.
+    Make sure waitSignal without signals isn't supported anymore.
     """
+    meth = getattr(qtbot, method)
     with pytest.raises(ValueError):
-        qtbot.waitSignal(None, None).wait()
-    with pytest.raises(ValueError):
-        qtbot.waitSignals([], None).wait()
+        meth(signal, timeout).wait()
 
 
 def explicit_wait(qtbot, signal, timeout, multiple, raising, should_raise):
@@ -396,9 +405,9 @@ class TestArgs:
             signaller.signal_args.emit("test", 123)
         assert blocker.args == ["test", 123]
 
-    def test_timeout(self, qtbot):
+    def test_timeout(self, qtbot, signaller):
         """If there's a timeout, the args attribute is None."""
-        with qtbot.waitSignal(timeout=100, raising=False) as blocker:
+        with qtbot.waitSignal(signaller.signal, timeout=100, raising=False) as blocker:
             pass
         assert blocker.args is None
 

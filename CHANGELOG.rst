@@ -27,6 +27,9 @@
   `@The-Compiler`_ for the PR.
 - The old ``qtbot.stopForInteraction()`` name is now removed as it was
   cumbersome and rarely used. Use ``qtbot.stop()`` (added in 1.1.1) instead.
+- ``qtbot.waitSignal`` and ``waitSignals`` (as well as their PEP-8 aliases)
+  supported passing ``None`` as signal, making them wait for the given timeout
+  instead. This is not supported anymore, use ``qtbot.wait(ms)`` instead.
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
 .. _#326: https://github.com/pytest-dev/pytest-qt/pull/326
