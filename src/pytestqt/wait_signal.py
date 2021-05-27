@@ -48,7 +48,7 @@ class _AbstractSignalBlocker:
             self._timer.start()
 
         if self.timeout != 0:
-            self._loop.exec_()
+            qt_api.exec(self._loop)
 
         if not self.signal_triggered and self.raising:
             raise TimeoutError(self._timeout_message)
@@ -666,7 +666,7 @@ class CallbackBlocker:
         if self._timer is not None:
             self._timer.timeout.connect(self._quit_loop_by_timeout)
             self._timer.start()
-        self._loop.exec_()
+        qt_api.exec(self._loop)
         if not self.called and self.raising:
             raise TimeoutError("Callback wasn't called after %sms." % self.timeout)
 
