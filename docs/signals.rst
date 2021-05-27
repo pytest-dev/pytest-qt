@@ -70,8 +70,6 @@ value of the ``raising`` parameter of the ``qtbot.waitSignal`` and
 
 Calls which explicitly pass the ``raising`` parameter are not affected.
 
-This option was called ``qt_wait_signal_raising`` before 3.1.0.
-
 check_params_cb parameter
 -------------------------
 

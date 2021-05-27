@@ -140,12 +140,9 @@ class QtBot:
 
     def _should_raise(self, raising_arg):
         ini_val = self._request.config.getini("qt_default_raising")
-        legacy_ini_val = self._request.config.getini("qt_wait_signal_raising")
 
         if raising_arg is not None:
             return raising_arg
-        elif legacy_ini_val:
-            return _parse_ini_boolean(legacy_ini_val)
         elif ini_val:
             return _parse_ini_boolean(ini_val)
         else:
