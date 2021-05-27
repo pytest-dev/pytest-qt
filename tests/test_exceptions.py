@@ -272,7 +272,7 @@ def test_capture_exceptions_context_manager(qapp):
     should be properly tested.
     """
     from pytestqt.qt_compat import qt_api
-    from pytestqt.plugin import capture_exceptions
+    from pytestqt.exceptions import capture_exceptions
 
     class Receiver(qt_api.QtCore.QObject):
         def event(self, ev):

@@ -34,6 +34,16 @@
 - ``qtbot.waitSignal`` and ``waitSignals`` (as well as their PEP-8 aliases)
   supported passing ``None`` as signal, making them wait for the given timeout
   instead. This is not supported anymore, use ``qtbot.wait(ms)`` instead.
+- Various classes are now not importable from ``pytestqt.plugin`` anymore, and
+  should instead be imported from the module they're residing in since the 1.6.0
+  release:
+
+  * ``pytestqt.plugin.QtBot`` -> ``pytestqt.qtbot.QtBot``
+  * ``pytestqt.plugin.SignalBlocker`` -> ``pytestqt.wait_signal.SignalBlocker``
+  * ``pytestqt.plugin.MultiSignalBlocker`` -> ``pytestqt.wait_signal.MultiSignalBlocker``
+  * ``pytestqt.plugin.Record`` -> ``pytestqt.logging.Record``
+  * ``pytestqt.plugin.capture_exceptions`` -> ``pytestqt.exceptions.capture_exceptions`` (but consider using ``qtbot.capture_exceptions`` instead)
+  * ``pytestqt.plugin.format_captured_exceptions`` -> ``pytestqt.exceptions.format_captured_exceptions``
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
 .. _#326: https://github.com/pytest-dev/pytest-qt/pull/326
