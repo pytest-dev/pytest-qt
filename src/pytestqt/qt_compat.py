@@ -12,6 +12,8 @@ Based on from https://github.com/epage/PythonUtils.
 from collections import namedtuple
 import os
 
+import pytest
+
 
 VersionTuple = namedtuple("VersionTuple", "qt_api, qt_api_version, runtime, compiled")
 
@@ -34,16 +36,18 @@ class _QtApi:
 
     def _get_qt_api_from_env(self):
         api = os.environ.get("PYTEST_QT_API")
+        supported_apis = [
+            "pyside6",
+            "pyside2",
+            "pyqt6",
+            "pyqt5",
+        ]
+
         if api is not None:
             api = api.lower()
-            if api not in (
-                "pyside6",
-                "pyside2",
-                "pyqt6",
-                "pyqt5",
-            ):  # pragma: no cover
-                msg = "Invalid value for $PYTEST_QT_API: %s"
-                raise RuntimeError(msg % api)
+            if api not in supported_apis:  # pragma: no cover
+                msg = f"Invalid value for $PYTEST_QT_API: {api}, expected one of {supported_apis}"
+                raise pytest.UsageError(msg)
         return api
 
     def _guess_qt_api(self):  # pragma: no cover
@@ -82,7 +86,7 @@ class _QtApi:
                 "pytest-qt requires either PySide2, PySide6, PyQt5 or PyQt6 installed.\n"
                 + errors
             )
-            raise RuntimeError(msg)
+            raise pytest.UsageError(msg)
 
         _root_modules = {
             "pyside6": "PySide6",
@@ -176,11 +180,11 @@ class _QtApi:
             return
 
         if self.QtCore.PYQT_VERSION == 0x060000:  # 6.0.0
-            raise RuntimeError(
+            raise pytest.UsageError(
                 "PyQt 6.0 is not supported by pytest-qt, use 6.1+ instead."
             )
         elif self.QtCore.PYQT_VERSION < 0x050B00:  # 5.11.0
-            raise RuntimeError(
+            raise pytest.UsageError(
                 "PyQt < 5.11 is not supported by pytest-qt, use 5.11+ instead."
             )
 
