@@ -148,16 +148,13 @@ def test_zero_timeout(qtbot, timer, delayed, signaller):
 @pytest.mark.parametrize(
     "configval, raises", [("false", False), ("true", True), (None, True)]
 )
-@pytest.mark.parametrize("configkey", ["qt_wait_signal_raising", "qt_default_raising"])
-def test_raising(qtbot, testdir, configkey, configval, raises):
+def test_raising(qtbot, testdir, configval, raises):
     if configval is not None:
         testdir.makeini(
-            """
+            f"""
             [pytest]
-            {} = {}
-        """.format(
-                configkey, configval
-            )
+            qt_default_raising = {configval}
+        """
         )
 
     testdir.makepyfile(
@@ -176,11 +173,7 @@ def test_raising(qtbot, testdir, configkey, configval, raises):
     """
     )
 
-    if configkey == "qt_wait_signal_raising" and configval is not None:
-        with pytest.warns(DeprecationWarning):
-            res = testdir.runpytest()
-    else:
-        res = testdir.runpytest()
+    res = testdir.runpytest()
 
     if raises:
         res.stdout.fnmatch_lines(["*1 failed*"])
@@ -188,16 +181,12 @@ def test_raising(qtbot, testdir, configkey, configval, raises):
         res.stdout.fnmatch_lines(["*1 passed*"])
 
 
-@pytest.mark.filterwarnings("ignore:qt_wait_signal_raising is deprecated")
-@pytest.mark.parametrize("configkey", ["qt_wait_signal_raising", "qt_default_raising"])
-def test_raising_by_default_overridden(qtbot, testdir, configkey):
+def test_raising_by_default_overridden(qtbot, testdir):
     testdir.makeini(
         """
         [pytest]
-        {} = false
-    """.format(
-            configkey
-        )
+        qt_default_raising = false
+    """
     )
 
     testdir.makepyfile(

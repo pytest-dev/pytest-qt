@@ -1,5 +1,3 @@
-import warnings
-
 import pytest
 
 from pytestqt.exceptions import (
@@ -106,10 +104,6 @@ def pytest_addoption(parser):
     parser.addini(
         "qt_default_raising",
         "Default value for the raising parameter of qtbot.waitSignal/waitCallback",
-    )
-    parser.addini(
-        "qt_wait_signal_raising",
-        "Default value for the raising parameter of qtbot.waitSignal (legacy alias)",
     )
     parser.addini(
         "qt_qapp_name", "The Qt application name to use", default="pytest-qt-qapp"
@@ -219,12 +213,6 @@ def pytest_configure(config):
         config.pluginmanager.register(QtLoggingPlugin(config), "_qt_logging")
 
     qt_api.set_qt_api(config.getini("qt_api"))
-
-    if config.getini("qt_wait_signal_raising"):
-        warnings.warn(
-            "qt_wait_signal_raising is deprecated, use qt_default_raising instead.",
-            DeprecationWarning,
-        )
 
 
 def pytest_report_header():
