@@ -209,7 +209,7 @@ class _QtApi:
                 self.QtCore.QT_VERSION_STR,
             )
 
-        assert False, self.pytest_qt_api
+        assert False, f"Internal error, unknown pytest_qt_api: {self.pytest_qt_api}"
 
 
 qt_api = _QtApi()
