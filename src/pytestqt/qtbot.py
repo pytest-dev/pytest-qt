@@ -165,7 +165,7 @@ class QtBot:
 
         .. note:: This method is also available as ``add_widget`` (pep-8 alias)
         """
-        if not isinstance(widget, qt_api.QWidget):
+        if not isinstance(widget, qt_api.QtWidgets.QWidget):
             raise TypeError("Need to pass a QWidget to addWidget!")
         _add_widget(self._request.node, widget, before_close_func=before_close_func)
 
@@ -265,7 +265,7 @@ class QtBot:
             if widget is not None:
                 widget_and_visibility.append((widget, widget.isVisible()))
 
-        qt_api.exec(qt_api.QApplication.instance())
+        qt_api.exec(qt_api.QtWidgets.QApplication.instance())
 
         for widget, visible in widget_and_visibility:
             widget.setVisible(visible)

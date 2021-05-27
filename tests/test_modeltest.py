@@ -25,10 +25,10 @@ class BasicModel(qt_api.QtCore.QAbstractItemModel):
 
 def test_standard_item_model(qtmodeltester):
     """
-    Basic test which uses qtmodeltester with a qt_api.QStandardItemModel.
+    Basic test which uses qtmodeltester with a qt_api.QtGui.QStandardItemModel.
     """
-    model = qt_api.QStandardItemModel()
-    items = [qt_api.QStandardItem(str(i)) for i in range(6)]
+    model = qt_api.QtGui.QStandardItemModel()
+    items = [qt_api.QtGui.QStandardItem(str(i)) for i in range(6)]
     model.setItem(0, 0, items[0])
     model.setItem(0, 1, items[1])
     model.setItem(1, 0, items[2])
@@ -41,15 +41,15 @@ def test_standard_item_model(qtmodeltester):
 
 
 def test_string_list_model(qtmodeltester):
-    model = qt_api.QStringListModel()
+    model = qt_api.QtCore.QStringListModel()
     model.setStringList(["hello", "world"])
     qtmodeltester.check(model, force_py=True)
 
 
 def test_sort_filter_proxy_model(qtmodeltester):
-    model = qt_api.QStringListModel()
+    model = qt_api.QtCore.QStringListModel()
     model.setStringList(["hello", "world"])
-    proxy = qt_api.QSortFilterProxyModel()
+    proxy = qt_api.QtCore.QSortFilterProxyModel()
     proxy.setSourceModel(model)
     qtmodeltester.check(proxy, force_py=True)
 
@@ -74,7 +74,7 @@ def test_broken_types(check_model, broken_role):
     values for various display roles.
     """
 
-    class BrokenTypeModel(qt_api.QAbstractListModel):
+    class BrokenTypeModel(qt_api.QtCore.QAbstractListModel):
         def rowCount(self, parent=qt_api.QtCore.QModelIndex()):
             if parent == qt_api.QtCore.QModelIndex():
                 return 1
@@ -109,7 +109,7 @@ def test_data_alignment(role_value, should_pass, check_model):
     qtmodeltest should capture this problem and fail when that happens.
     """
 
-    class MyModel(qt_api.QAbstractListModel):
+    class MyModel(qt_api.QtCore.QAbstractListModel):
         def rowCount(self, parent=qt_api.QtCore.QModelIndex()):
             return 1 if parent == qt_api.QtCore.QModelIndex() else 0
 
@@ -129,7 +129,7 @@ def test_data_alignment(role_value, should_pass, check_model):
 
 
 def test_header_handling(check_model):
-    class MyModel(qt_api.QAbstractListModel):
+    class MyModel(qt_api.QtCore.QAbstractListModel):
         def rowCount(self, parent=qt_api.QtCore.QModelIndex()):
             return 1 if parent == qt_api.QtCore.QModelIndex() else 0
 
@@ -193,23 +193,23 @@ def test_invalid_column_count(qtmodeltester):
 
 
 def test_changing_model_insert(qtmodeltester):
-    model = qt_api.QStandardItemModel()
-    item = qt_api.QStandardItem("foo")
+    model = qt_api.QtGui.QStandardItemModel()
+    item = qt_api.QtGui.QStandardItem("foo")
     qtmodeltester.check(model, force_py=True)
     model.insertRow(0, item)
 
 
 def test_changing_model_remove(qtmodeltester):
-    model = qt_api.QStandardItemModel()
-    item = qt_api.QStandardItem("foo")
+    model = qt_api.QtGui.QStandardItemModel()
+    item = qt_api.QtGui.QStandardItem("foo")
     model.setItem(0, 0, item)
     qtmodeltester.check(model, force_py=True)
     model.removeRow(0)
 
 
 def test_changing_model_data(qtmodeltester):
-    model = qt_api.QStandardItemModel()
-    item = qt_api.QStandardItem("foo")
+    model = qt_api.QtGui.QStandardItemModel()
+    item = qt_api.QtGui.QStandardItem("foo")
     model.setItem(0, 0, item)
     qtmodeltester.check(model, force_py=True)
     model.setData(model.index(0, 0), "hello world")
@@ -220,8 +220,8 @@ def test_changing_model_data(qtmodeltester):
     [qt_api.QtCore.Qt.Orientation.Horizontal, qt_api.QtCore.Qt.Orientation.Vertical],
 )
 def test_changing_model_header_data(qtmodeltester, orientation):
-    model = qt_api.QStandardItemModel()
-    item = qt_api.QStandardItem("foo")
+    model = qt_api.QtGui.QStandardItemModel()
+    item = qt_api.QtGui.QStandardItem("foo")
     model.setItem(0, 0, item)
     qtmodeltester.check(model, force_py=True)
     model.setHeaderData(0, orientation, "blah")
@@ -229,8 +229,8 @@ def test_changing_model_header_data(qtmodeltester, orientation):
 
 def test_changing_model_sort(qtmodeltester):
     """Sorting emits layoutChanged"""
-    model = qt_api.QStandardItemModel()
-    item = qt_api.QStandardItem("foo")
+    model = qt_api.QtGui.QStandardItemModel()
+    item = qt_api.QtGui.QStandardItem("foo")
     model.setItem(0, 0, item)
     qtmodeltester.check(model, force_py=True)
     model.sort(0)
@@ -264,7 +264,7 @@ def test_overridden_methods(qtmodeltester):
 
 
 def test_fetch_more(qtmodeltester):
-    class Model(qt_api.QStandardItemModel):
+    class Model(qt_api.QtGui.QStandardItemModel):
         def canFetchMore(self, parent):
             return True
 
@@ -273,13 +273,13 @@ def test_fetch_more(qtmodeltester):
             self.setData(self.index(0, 0), "bar")
 
     model = Model()
-    item = qt_api.QStandardItem("foo")
+    item = qt_api.QtGui.QStandardItem("foo")
     model.setItem(0, 0, item)
     qtmodeltester.check(model, force_py=True)
 
 
 def test_invalid_parent(qtmodeltester):
-    class Model(qt_api.QStandardItemModel):
+    class Model(qt_api.QtGui.QStandardItemModel):
         def parent(self, index):
             if index == self.index(0, 0, parent=self.index(0, 0)):
                 return self.index(0, 0)
@@ -287,9 +287,9 @@ def test_invalid_parent(qtmodeltester):
                 return qt_api.QtCore.QModelIndex()
 
     model = Model()
-    item = qt_api.QStandardItem("foo")
-    item2 = qt_api.QStandardItem("bar")
-    item3 = qt_api.QStandardItem("bar")
+    item = qt_api.QtGui.QStandardItem("foo")
+    item2 = qt_api.QtGui.QStandardItem("bar")
+    item3 = qt_api.QtGui.QStandardItem("bar")
     model.setItem(0, 0, item)
     item.setChild(0, item2)
     item2.setChild(0, item3)
@@ -309,7 +309,7 @@ def test_qt_tester_valid(testdir):
 
 
         def test_ok(qtmodeltester):
-            model = qt_api.QStandardItemModel()
+            model = qt_api.QtGui.QStandardItemModel()
             qtmodeltester.check(model)
         """
     )

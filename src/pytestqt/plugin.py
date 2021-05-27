@@ -51,10 +51,10 @@ def qapp(qapp_args, pytestconfig):
     You can use the ``qapp`` fixture in tests which require a ``QApplication``
     to run, but where you don't need full ``qtbot`` functionality.
     """
-    app = qt_api.QApplication.instance()
+    app = qt_api.QtWidgets.QApplication.instance()
     if app is None:
         global _qapp_instance
-        _qapp_instance = qt_api.QApplication(qapp_args)
+        _qapp_instance = qt_api.QtWidgets.QApplication(qapp_args)
         name = pytestconfig.getini("qt_qapp_name")
         _qapp_instance.setApplicationName(name)
         return _qapp_instance
@@ -197,7 +197,7 @@ def _process_events():
     """Calls app.processEvents() while taking care of capturing exceptions
     or not based on the given item's configuration.
     """
-    app = qt_api.QApplication.instance()
+    app = qt_api.QtWidgets.QApplication.instance()
     if app is not None:
         app.processEvents()
 

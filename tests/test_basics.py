@@ -11,8 +11,8 @@ def test_basics(qtbot):
     Basic test that works more like a sanity check to ensure we are setting up a QApplication
     properly and are able to display a simple event_recorder.
     """
-    assert qt_api.QApplication.instance() is not None
-    widget = qt_api.QWidget()
+    assert qt_api.QtWidgets.QApplication.instance() is not None
+    widget = qt_api.QtWidgets.QWidget()
     qtbot.addWidget(widget)
     widget.setWindowTitle("W1")
     widget.show()
@@ -48,21 +48,25 @@ def test_key_events(qtbot, event_recorder):
     """
 
     def extract(key_event):
-        return (key_event.type(), qt_api.Qt.Key(key_event.key()), key_event.text())
+        return (
+            key_event.type(),
+            qt_api.QtCore.Qt.Key(key_event.key()),
+            key_event.text(),
+        )
 
     event_recorder.registerEvent(qt_api.QtGui.QKeyEvent, extract)
 
     qtbot.keyPress(event_recorder, "a")
     assert event_recorder.event_data == (
-        qt_api.QEvent.Type.KeyPress,
-        qt_api.Qt.Key.Key_A,
+        qt_api.QtCore.QEvent.Type.KeyPress,
+        qt_api.QtCore.Qt.Key.Key_A,
         "a",
     )
 
     qtbot.keyRelease(event_recorder, "a")
     assert event_recorder.event_data == (
-        qt_api.QEvent.Type.KeyRelease,
-        qt_api.Qt.Key.Key_A,
+        qt_api.QtCore.QEvent.Type.KeyRelease,
+        qt_api.QtCore.Qt.Key.Key_A,
         "a",
     )
 
@@ -79,7 +83,7 @@ def test_mouse_events(qtbot, event_recorder):
 
     qtbot.mousePress(event_recorder, qt_api.QtCore.Qt.MouseButton.LeftButton)
     assert event_recorder.event_data == (
-        qt_api.QEvent.Type.MouseButtonPress,
+        qt_api.QtCore.QEvent.Type.MouseButtonPress,
         qt_api.QtCore.Qt.MouseButton.LeftButton,
         qt_api.QtCore.Qt.KeyboardModifier.NoModifier,
     )
@@ -90,7 +94,7 @@ def test_mouse_events(qtbot, event_recorder):
         qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
     )
     assert event_recorder.event_data == (
-        qt_api.QEvent.Type.MouseButtonPress,
+        qt_api.QtCore.QEvent.Type.MouseButtonPress,
         qt_api.QtCore.Qt.MouseButton.RightButton,
         qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
     )
@@ -100,7 +104,7 @@ def test_stop_for_interaction(qtbot, timer):
     """
     Test qtbot.stopForInteraction()
     """
-    widget = qt_api.QWidget()
+    widget = qt_api.QtWidgets.QWidget()
     qtbot.addWidget(widget)
     qtbot.waitForWindowShown(widget)
     timer.single_shot_callback(widget.close, 0)
@@ -121,7 +125,7 @@ def test_wait_window(show, method_name, qtbot):
                 pass
         assert str(exc_info.value) == "Available in PyQt5 only"
     else:
-        widget = qt_api.QWidget()
+        widget = qt_api.QtWidgets.QWidget()
         qtbot.add_widget(widget)
         if show:
             with method(widget, timeout=1000):
@@ -142,7 +146,7 @@ def test_wait_window_propagates_other_exception(method_name, qtbot):
         pytest.skip("Available in PyQt5 only")
 
     method = getattr(qtbot, method_name)
-    widget = qt_api.QWidget()
+    widget = qt_api.QtWidgets.QWidget()
     qtbot.add_widget(widget)
     with pytest.raises(ValueError) as exc_info:
         with method(widget, timeout=100):
@@ -155,7 +159,7 @@ def test_widget_kept_as_weakref(qtbot):
     """
     Test if the widget is kept as a weak reference in QtBot
     """
-    widget = qt_api.QWidget()
+    widget = qt_api.QtWidgets.QWidget()
     qtbot.add_widget(widget)
     widget = weakref.ref(widget)
     assert widget() is None
@@ -186,10 +190,10 @@ def test_event_processing_before_and_after_teardown(testdir):
                     self.events = []
 
                 def pop_later(self):
-                    qapp.postEvent(self, qt_api.QEvent(qt_api.QEvent.Type.User))
+                    qapp.postEvent(self, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.Type.User))
 
                 def event(self, ev):
-                    if ev.type() == qt_api.QEvent.Type.User:
+                    if ev.type() == qt_api.QtCore.QEvent.Type.User:
                         self.events.pop(-1)
                     return qt_api.QtCore.QObject.event(self, ev)
 
@@ -275,7 +279,7 @@ def test_widgets_closed_before_fixtures(testdir):
         import pytest
         from pytestqt.qt_compat import qt_api
 
-        class Widget(qt_api.QWidget):
+        class Widget(qt_api.QtWidgets.QWidget):
 
             closed = False
 
@@ -307,7 +311,7 @@ def test_qtbot_wait(qtbot, stop_watch):
 
 @pytest.fixture
 def event_recorder(qtbot):
-    class EventRecorder(qt_api.QWidget):
+    class EventRecorder(qt_api.QtWidgets.QWidget):
 
         """
         Widget that records some kind of events sent to it.
@@ -318,7 +322,7 @@ def event_recorder(qtbot):
         """
 
         def __init__(self):
-            qt_api.QWidget.__init__(self)
+            qt_api.QtWidgets.QWidget.__init__(self)
             self._event_types = {}
             self.event_data = None
 
@@ -519,7 +523,7 @@ def test_before_close_func(testdir):
 
         @pytest.fixture
         def widget(qtbot):
-            w = qt_api.QWidget()
+            w = qt_api.QtWidgets.QWidget()
             w.some_id = 'my id'
             qtbot.add_widget(w, before_close_func=widget_closed)
             return w
