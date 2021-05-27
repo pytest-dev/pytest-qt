@@ -2,8 +2,10 @@
 ------------------
 
 - `PySide6 <https://pypi.org/project/PySide6>`__ is now supported. Thanks `@jensheilman`_ for the PR.
-- Support for Qt4 (i.e. ``PyQt4`` and ``PySide``) is now dropped.
+- `PyQt6 <https://pypi.org/project/PyQt6>`__ 6.1+ is now supported. Thanks `@The-Compiler`_ for the PR.
 - ``pytest-qt`` now requires Python 3.6+.
+- When using PyQt5, ``pytest-qt`` now requires PyQt5 5.11 or newer.
+- Support for Qt4 (i.e. ``PyQt4`` and ``PySide``) is now dropped.
 - ``waitUntil`` now raises a ``TimeoutError`` when a timeout occurs to make the cause of the timeout more explict (`#222`_). Thanks `@karlch`_ for the PR.
 - The ``QtTest::keySequence`` method is now exposed (if available, with Qt >= 5.10).
 - ``addWidget`` now enforces that its argument is a ``QWidget`` in order to display a clearer error when this isn't the case.
