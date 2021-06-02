@@ -6,6 +6,12 @@
 - ``pytest-qt`` now requires Python 3.6+.
 - When using PyQt5, ``pytest-qt`` now requires PyQt5 5.11 or newer.
 - Support for Qt4 (i.e. ``PyQt4`` and ``PySide``) is now dropped.
+- The ``qtbot.waitActive`` and ``qtbot.waitExposed`` context managers are now
+  available with all Qt APIs, rather than only PyQt5.
+- The ``qtbot.waitForWindowShown`` method is deprecated, as the underlying Qt
+  method was obsoleted in Qt 5.0 and removed in Qt 6.0. Its name is imprecise and
+  the pytest-qt wrapper does not raise TimeoutError if the window wasn't shown.
+  Please use the ``qtbot.waitExposed`` context manager instead.
 - ``waitUntil`` now raises a ``TimeoutError`` when a timeout occurs to make the cause of the timeout more explict (`#222`_). Thanks `@karlch`_ for the PR.
 - The ``QtTest::keySequence`` method is now exposed (if available, with Qt >= 5.10).
 - ``addWidget`` now enforces that its argument is a ``QWidget`` in order to display a clearer error when this isn't the case.
@@ -49,8 +55,6 @@
   with the existing ``waitActive`` and ``waitExposed`` timeouts, as well as the
   default timeout used by Qt's ``QSignalSpy::wait``. To get the old behavior
   back, explicitly pass ``timeout=1000`` to those functions.
-- The ``qtbot.waitForWindowShown`` now supports a ``timeout`` argument which is
-  passed through to Qt.
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
 .. _#326: https://github.com/pytest-dev/pytest-qt/pull/326

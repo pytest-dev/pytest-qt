@@ -106,7 +106,10 @@ def test_stop(qtbot, timer):
     """
     widget = qt_api.QtWidgets.QWidget()
     qtbot.addWidget(widget)
-    qtbot.waitForWindowShown(widget)
+
+    with qtbot.waitExposed(widget):
+        widget.show()
+
     timer.single_shot_callback(widget.close, 0)
     qtbot.stop()
 
@@ -119,21 +122,29 @@ def test_wait_window(show, method_name, qtbot):
     is properly displayed, otherwise should raise a TimeoutError.
     """
     method = getattr(qtbot, method_name)
-    if qt_api.pytest_qt_api != "pyqt5":
-        with pytest.raises(RuntimeError) as exc_info:
-            with method(None, None):
-                pass
-        assert str(exc_info.value) == "Available in PyQt5 only"
+    widget = qt_api.QtWidgets.QWidget()
+    qtbot.add_widget(widget)
+    if show:
+        with method(widget, timeout=1000):
+            widget.show()
     else:
-        widget = qt_api.QtWidgets.QWidget()
-        qtbot.add_widget(widget)
-        if show:
-            with method(widget, timeout=1000):
-                widget.show()
-        else:
-            with pytest.raises(qtbot.TimeoutError):
-                with method(widget, timeout=100):
-                    pass
+        with pytest.raises(qtbot.TimeoutError):
+            with method(widget, timeout=100):
+                pass
+
+
+@pytest.mark.parametrize("show", [True, False])
+def test_wait_for_window_shown(qtbot, show):
+    widget = qt_api.QtWidgets.QWidget()
+    qtbot.add_widget(widget)
+
+    if show:
+        widget.show()
+
+    with pytest.deprecated_call(match="waitForWindowShown is deprecated"):
+        shown = qtbot.waitForWindowShown(widget)
+
+    assert shown == show
 
 
 @pytest.mark.parametrize("method_name", ["waitExposed", "waitActive"])
@@ -142,17 +153,13 @@ def test_wait_window_propagates_other_exception(method_name, qtbot):
     Exceptions raised inside the with-statement of wait-widget methods should
     propagate properly.
     """
-    if qt_api.pytest_qt_api != "pyqt5":
-        pytest.skip("Available in PyQt5 only")
-
     method = getattr(qtbot, method_name)
     widget = qt_api.QtWidgets.QWidget()
     qtbot.add_widget(widget)
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match="some other error"):
         with method(widget, timeout=100):
             widget.show()
             raise ValueError("some other error")
-    assert str(exc_info.value) == "some other error"
 
 
 def test_widget_kept_as_weakref(qtbot):
