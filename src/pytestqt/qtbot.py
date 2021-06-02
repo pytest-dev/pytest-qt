@@ -1,5 +1,6 @@
 import contextlib
 import weakref
+import warnings
 
 from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
@@ -185,10 +186,6 @@ class QtBot:
         :param int|None timeout:
             How many milliseconds to wait for.
 
-        .. note::
-            This function is only available in PyQt5, raising a ``RuntimeError`` if called from
-            ``PySide2/6``.
-
         .. note:: This method is also available as ``wait_active`` (pep-8 alias)
         """
         __tracebackhide__ = True
@@ -215,10 +212,6 @@ class QtBot:
         :param int|None timeout:
             How many milliseconds to wait for.
 
-        .. note::
-            This function is only available in PyQt5, raising a ``RuntimeError`` if called from
-            ``PySide2/6``.
-
         .. note:: This method is also available as ``wait_exposed`` (pep-8 alias)
         """
         __tracebackhide__ = True
@@ -226,26 +219,36 @@ class QtBot:
             "qWaitForWindowExposed", "exposed", widget, timeout
         )
 
-    def waitForWindowShown(self, widget, timeout=5000):
+    def waitForWindowShown(self, widget):
         """
         Waits until the window is shown in the screen. This is mainly useful for asynchronous
         systems like X11, where a window will be mapped to screen some time after being asked to
         show itself on the screen.
 
+        .. warning::
+            This method does **not** raise ``TimeoutError`` if the window wasn't shown.
+
+        .. deprecated:: 4.0
+            Use the qtbot.waitForWindowExposed context manager instead.
+
         :param QWidget widget:
             Widget to wait on.
 
-        :param int|None timeout:
-            How many milliseconds to wait for.
-
-        .. note:: In ``PyQt5`` this function is considered deprecated in favor of :meth:`waitExposed`.
+        :returns:
+            ``True`` if the window was shown, ``False`` if ``.show()`` was never
+            called or a timeout occurred.
 
         .. note:: This method is also available as ``wait_for_window_shown`` (pep-8 alias)
         """
-        if hasattr(qt_api.QtTest.QTest, "qWaitForWindowExposed"):
-            return qt_api.QtTest.QTest.qWaitForWindowExposed(widget, timeout)
-        else:
-            return qt_api.QtTest.QTest.qWaitForWindowShown(widget, timeout)
+        warnings.warn(
+            "waitForWindowShown is deprecated, as the underlying Qt method was "
+            "obsoleted in Qt 5.0 and removed in Qt 6.0. Its name is imprecise and "
+            "the pytest-qt wrapper does not raise TimeoutError if the window "
+            "wasn't shown. Please use the qtbot.waitExposed context manager "
+            "instead.",
+            DeprecationWarning,
+        )
+        return qt_api.QtTest.QTest.qWaitForWindowExposed(widget)
 
     def stop(self):
         """
@@ -729,8 +732,6 @@ class _WaitWidgetContextManager:
 
     def __enter__(self):
         __tracebackhide__ = True
-        if qt_api.pytest_qt_api != "pyqt5":
-            raise RuntimeError("Available in PyQt5 only")
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
