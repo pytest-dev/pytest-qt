@@ -323,7 +323,7 @@ class QtBot:
         """
         if signal is None:
             raise ValueError(
-                f"Passing None as signal isn't supported anymore, use qt_bot.wait({timeout}) instead."
+                f"Passing None as signal isn't supported anymore, use qtbot.wait({timeout}) instead."
             )
         raising = self._should_raise(raising)
         blocker = SignalBlocker(
@@ -399,7 +399,7 @@ class QtBot:
 
         if not signals:
             raise ValueError(
-                f"Passing {signals} as signals isn't supported anymore, consider using qt_bot.wait({timeout}) instead."
+                f"Passing {signals} as signals isn't supported anymore, consider using qtbot.wait({timeout}) instead."
             )
 
         raising = self._should_raise(raising)
