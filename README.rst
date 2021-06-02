@@ -3,7 +3,7 @@ pytest-qt
 =========
 
 pytest-qt is a `pytest`_ plugin that allows programmers to write tests
-for `PyQt5`_ and `PySide2`_ applications.
+for `PyQt5`_, `PyQt6`_, `PySide2`_ and `PyQt6`_ applications.
 
 The main usage is to use the ``qtbot`` fixture, responsible for handling ``qApp``
 creation as needed and provides methods to simulate user interaction,
@@ -23,7 +23,9 @@ like key presses and mouse clicks:
 
 
 .. _PySide2: https://pypi.org/project/PySide2/
+.. _PySide6: https://pypi.org/project/PySide6/
 .. _PyQt5: https://pypi.org/project/PyQt5/
+.. _PyQt6: https://pypi.org/project/PyQt6/
 .. _pytest: http://pytest.org
 
 This allows you to test and make sure your view layer is behaving the way you expect after each code change.
@@ -74,15 +76,17 @@ Requirements
 
 Since version 4.0.0, ``pytest-qt`` requires Python 3.6+.
 
-Works with either PyQt5_ or PySide2_, picking whichever
+Works with either PySide6_, PySide2_, PyQt6_ or PyQt5_, picking whichever
 is available on the system, giving preference to the first one installed in
 this order:
 
+- ``PySide6``
 - ``PySide2``
+- ``PyQt6``
 - ``PyQt5``
 
 To force a particular API, set the configuration variable ``qt_api`` in your ``pytest.ini`` file to
-``pyqt5`` or ``pyside2``:
+``pyqt6``, ``pyside2``, ``pyqt6`` or ```pyqt5``:
 
 .. code-block:: ini
 

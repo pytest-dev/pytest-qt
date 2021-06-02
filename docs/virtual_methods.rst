@@ -6,8 +6,8 @@ Exceptions in virtual methods
 It is common in Qt programming to override virtual C++ methods to customize
 behavior, like listening for mouse events, implement drawing routines, etc.
 
-Fortunately, both ``PyQt5`` and ``PySide2`` support overriding this virtual methods
-naturally in your python code::
+Fortunately, all Python bindings for Qt support overriding these virtual methods
+naturally in your Python code::
 
     class MyWidget(QWidget):
 
@@ -15,12 +15,13 @@ naturally in your python code::
         def mouseReleaseEvent(self, ev):
             print('mouse released at: %s' % ev.pos())
 
-In ``PyQt5`` and ``PySide2``, exceptions in
-virtual methods will by default call ``abort()``, which will crash the
-interpreter.
+In ``PyQt5`` and ``PyQt6``, exceptions in virtual methods will by default call
+abort(), which will crash the interpreter. All other Qt wrappers will print the
+exception stacktrace and return a default value back to C++/Qt (if a return
+value is required).
 
-This might be surprising for python users which are used to exceptions
-being raised at the calling point: for example, the following code will just
+This might be surprising for Python users which are used to exceptions
+being raised at the calling point: For example, the following code will just
 print a stack trace without raising any exception::
 
     class MyWidget(QWidget):
@@ -68,5 +69,5 @@ This might be desirable if you plan to install a custom exception hook.
 
     Starting with ``PyQt5.5``, exceptions raised during virtual methods will
     actually trigger an ``abort()``, crashing the Python interpreter. For this
-    reason, disabling exception capture in ``PyQt5.5+`` is not recommended
-    unless you install your own exception hook.
+    reason, disabling exception capture in ``PyQt5.5+`` and ``PyQt6`` is not
+    recommended unless you install your own exception hook.

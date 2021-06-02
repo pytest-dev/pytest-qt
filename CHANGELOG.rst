@@ -1,63 +1,88 @@
 4.0.0 (UNRELEASED)
 ------------------
 
-- `PySide6 <https://pypi.org/project/PySide6>`__ is now supported. Thanks `@jensheilman`_ for the PR.
-- `PyQt6 <https://pypi.org/project/PyQt6>`__ 6.1+ is now supported. Thanks `@The-Compiler`_ for the PR.
+- `PySide6 <https://pypi.org/project/PySide6>`__ and `PyQt6 <https://pypi.org/project/PyQt6>`__ (6.1+)
+  are now supported. Thanks `@jensheilman`_ and `@The-Compiler`_ for the PRs (`#328`_, `#330`_).
 - ``pytest-qt`` now requires Python 3.6+.
-- When using PyQt5, ``pytest-qt`` now requires PyQt5 5.11 or newer.
-- Support for Qt4 (i.e. ``PyQt4`` and ``PySide``) is now dropped.
+- When using PyQt5, ``pytest-qt`` now requires PyQt5 5.11 or newer (`#330`_).
+- Support for Qt4 (i.e. ``PyQt4`` and ``PySide``) is now dropped (`#279`_).
 - The ``qtbot.waitActive`` and ``qtbot.waitExposed`` context managers are now
-  available with all Qt APIs, rather than only PyQt5.
+  available with all Qt APIs, rather than only PyQt5 (`#361`_). Thanks
+  `@The-Compiler`_ for the PR.
 - The ``qtbot.waitForWindowShown`` method is deprecated, as the underlying Qt
   method was obsoleted in Qt 5.0 and removed in Qt 6.0. Its name is imprecise and
   the pytest-qt wrapper does not raise TimeoutError if the window wasn't shown.
-  Please use the ``qtbot.waitExposed`` context manager instead.
-- ``waitUntil`` now raises a ``TimeoutError`` when a timeout occurs to make the cause of the timeout more explict (`#222`_). Thanks `@karlch`_ for the PR.
-- The ``QtTest::keySequence`` method is now exposed (if available, with Qt >= 5.10).
-- ``addWidget`` now enforces that its argument is a ``QWidget`` in order to display a clearer error when this isn't the case.
-- New option ``qt_qapp_name`` can be used to set the name of the ``QApplication`` created by ``pytest-qt``, defaulting to ``"pytest-qt-qapp"``.
-- ``waitExposed`` and ``waitActive`` now have a default timeout of 5s instead of 1s, in order to match the default
-  timeouts Qt uses in the underlying QTest methods.
-- When the ``-s`` (``--capture=no``) argument is passed to pytest, Qt log capturing is now disabled as well.
-- PEP-8 aliases (``add_widget``, ``wait_active``, etc) are no longer just simple
-  assignments to the methods, but they are real methods which call the normal
-  implementations. This makes subclasses work as expected, instead of having to
-  duplicate the assignment. Thanks `@oliveira-mauricio`_ for the PR.
-- The ``qt_api.extract_from_variant`` and ``qt_api.make_variant`` functions
-  (which were never intended for public usage) as well as all class aliases
-  (such as ``qtbot.QWidget`` or ``qtbot.QEvent``, among others) are now
-  removed.
-- Errors related to the ``qt_compat`` module (such as an invalid
-  ``PYTEST_QT_API`` setting or missing Qt API wrappers) are now shown as a more
-  human-readable error message rather than an internal pytest error. Thanks
+  Please use the ``qtbot.waitExposed`` context manager instead (`#361`_). Thanks
   `@The-Compiler`_ for the PR.
 - The old ``qtbot.stopForInteraction()`` name is now removed as it was
-  cumbersome and rarely used. Use ``qtbot.stop()`` (added in 1.1.1) instead.
+  cumbersome and rarely used. Use ``qtbot.stop()`` (added in 1.1.1) instead
+  (`#306`_). Thanks `@The-Compiler`_ for the PR.
 - The old ``SignalTimeoutError`` exception alias is now removed, as it was renamed to
-  ``TimeoutError`` in 2.1.
+  ``TimeoutError`` in 2.1 (`#306`_). Thanks `@The-Compiler`_ for the PR.
 - The old ``qt_wait_signal_raising`` option is now removed, as it was renamed to
-  ``qt_default_raising`` in 3.1.
+  ``qt_default_raising`` in 3.1 (`#306`_). Thanks `@The-Compiler`_ for the PR.
 - ``qtbot.waitSignal`` and ``waitSignals`` (as well as their PEP-8 aliases)
   supported passing ``None`` as signal, making them wait for the given timeout
-  instead. This is not supported anymore, use ``qtbot.wait(ms)`` instead.
+  instead. This is not supported anymore, use ``qtbot.wait(ms)`` instead
+  (`#306`_). Thanks `@The-Compiler`_ for the PR.
 - Various classes are now not importable from ``pytestqt.plugin`` anymore, and
   should instead be imported from the module they're residing in since the 1.6.0
-  release:
+  release (`#306`_):
 
   * ``pytestqt.plugin.QtBot`` -> ``pytestqt.qtbot.QtBot``
   * ``pytestqt.plugin.SignalBlocker`` -> ``pytestqt.wait_signal.SignalBlocker``
   * ``pytestqt.plugin.MultiSignalBlocker`` -> ``pytestqt.wait_signal.MultiSignalBlocker``
   * ``pytestqt.plugin.Record`` -> ``pytestqt.logging.Record``
-  * ``pytestqt.plugin.capture_exceptions`` -> ``pytestqt.exceptions.capture_exceptions`` (but consider using ``qtbot.capture_exceptions`` instead)
-  * ``pytestqt.plugin.format_captured_exceptions`` -> ``pytestqt.exceptions.format_captured_exceptions``
+  * ``pytestqt.plugin.capture_exceptions`` ->
+    ``pytestqt.exceptions.capture_exceptions`` (but consider using
+    ``qtbot.capture_exceptions`` instead)
+  * ``pytestqt.plugin.format_captured_exceptions`` ->
+    ``pytestqt.exceptions.format_captured_exceptions``
+- The ``qt_api.extract_from_variant`` and ``qt_api.make_variant`` functions
+  (which were never intended for public usage) as well as all class aliases
+  (such as ``qt_api.QWidget`` or ``qt_api.QEvent``, among others) are now
+  removed. Thanks `@The-Compiler`_ for the PR.
 - The default timeouts for ``qtbot.waitSignal``, ``waitSignals``, ``waitUntil``
-  and ``waitCallback`` have been raised from 1s to 5s. This makes them in line
-  with the existing ``waitActive`` and ``waitExposed`` timeouts, as well as the
-  default timeout used by Qt's ``QSignalSpy::wait``. To get the old behavior
-  back, explicitly pass ``timeout=1000`` to those functions.
+  and ``waitCallback``, ``waitActive`` and ``waitExposed`` have been raised from
+  1s to 5s. This makes them in line the default timeout used by Qt's underlying
+  methods such as ``QSignalSpy::wait``. To get the old behavior back, explicitly
+  pass ``timeout=1000`` to those functions (`#306`_). Thanks `@The-Compiler`_
+  for the PR.
+- ``waitUntil`` now raises a ``TimeoutError`` when a timeout occurs to make the
+  cause of the timeout more explict (`#222`_). Thanks `@karlch`_ for the PR.
+- The ``QtTest::keySequence`` method is now exposed (if available, with Qt >=
+  5.10) (`#289`_). Thanks `@The-Compiler`_ for the PR.
+- ``addWidget`` now enforces that its argument is a ``QWidget`` in order to
+  display a clearer error when this isn't the case (`#290`_). Thanks
+  `@The-Compiler`_ for the PR.
+- New option ``qt_qapp_name`` can be used to set the name of the
+  ``QApplication`` created by ``pytest-qt``, defaulting to ``"pytest-qt-qapp"``
+  (`#302`_). Thanks `@The-Compiler`_ for the PR.
+- When the ``-s`` (``--capture=no``) argument is passed to pytest, Qt log
+  capturing is now disabled as well (`#300`_). Thanks `@The-Compiler`_ for the PR.
+- PEP-8 aliases (``add_widget``, ``wait_active``, etc) are no longer just simple
+  assignments to the methods, but they are real methods which call the normal
+  implementations. This makes subclasses work as expected, instead of having to
+  duplicate the assignment (`#326`_, `#333`_). Thanks `@oliveira-mauricio`_ and
+  `@jensheilman`_ for the PRs.
+- Errors related to the ``qt_compat`` module (such as an invalid
+  ``PYTEST_QT_API`` setting or missing Qt API wrappers) are now shown as a more
+  human-readable error message rather than an internal pytest error (`#355`_). Thanks
+  `@The-Compiler`_ for the PR.
 
 .. _#222: https://github.com/pytest-dev/pytest-qt/pull/222
 .. _#326: https://github.com/pytest-dev/pytest-qt/pull/326
+.. _#328: https://github.com/pytest-dev/pytest-qt/issues/328
+.. _#330: https://github.com/pytest-dev/pytest-qt/pull/330
+.. _#279: https://github.com/pytest-dev/pytest-qt/pull/279
+.. _#361: https://github.com/pytest-dev/pytest-qt/pull/361
+.. _#306: https://github.com/pytest-dev/pytest-qt/pull/306
+.. _#289: https://github.com/pytest-dev/pytest-qt/pull/289
+.. _#290: https://github.com/pytest-dev/pytest-qt/issues/290
+.. _#302: https://github.com/pytest-dev/pytest-qt/pull/302
+.. _#300: https://github.com/pytest-dev/pytest-qt/pull/300
+.. _#333: https://github.com/pytest-dev/pytest-qt/issue/333
+.. _#355: https://github.com/pytest-dev/pytest-qt/issue/355
 .. _@karlch: https://github.com/karlch
 .. _@oliveira-mauricio: https://github.com/oliveira-mauricio
 .. _@jensheilman: https://github.com/jensheilman

@@ -50,10 +50,10 @@ custom application like below:
 
 .. code-block:: python
 
-    from PyQt5.QtWidgets import QApplication
+    from pytestqt.qt_compat import qt_api
 
 
-    class CustomQApplication(QApplication):
+    class CustomQApplication(qt_api.QtWidgets.QApplication):
         def __init__(self, *argv):
             super().__init__(*argv)
             self.custom_attr = "xxx"
