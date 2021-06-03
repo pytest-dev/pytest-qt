@@ -83,12 +83,9 @@ class QtLoggingPlugin:
                     log_format = self.config.getoption("qt_log_format")
                     context_format = None
                     if log_format is None:
-                        if qt_api.pytest_qt_api == "pyqt5":
-                            context_format = "{rec.context.file}:{rec.context.function}:{rec.context.line}:\n"
-                            log_format = "    {rec.type_name}: {rec.message}"
-                        else:
-                            context_format = None
-                            log_format = "{rec.type_name}: {rec.message}"
+                        context_format = "{rec.context.file}:{rec.context.function}:{rec.context.line}:\n"
+                        log_format = "    {rec.type_name}: {rec.message}"
+
                     lines = []
                     for rec in item.qt_log_capture.records:
                         suffix = " (IGNORED)" if rec.ignored else ""
@@ -104,6 +101,8 @@ class QtLoggingPlugin:
                         ):
                             context_line = context_format.format(rec=rec)
                             lines.append(context_line)
+                        else:
+                            log_format = log_format.lstrip()
 
                         line = log_format.format(rec=rec) + suffix
                         lines.append(line)
