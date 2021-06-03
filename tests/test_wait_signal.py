@@ -34,7 +34,7 @@ def test_signal_blocker_none(qtbot, method, signal, timeout):
     """
     meth = getattr(qtbot, method)
     with pytest.raises(ValueError):
-        meth(signal, timeout).wait()
+        meth(signal, timeout=timeout).wait()
 
 
 def explicit_wait(qtbot, signal, timeout, multiple, raising, should_raise):
@@ -42,7 +42,7 @@ def explicit_wait(qtbot, signal, timeout, multiple, raising, should_raise):
     Explicit wait for the signal using blocker API.
     """
     func = qtbot.waitSignals if multiple else qtbot.waitSignal
-    blocker = func(signal, timeout, raising=raising)
+    blocker = func(signal, timeout=timeout, raising=raising)
     assert not blocker.signal_triggered
     if should_raise:
         with pytest.raises(qtbot.TimeoutError):
@@ -59,10 +59,10 @@ def context_manager_wait(qtbot, signal, timeout, multiple, raising, should_raise
     func = qtbot.waitSignals if multiple else qtbot.waitSignal
     if should_raise:
         with pytest.raises(qtbot.TimeoutError):
-            with func(signal, timeout, raising=raising) as blocker:
+            with func(signal, timeout=timeout, raising=raising) as blocker:
                 pass
     else:
-        with func(signal, timeout, raising=raising) as blocker:
+        with func(signal, timeout=timeout, raising=raising) as blocker:
             pass
     return blocker
 
@@ -118,7 +118,7 @@ def test_signal_triggered(
     blocker = wait_function(
         qtbot,
         signaller.signal,
-        timeout,
+        timeout=timeout,
         raising=raising,
         should_raise=should_raise,
         multiple=False,
@@ -257,7 +257,7 @@ def test_signal_triggered_multiple(
     blocker = wait_function(
         qtbot,
         [signaller.signal, signaller.signal_2],
-        timeout,
+        timeout=timeout,
         multiple=True,
         raising=raising,
         should_raise=should_raise,

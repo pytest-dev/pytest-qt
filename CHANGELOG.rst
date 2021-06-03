@@ -25,6 +25,18 @@
   supported passing ``None`` as signal, making them wait for the given timeout
   instead. This is not supported anymore, use ``qtbot.wait(ms)`` instead
   (`#306`_). Thanks `@The-Compiler`_ for the PR.
+- Various arguments to ``qtbot`` methods are now keyword-only (`#366`_):
+
+  * ``qtbot.waitActive``: ``timeout`` (``widget`` being the only positional argument)
+  * ``qtbot.waitExposed``: ``timeout`` (``widget`` being the only positional argument)
+  * ``qtbot.waitSignal``:  ``timeout``, ``raising`` and ``check_params_cb`` (``signal`` being the only positional argument)
+  * ``qtbot.waitSignals``:  ``timeout``, ``raising`` and ``check_params_cbs`` (``signals`` being the only positional argument)
+  * ``qtbot.assertNotEmitted``:  ``wait`` (``signal`` being the only positional argument)
+  * ``qtbot.waitUntil``:  ``timeout`` (``callback`` being the only positional argument)
+  * ``qtbot.waitCallback``:  ``timeout`` and ``raising`` (with no positional arguments)
+
+  The same applies to the respective PEP-8 aliases. Thanks `@The-Compiler`_ for
+  the PR.
 - Various classes are now not importable from ``pytestqt.plugin`` anymore, and
   should instead be imported from the module they're residing in since the 1.6.0
   release (`#306`_):
@@ -83,6 +95,7 @@
 .. _#300: https://github.com/pytest-dev/pytest-qt/pull/300
 .. _#333: https://github.com/pytest-dev/pytest-qt/issue/333
 .. _#355: https://github.com/pytest-dev/pytest-qt/issue/355
+.. _#366: https://github.com/pytest-dev/pytest-qt/issue/366
 .. _@karlch: https://github.com/karlch
 .. _@oliveira-mauricio: https://github.com/oliveira-mauricio
 .. _@jensheilman: https://github.com/jensheilman
