@@ -1,4 +1,4 @@
-4.0.0 (UNRELEASED)
+4.0.0 (2021-06-03)
 ------------------
 
 - `PySide6 <https://pypi.org/project/PySide6>`__ and `PyQt6 <https://pypi.org/project/PyQt6>`__ (6.1+)
