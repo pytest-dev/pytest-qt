@@ -167,7 +167,7 @@ class QtBot:
             raise TypeError("Need to pass a QWidget to addWidget!")
         _add_widget(self._request.node, widget, before_close_func=before_close_func)
 
-    def waitActive(self, widget, timeout=5000):
+    def waitActive(self, widget, *, timeout=5000):
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is active.
         If window is not exposed within ``timeout`` milliseconds, raise ``TimeoutError``.
@@ -193,7 +193,7 @@ class QtBot:
             "qWaitForWindowActive", "activated", widget, timeout
         )
 
-    def waitExposed(self, widget, timeout=5000):
+    def waitExposed(self, widget, *, timeout=5000):
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is exposed.
         If the window is not exposed within ``timeout`` milliseconds, raise ``TimeoutError``.
@@ -271,7 +271,7 @@ class QtBot:
         for widget, visible in widget_and_visibility:
             widget.setVisible(visible)
 
-    def waitSignal(self, signal, timeout=5000, raising=None, check_params_cb=None):
+    def waitSignal(self, signal, *, timeout=5000, raising=None, check_params_cb=None):
         """
         .. versionadded:: 1.2
 
@@ -335,6 +335,7 @@ class QtBot:
     def waitSignals(
         self,
         signals,
+        *,
         timeout=5000,
         raising=None,
         check_params_cbs=None,
@@ -434,7 +435,7 @@ class QtBot:
         blocker.wait()
 
     @contextlib.contextmanager
-    def assertNotEmitted(self, signal, wait=0):
+    def assertNotEmitted(self, signal, *, wait=0):
         """
         .. versionadded:: 1.11
 
@@ -455,7 +456,7 @@ class QtBot:
             yield
         spy.assert_not_emitted()
 
-    def waitUntil(self, callback, timeout=5000):
+    def waitUntil(self, callback, *, timeout=5000):
         """
         .. versionadded:: 2.0
 
@@ -526,7 +527,7 @@ class QtBot:
                     raise TimeoutError(timeout_msg)
             self.wait(10)
 
-    def waitCallback(self, timeout=5000, raising=None):
+    def waitCallback(self, *, timeout=5000, raising=None):
         """
         .. versionadded:: 3.1
 
