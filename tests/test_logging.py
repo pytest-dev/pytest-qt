@@ -485,7 +485,7 @@ def test_lineno_failure(testdir):
         """
     )
     res = testdir.runpytest()
-    if qt_api.pytest_qt_api == "pyqt5":
+    if qt_api.is_pyqt:
         res.stdout.fnmatch_lines(
             [
                 "*test_lineno_failure.py:2: Failure*",
@@ -494,12 +494,17 @@ def test_lineno_failure(testdir):
             ]
         )
     else:
-        res.stdout.fnmatch_lines("*test_lineno_failure.py:2: Failure*")
+        res.stdout.fnmatch_lines(
+            [
+                "*test_lineno_failure.py:2: Failure*",
+                "QtWarningMsg: this is a WARNING message",
+            ]
+        )
 
 
 def test_context_none(testdir):
     """
-    Sometimes PyQt5 will emit a context with some/all attributes set as None
+    Sometimes PyQt will emit a context with some/all attributes set as None
     instead of appropriate file, function and line number.
 
     Test that when this happens the plugin doesn't break, and it filters
@@ -507,8 +512,6 @@ def test_context_none(testdir):
 
     :type testdir: _pytest.pytester.TmpTestdir
     """
-    if qt_api.pytest_qt_api != "pyqt5":
-        pytest.skip("Context information only available in PyQt5")
     testdir.makepyfile(
         """
         from pytestqt.qt_compat import qt_api
@@ -523,7 +526,7 @@ def test_context_none(testdir):
     )
     res = testdir.runpytest()
     assert "*None:None:0:*" not in str(res.stdout)
-    res.stdout.fnmatch_lines(["* QtWarningMsg: WARNING message*"])
+    res.stdout.fnmatch_lines(["QtWarningMsg: WARNING message"])
 
 
 def test_logging_broken_makereport(testdir):
