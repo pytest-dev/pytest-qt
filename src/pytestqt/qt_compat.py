@@ -141,7 +141,12 @@ class _QtApi:
             self.isdeleted = lambda obj: not shiboken6.isValid(obj)
         else:
             assert self.is_pyqt
-            self.isdeleted = _import_module("sip").isdeleted
+            try:
+                sip = _import_module("sip")
+            except AttributeError:
+                # some distributions still package PyQt5.sip as sip
+                import sip
+            self.isdeleted = sip.isdeleted
 
     def _check_qt_api_version(self):
         if not self.is_pyqt:
