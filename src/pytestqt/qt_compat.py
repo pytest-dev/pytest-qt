@@ -144,7 +144,7 @@ class _QtApi:
             try:
                 sip = _import_module("sip")
             except AttributeError:
-                # some distributions still package PyQt5.sip as sip
+                # some distributions still package PyQt5.sip as sip (#396)
                 import sip
             self.isdeleted = sip.isdeleted
 
