@@ -1,3 +1,12 @@
+4.0.1 (UNRELEASED)
+------------------
+
+- The ``sip`` module now gets imported directly if ``PyQt5.sip`` /
+  ``PyQt6.sip`` wasn't found, as it's still packaged like that in some
+  distributions (`#369`_). Thanks `@The-Compiler`_ for the PR.
+
+.. _#369: https://github.com/pytest-dev/pytest-qt/pull/369
+
 4.0.0 (2021-06-03)
 ------------------
 
