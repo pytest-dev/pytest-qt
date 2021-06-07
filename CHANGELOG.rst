@@ -1,4 +1,4 @@
-4.0.1 (UNRELEASED)
+4.0.1 (2021-06-07)
 ------------------
 
 - The ``sip`` module now gets imported directly if ``PyQt5.sip`` /
