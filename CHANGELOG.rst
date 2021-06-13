@@ -1,4 +1,4 @@
-4.0.2 (UNRELEASED)
+4.0.2 (2021-06-14)
 ------------------
 
 - Restored compatibility with PySide2 5.11, which doesn't depend on the
