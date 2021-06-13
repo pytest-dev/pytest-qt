@@ -1,3 +1,11 @@
+4.0.2 (UNRELEASED)
+------------------
+
+- Restored compatibility with PySide2 5.11, which doesn't depend on the
+  ``shiboken2`` project, used by pytest-qt 4.0.0. The dependency is now not
+  needed anymore, and the ``.isdeleted`` attribute of ``qt_compat`` (which
+  isn't intended for public use) is removed.
+
 4.0.1 (2021-06-07)
 ------------------
 
