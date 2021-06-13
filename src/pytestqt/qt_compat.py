@@ -131,23 +131,6 @@ class _QtApi:
         else:
             assert False, "Expected either is_pyqt or is_pyside"
 
-        if self.pytest_qt_api == "pyside2":
-            import shiboken2
-
-            self.isdeleted = lambda obj: not shiboken2.isValid(obj)
-        elif self.pytest_qt_api == "pyside6":
-            import shiboken6
-
-            self.isdeleted = lambda obj: not shiboken6.isValid(obj)
-        else:
-            assert self.is_pyqt
-            try:
-                sip = _import_module("sip")
-            except AttributeError:
-                # some distributions still package PyQt5.sip as sip (#396)
-                import sip
-            self.isdeleted = sip.isdeleted
-
     def _check_qt_api_version(self):
         if not self.is_pyqt:
             # We support all PySide versions

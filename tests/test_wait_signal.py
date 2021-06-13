@@ -382,7 +382,8 @@ def test_destroyed(qtbot):
     with qtbot.waitSignal(obj.destroyed):
         obj.deleteLater()
 
-    assert qt_api.isdeleted(obj)
+    with pytest.raises(RuntimeError):
+        obj.objectName()
 
 
 class TestArgs:
