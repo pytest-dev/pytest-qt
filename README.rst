@@ -3,7 +3,7 @@ pytest-qt
 =========
 
 pytest-qt is a `pytest`_ plugin that allows programmers to write tests
-for `PyQt5`_, `PyQt6`_, `PySide2`_ and `PyQt6`_ applications.
+for `PyQt5`_, `PyQt6`_, `PySide2`_ and `PySide6`_ applications.
 
 The main usage is to use the ``qtbot`` fixture, responsible for handling ``qApp``
 creation as needed and provides methods to simulate user interaction,
