@@ -19,7 +19,7 @@ repos:
     -   id: check-yaml
     -   id: debug-statements
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v2.21.2
+    rev: v2.23.0
     hooks:
     - id: pyupgrade
 -   repo: https://github.com/PyCQA/flake8
