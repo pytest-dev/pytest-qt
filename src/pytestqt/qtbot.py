@@ -138,6 +138,17 @@ class QtBot:
 
     def __init__(self, request):
         self._request = request
+        # pep8 aliases. Set here to automatically use implementations defined in sub-classes for alias creation
+        self.add_widget = self.addWidget
+        self.capture_exceptions = self.captureExceptions
+        self.wait_active = self.waitActive
+        self.wait_exposed = self.waitExposed
+        self.wait_for_window_shown = self.waitForWindowShown
+        self.wait_signal = self.waitSignal
+        self.wait_signals = self.waitSignals
+        self.assert_not_emitted = self.assertNotEmitted
+        self.wait_until = self.waitUntil
+        self.wait_callback = self.waitCallback
 
     def _should_raise(self, raising_arg):
         ini_val = self._request.config.getini("qt_default_raising")
@@ -644,35 +655,6 @@ class QtBot:
     @staticmethod
     def mouseRelease(*args, **kwargs):
         qt_api.QtTest.QTest.mouseRelease(*args, **kwargs)
-
-    # pep-8 aliases
-
-    def add_widget(self, *args, **kwargs):
-        return self.addWidget(*args, **kwargs)
-
-    def wait_active(self, *args, **kwargs):
-        return self.waitActive(*args, **kwargs)
-
-    def wait_exposed(self, *args, **kwargs):
-        return self.waitExposed(*args, **kwargs)
-
-    def wait_for_window_shown(self, *args, **kwargs):
-        return self.waitForWindowShown(*args, **kwargs)
-
-    def wait_signal(self, *args, **kwargs):
-        return self.waitSignal(*args, **kwargs)
-
-    def wait_signals(self, *args, **kwargs):
-        return self.waitSignals(*args, **kwargs)
-
-    def assert_not_emitted(self, *args, **kwargs):
-        return self.assertNotEmitted(*args, **kwargs)
-
-    def wait_until(self, *args, **kwargs):
-        return self.waitUntil(*args, **kwargs)
-
-    def wait_callback(self, *args, **kwargs):
-        return self.waitCallback(*args, **kwargs)
 
 
 # provide easy access to exceptions to qtbot fixtures

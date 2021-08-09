@@ -1,3 +1,11 @@
+UNRELEASED
+----------
+
+- Improved PEP-8 aliases definition so they have a smaller call stack depth by one and better parameter suggestions in IDEs. (`#383`_). Thanks `@luziferius`_ for the PR.
+
+.. _#383: https://github.com/pytest-dev/pytest-qt/pull/383
+.. _@luziferius: https://github.com/luziferius
+
 4.0.2 (2021-06-14)
 ------------------
 
