@@ -108,8 +108,8 @@ Using with other Qt-related packages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Using Python's Qt modules (``PySide`` or ``PyQt5``) with other packages which
-use Qt (e.g. ``cv2``) can result conflict. This is because the latter build
-their own Qt and modify the environment variable. This may not raise error
+use Qt (e.g. ``cv2``) can result in conflicts. This is because the latter builds
+their own Qt and modify Qt-related environment variables. This may not raise errors
 in your local app, but running the tests on CI servers can fail.
 
 In this case, try use the package without Qt dependency. For example, if your
