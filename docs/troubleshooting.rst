@@ -103,3 +103,19 @@ pytest-xvfb
 ~~~~~~~~~~~
 
 Instead of running Xvfb manually it is possible to use ``pytest-xvfb`` plugin.
+
+Using with other Qt-related packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Using Python's Qt modules (``PySide`` or ``PyQt5``) with other packages which
+use Qt (e.g. ``cv2``) can result conflict. This is because the latter build
+their own Qt and modify the environment variable. This may not raise error
+in your local app, but running the tests on CI servers can fail.
+
+In this case, try use the package without Qt dependency. For example, if your
+code does not rely on ``cv2``'s Qt feature you can use
+``opencv-python-headless`` instead of full ``opencv-python``.
+
+More details can be found in `issue #396`_.
+
+.. _issue #396: https://github.com/pytest-dev/pytest-qt/issues/396
