@@ -12,7 +12,7 @@ repos:
         additional_dependencies: [black==20.8b1]
         language_version: python3
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.1.0
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
