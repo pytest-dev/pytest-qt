@@ -22,11 +22,19 @@ jobs:
             tox-env: "py38"
           - python-version: "3.9"
             tox-env: "py39"
+        # https://bugreports.qt.io/browse/PYSIDE-1797
+        exclude:
+          - qt-lib: pyside6
+            os: macos-latest
+            python-version: "3.6"
+          - qt-lib: pyside6
+            os: macos-latest
+            python-version: "3.7"
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
 
