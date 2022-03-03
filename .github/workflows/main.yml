@@ -22,11 +22,19 @@ jobs:
             tox-env: "py38"
           - python-version: "3.9"
             tox-env: "py39"
+        # https://bugreports.qt.io/browse/PYSIDE-1797
+        exclude:
+          - qt-lib: pyside6
+            os: macos-latest
+            python-version: "3.6"
+          - qt-lib: pyside6
+            os: macos-latest
+            python-version: "3.7"
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -48,9 +56,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v3
       with:
         python-version: "3.7"
     - name: Install tox
@@ -73,9 +81,9 @@ jobs:
     needs: [build, checks]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v3
       with:
         python-version: "3.7"
     - name: Build package
@@ -85,7 +93,7 @@ jobs:
         python setup.py sdist bdist_wheel
     - name: Publish package to PyPI
       if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-      uses: pypa/gh-action-pypi-publish@master
+      uses: pypa/gh-action-pypi-publish@v1.5.0
       with:
         user: __token__
         password: ${{ secrets.pypi_token }}
