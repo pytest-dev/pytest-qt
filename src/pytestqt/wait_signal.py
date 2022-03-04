@@ -626,7 +626,7 @@ class CallbackBlocker:
     :ivar int timeout: maximum time to wait for the callback to be called.
 
     :ivar bool raising:
-        If :class:`TimeoutError` should be raised if a timeout occured.
+        If :class:`TimeoutError` should be raised if a timeout occurred.
 
         .. note:: contrary to the parameter of same name in
             :meth:`pytestqt.qtbot.QtBot.waitCallback`, this parameter does not

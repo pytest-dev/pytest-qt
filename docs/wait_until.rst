@@ -59,7 +59,7 @@ is raised from the last assertion error and the test will fail:
     E         + Please input a number
     _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     >       qtbot.waitUntil(check_label)
-    E       pytestqt.exceptions.TimeoutError: waitUntil timed out in 1000 miliseconds
+    E       pytestqt.exceptions.TimeoutError: waitUntil timed out in 1000 milliseconds
 
 
 A second way to use ``qtbot.waitUntil`` is to pass a callback which returns ``True`` when the

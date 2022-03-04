@@ -88,7 +88,7 @@ class QtBot:
 
     .. staticmethod:: keyToAscii (key)
 
-        Auxiliary method that converts the given constant ot its equivalent ascii.
+        Auxiliary method that converts the given constant to its equivalent ascii.
 
         :param Qt.Key_* key: one of the constants for keys in the Qt namespace.
 
@@ -703,7 +703,7 @@ class _WaitWidgetContextManager:
 
     def __init__(self, method_name, adjective_name, widget, timeout):
         """
-        :param str method_name: name ot the ``QtTest`` method to call to check if widget is active/exposed.
+        :param str method_name: name to the ``QtTest`` method to call to check if widget is active/exposed.
         :param str adjective_name: "activated" or "exposed".
         :param widget:
         :param timeout:
