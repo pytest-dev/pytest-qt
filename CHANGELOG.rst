@@ -86,7 +86,7 @@ UNRELEASED
   pass ``timeout=1000`` to those functions (`#306`_). Thanks `@The-Compiler`_
   for the PR.
 - ``waitUntil`` now raises a ``TimeoutError`` when a timeout occurs to make the
-  cause of the timeout more explict (`#222`_). Thanks `@karlch`_ for the PR.
+  cause of the timeout more explicit (`#222`_). Thanks `@karlch`_ for the PR.
 - The ``QtTest::keySequence`` method is now exposed (if available, with Qt >=
   5.10) (`#289`_). Thanks `@The-Compiler`_ for the PR.
 - ``addWidget`` now enforces that its argument is a ``QWidget`` in order to
@@ -542,7 +542,7 @@ Other Changes
   when tests fail, similar to `pytest-catchlog`_. Also, tests
   can be configured to automatically fail if an unexpected message is generated.
 
-- New method ``waitSignals``: will block untill **all** signals given are
+- New method ``waitSignals``: will block until **all** signals given are
   triggered (thanks `@The-Compiler`_ for idea and complete PR).
 
 - New parameter ``raising`` to ``waitSignals`` and ``waitSignals``: when ``True``

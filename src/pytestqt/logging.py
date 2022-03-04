@@ -10,7 +10,7 @@ from pytestqt.utils import get_marker
 
 class QtLoggingPlugin:
     """
-    Pluging responsible for installing a QtMessageHandler before each
+    Plugin responsible for installing a QtMessageHandler before each
     test and augment reporting if the test failed with the messages captured.
     """
 

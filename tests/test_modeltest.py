@@ -242,7 +242,7 @@ def test_nop(qtmodeltester):
 
 
 def test_overridden_methods(qtmodeltester):
-    """Make sure overriden methods of a model are actually run.
+    """Make sure overridden methods of a model are actually run.
 
     With a previous implementation of the modeltester using sip.cast, the custom
     implementations did never actually run.
