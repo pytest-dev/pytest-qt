@@ -87,7 +87,7 @@ class _QtApi:
         self.pytest_qt_api = (
             self._get_qt_api_from_env()
             or api
-            or self._get_backend_loaded
+            or self._get_backend_loaded()
             or self._guess_qt_api()
         )
 
