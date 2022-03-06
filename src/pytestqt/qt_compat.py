@@ -11,6 +11,7 @@ Based on from https://github.com/epage/PythonUtils.
 
 from collections import namedtuple
 import os
+import sys
 
 import pytest
 
@@ -50,6 +51,17 @@ class _QtApi:
                 raise pytest.UsageError(msg)
         return api
 
+    def _get_backend_loaded(self):
+        if "PySide6" in sys.modules:
+            return "pyside6"
+        elif "PySide2" in sys.modules:
+            return "pyside2"
+        elif "PyQt6" in sys.modules:
+            return "pyqt6"
+        elif "PyQt5" in sys.modules:
+            return "pyqt5"
+        return None
+
     def _guess_qt_api(self):  # pragma: no cover
         def _can_import(name):
             try:
@@ -72,7 +84,12 @@ class _QtApi:
         return None
 
     def set_qt_api(self, api):
-        self.pytest_qt_api = self._get_qt_api_from_env() or api or self._guess_qt_api()
+        self.pytest_qt_api = (
+            self._get_qt_api_from_env()
+            or api
+            or self._get_backend_loaded
+            or self._guess_qt_api()
+        )
 
         self.is_pyside = self.pytest_qt_api in ["pyside2", "pyside6"]
         self.is_pyqt = self.pytest_qt_api in ["pyqt5", "pyqt6"]
