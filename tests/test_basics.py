@@ -479,7 +479,7 @@ def test_importerror(monkeypatch):
     def _fake_import(name, *args):
         raise ModuleNotFoundError(f"Failed to import {name}")
 
-    def _fake_is_library_loaded():
+    def _fake_is_library_loaded(name):
         return False
 
     monkeypatch.delenv("PYTEST_QT_API", raising=False)
