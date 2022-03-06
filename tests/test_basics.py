@@ -582,6 +582,72 @@ def test_importerror(monkeypatch):
         qt_api.set_qt_api(api=None)
 
 
+@pytest.mark.parametrize(
+    "option_api, backend",
+    [
+        ("pyqt5", "PyQt5"),
+        ("pyqt6", "PyQt6"),
+        ("pyside2", "PySide2"),
+        ("pyside6", "PySide6"),
+    ],
+)
+def test_already_loaded_backend(monkeypatch, option_api, backend):
+
+    import builtins
+
+    class Mock:
+        pass
+
+    qtcore = Mock()
+    for method_name in (
+        "qInstallMessageHandler",
+        "qDebug",
+        "qWarning",
+        "qCritical",
+        "qFatal",
+        "Signal",
+        "Slot",
+        "Property",
+    ):
+        setattr(qtcore, method_name, lambda *_: None)
+
+    if backend in ("PyQt5", "PyQt6"):
+        pyqt_version = {"PyQt5": 0x050B00, "PyQt6": 0x060000}[backend]
+        setattr(qtcore, "PYQT_VERSION", pyqt_version + 1)
+        setattr(qtcore, "pyqtSignal", object())
+        setattr(qtcore, "pyqtSlot", object())
+        setattr(qtcore, "pyqtProperty", object())
+
+    qtwidgets = Mock()
+    qapplication = Mock()
+    setattr(qapplication, "instance", lambda *_: None)
+    setattr(qtwidgets, "QApplication", qapplication)
+
+    qbackend = Mock()
+    setattr(qbackend, "QtCore", qtcore)
+    setattr(qbackend, "QtGui", object())
+    setattr(qbackend, "QtTest", object())
+    setattr(qbackend, "QtWidgets", qtwidgets)
+
+    import_orig = builtins.__import__
+
+    def _fake_import(name, *args, **kwargs):
+        if name == backend:
+            return qbackend
+        return import_orig(name, *args, **kwargs)
+
+    def _fake_is_library_loaded(name, *args):
+        return name == backend
+
+    monkeypatch.delenv("PYTEST_QT_API", raising=False)
+    monkeypatch.setattr(qt_compat, "_is_library_loaded", _fake_is_library_loaded)
+    monkeypatch.setattr(builtins, "__import__", _fake_import)
+
+    qt_api.set_qt_api(api=None)
+
+    assert qt_api.pytest_qt_api == option_api
+
+
 def test_before_close_func(testdir):
     """
     Test the `before_close_func` argument of qtbot.addWidget.
