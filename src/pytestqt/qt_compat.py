@@ -11,6 +11,7 @@ Based on from https://github.com/epage/PythonUtils.
 
 from collections import namedtuple
 import os
+import sys
 
 import pytest
 
@@ -21,6 +22,10 @@ VersionTuple = namedtuple("VersionTuple", "qt_api, qt_api_version, runtime, comp
 def _import(name):
     """Think call so we can mock it during testing"""
     return __import__(name)
+
+
+def _is_library_loaded(name):
+    return name in sys.modules
 
 
 class _QtApi:
@@ -50,6 +55,17 @@ class _QtApi:
                 raise pytest.UsageError(msg)
         return api
 
+    def _get_backend_loaded(self):
+        if _is_library_loaded("PySide6"):
+            return "pyside6"
+        if _is_library_loaded("PySide2"):
+            return "pyside2"
+        if _is_library_loaded("PyQt6"):
+            return "pyqt6"
+        if _is_library_loaded("PyQt5"):
+            return "pyqt5"
+        return None
+
     def _guess_qt_api(self):  # pragma: no cover
         def _can_import(name):
             try:
@@ -72,7 +88,12 @@ class _QtApi:
         return None
 
     def set_qt_api(self, api):
-        self.pytest_qt_api = self._get_qt_api_from_env() or api or self._guess_qt_api()
+        self.pytest_qt_api = (
+            self._get_qt_api_from_env()
+            or api
+            or self._get_backend_loaded()
+            or self._guess_qt_api()
+        )
 
         self.is_pyside = self.pytest_qt_api in ["pyside2", "pyside6"]
         self.is_pyqt = self.pytest_qt_api in ["pyqt5", "pyqt6"]
