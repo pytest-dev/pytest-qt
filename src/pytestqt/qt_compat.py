@@ -1,6 +1,6 @@
 """
 Provide a common way to import Qt classes used by pytest-qt in a unique manner,
-abstracting API differences between PyQt5 and PySide2/6.
+abstracting API differences between PyQt5/6 and PySide2/6.
 
 .. note:: This module is not part of pytest-qt public API, hence its interface
 may change between releases and users should not rely on it.
@@ -55,7 +55,7 @@ class _QtApi:
                 raise pytest.UsageError(msg)
         return api
 
-    def _get_backend_loaded(self):
+    def _get_already_loaded_backend(self):
         if _is_library_loaded("PySide6"):
             return "pyside6"
         if _is_library_loaded("PySide2"):
@@ -91,7 +91,7 @@ class _QtApi:
         self.pytest_qt_api = (
             self._get_qt_api_from_env()
             or api
-            or self._get_backend_loaded()
+            or self._get_already_loaded_backend()
             or self._guess_qt_api()
         )
 
