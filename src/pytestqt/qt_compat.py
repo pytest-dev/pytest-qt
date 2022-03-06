@@ -24,6 +24,10 @@ def _import(name):
     return __import__(name)
 
 
+def _is_library_loaded(name):
+    return name in sys.modules
+
+
 class _QtApi:
     """
     Interface to the underlying Qt API currently configured for pytest-qt.
@@ -52,13 +56,13 @@ class _QtApi:
         return api
 
     def _get_backend_loaded(self):
-        if "PySide6" in sys.modules:
+        if _is_library_loaded("PySide6"):
             return "pyside6"
-        elif "PySide2" in sys.modules:
+        if _is_library_loaded("PySide2"):
             return "pyside2"
-        elif "PyQt6" in sys.modules:
+        if _is_library_loaded("PyQt6"):
             return "pyqt6"
-        elif "PyQt5" in sys.modules:
+        if _is_library_loaded("PyQt5"):
             return "pyqt5"
         return None
 
