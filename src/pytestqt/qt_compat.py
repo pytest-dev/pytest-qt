@@ -9,7 +9,7 @@ Based on from https://github.com/epage/PythonUtils.
 """
 
 
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 import os
 import sys
 
@@ -17,6 +17,12 @@ import pytest
 
 
 VersionTuple = namedtuple("VersionTuple", "qt_api, qt_api_version, runtime, compiled")
+
+QT_APIS = OrderedDict()
+QT_APIS["pyside6"] = "PySide6"
+QT_APIS["pyside2"] = "PySide2"
+QT_APIS["pyqt6"] = "PyQt6"
+QT_APIS["pyqt5"] = "PyQt5"
 
 
 def _import(name):
@@ -41,12 +47,7 @@ class _QtApi:
 
     def _get_qt_api_from_env(self):
         api = os.environ.get("PYTEST_QT_API")
-        supported_apis = [
-            "pyside6",
-            "pyside2",
-            "pyqt6",
-            "pyqt5",
-        ]
+        supported_apis = QT_APIS.keys()
 
         if api is not None:
             api = api.lower()
@@ -56,14 +57,9 @@ class _QtApi:
         return api
 
     def _get_already_loaded_backend(self):
-        if _is_library_loaded("PySide6"):
-            return "pyside6"
-        if _is_library_loaded("PySide2"):
-            return "pyside2"
-        if _is_library_loaded("PyQt6"):
-            return "pyqt6"
-        if _is_library_loaded("PyQt5"):
-            return "pyqt5"
+        for api, backend in QT_APIS.items():
+            if _is_library_loaded(backend):
+                return api
         return None
 
     def _guess_qt_api(self):  # pragma: no cover
@@ -77,14 +73,9 @@ class _QtApi:
 
         # Note, not importing only the root namespace because when uninstalling from conda,
         # the namespace can still be there.
-        if _can_import("PySide6.QtCore"):
-            return "pyside6"
-        elif _can_import("PySide2.QtCore"):
-            return "pyside2"
-        elif _can_import("PyQt6.QtCore"):
-            return "pyqt6"
-        elif _can_import("PyQt5.QtCore"):
-            return "pyqt5"
+        for api, backend in QT_APIS.items():
+            if _can_import(f"{backend}.QtCore"):
+                return api
         return None
 
     def set_qt_api(self, api):
@@ -109,13 +100,7 @@ class _QtApi:
             )
             raise pytest.UsageError(msg)
 
-        _root_modules = {
-            "pyside6": "PySide6",
-            "pyside2": "PySide2",
-            "pyqt6": "PyQt6",
-            "pyqt5": "PyQt5",
-        }
-        _root_module = _root_modules[self.pytest_qt_api]
+        _root_module = QT_APIS[self.pytest_qt_api]
 
         def _import_module(module_name):
             m = __import__(_root_module, globals(), locals(), [module_name], 0)

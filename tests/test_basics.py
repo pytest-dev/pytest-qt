@@ -605,9 +605,6 @@ def test_already_loaded_backend(monkeypatch, option_api, backend):
         "qWarning",
         "qCritical",
         "qFatal",
-        "Signal",
-        "Slot",
-        "Property",
     ):
         setattr(qtcore, method_name, lambda *_: None)
 
@@ -617,6 +614,10 @@ def test_already_loaded_backend(monkeypatch, option_api, backend):
         setattr(qtcore, "pyqtSignal", object())
         setattr(qtcore, "pyqtSlot", object())
         setattr(qtcore, "pyqtProperty", object())
+    else:
+        setattr(qtcore, "Signal", object())
+        setattr(qtcore, "Slot", object())
+        setattr(qtcore, "Property", object())
 
     qtwidgets = Mock()
     qapplication = Mock()
