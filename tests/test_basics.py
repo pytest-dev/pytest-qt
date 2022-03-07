@@ -612,7 +612,7 @@ def test_already_loaded_backend(monkeypatch, option_api, backend):
         setattr(qtcore, method_name, lambda *_: None)
 
     if backend in ("PyQt5", "PyQt6"):
-        pyqt_version = {"PyQt5": 0x050B00, "PyQt6": 0x060000}[backend]
+        pyqt_version = 0x050B00 if backend == "PyQt5" else 0x060000
         setattr(qtcore, "PYQT_VERSION", pyqt_version + 1)
         setattr(qtcore, "pyqtSignal", object())
         setattr(qtcore, "pyqtSlot", object())
