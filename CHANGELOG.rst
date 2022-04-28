@@ -7,6 +7,7 @@ UNRELEASED
 - New ``qapp_cls`` fixture returning the ``QApplication`` class to use, thus
   making it easier to use a custom subclass without having to override the
   whole ``qapp`` fixture. Thanks `@The-Compiler`_ for the PR.
+- Updated model tester to track/verify in-flight changes based on Qt's updates.
 
 .. _#383: https://github.com/pytest-dev/pytest-qt/pull/383
 .. _@luziferius: https://github.com/luziferius

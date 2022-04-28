@@ -1,6 +1,6 @@
 # This file is based on the original C++ qabstractitemmodeltester.cpp from:
 # http://code.qt.io/cgit/qt/qtbase.git/tree/src/testlib/qabstractitemmodeltester.cpp
-# Commit 1f2f61d80860f55638cfd194bbed5d679a588b1f
+# Commit b6759ff81c1b6ecb7e18144db0b7c9c5884d7f24
 #
 # Licensed under the following terms:
 #
@@ -41,6 +41,7 @@
 #
 # $QT_END_LICENSE$
 
+import enum
 import collections
 
 from pytestqt.qt_compat import qt_api
@@ -50,6 +51,18 @@ _Changing = collections.namedtuple("_Changing", "parent, old_size, last, next")
 
 
 HAS_QT_TESTER = hasattr(qt_api.QtTest, "QAbstractItemModelTester")
+
+
+class _ChangeInFlight(enum.Enum):
+
+    COLUMNS_INSERTED = enum.auto()
+    COLUMNS_MOVED = enum.auto()
+    COLUMNS_REMOVED = enum.auto()
+    LAYOUT_CHANGED = enum.auto()
+    MODEL_RESET = enum.auto()
+    ROWS_INSERTED = enum.auto()
+    ROWS_MOVED = enum.auto()
+    ROWS_REMOVED = enum.auto()
 
 
 class ModelTester:
@@ -63,6 +76,7 @@ class ModelTester:
         self._remove = None
         self._changing = []
         self._qt_tester = None
+        self._change_in_flight = None
 
     def _debug(self, text):
         print("modeltest: " + text)
@@ -131,10 +145,32 @@ class ModelTester:
         # Special checks for changes
         self._model.layoutAboutToBeChanged.connect(self._on_layout_about_to_be_changed)
         self._model.layoutChanged.connect(self._on_layout_changed)
+
+        # column operations
+        self._model.columnsAboutToBeInserted.connect(
+            self._on_columns_about_to_be_inserted
+        )
+        self._model.columnsAboutToBeMoved.connect(self._on_columns_about_to_be_moved)
+        self._model.columnsAboutToBeRemoved.connect(
+            self._on_columns_about_to_be_removed
+        )
+        self._model.columnsInserted.connect(self._on_columns_inserted)
+        self._model.columnsMoved.connect(self._on_columns_moved)
+        self._model.columnsRemoved.connect(self._on_columns_removed)
+
+        # row operations
         self._model.rowsAboutToBeInserted.connect(self._on_rows_about_to_be_inserted)
+        self._model.rowsAboutToBeMoved.connect(self._on_rows_about_to_be_moved)
         self._model.rowsAboutToBeRemoved.connect(self._on_rows_about_to_be_removed)
         self._model.rowsInserted.connect(self._on_rows_inserted)
+        self._model.rowsMoved.connect(self._on_rows_moved)
         self._model.rowsRemoved.connect(self._on_rows_removed)
+
+        # reset
+        self._model.modelAboutToBeReset.connect(self._on_model_about_to_be_reset)
+        self._model.modelReset.connect(self._on_model_reset)
+
+        # data
         self._model.dataChanged.connect(self._on_data_changed)
         self._model.headerDataChanged.connect(self._on_header_data_changed)
 
@@ -515,11 +551,104 @@ class ModelTester:
             qt_api.QtCore.Qt.CheckState.Checked,
         ]
 
+    def _on_columns_about_to_be_inserted(self, parent, start, end):
+        assert self._change_in_flight is None
+        self._change_in_flight = _ChangeInFlight.COLUMNS_INSERTED
+        last_index = self._model.index(start - 1, 0, parent)
+        self._debug(
+            "columns about to be inserted: start {}, end {}, parent {}, "
+            "current count of parent {}, last before insertion {} {}".format(
+                start,
+                end,
+                self._modelindex_debug(parent),
+                self._model.rowCount(parent),
+                self._modelindex_debug(last_index),
+                self._model.data(last_index),
+            )
+        )
+
+    def _on_columns_inserted(self, parent, start, end):
+        assert self._change_in_flight == _ChangeInFlight.COLUMNS_INSERTED
+        self._change_in_flight = None
+        self._debug(
+            "columns inserted: start {}, end {}, parent {}, "
+            "current count of parent {}, ".format(
+                start,
+                end,
+                self._modelindex_debug(parent),
+                self._model.rowCount(parent),
+            )
+        )
+
+    def _on_columns_about_to_be_moved(
+        self, source_parent, source_start, source_end, dest_parent, dest_column
+    ):
+        assert self._change_in_flight is None
+        self._change_in_flight = _ChangeInFlight.COLUMNS_MOVED
+        self._debug(
+            "columns about to be moved: source start {}, source end {}, "
+            "source parent {}, destination parent {}, "
+            "destination column {}".format(
+                source_start,
+                source_end,
+                self._modelindex_debug(source_parent),
+                self._modelindex_debug(dest_parent),
+                dest_column,
+            )
+        )
+
+    def _on_columns_moved(
+        self, source_parent, source_start, source_end, dest_parent, dest_column
+    ):
+        assert self._change_in_flight == _ChangeInFlight.COLUMNS_MOVED
+        self._change_in_flight = None
+        self._debug(
+            "columns moved: source start {}, source end {}, "
+            "source parent {}, destination parent {}, "
+            "destination column {}".format(
+                source_start,
+                source_end,
+                self._modelindex_debug(source_parent),
+                self._modelindex_debug(dest_parent),
+                dest_column,
+            )
+        )
+
+    def _on_columns_about_to_be_removed(self, parent, start, end):
+        assert self._change_in_flight is None
+        self._change_in_flight = _ChangeInFlight.COLUMNS_REMOVED
+        last_index = self._model.index(start - 1, 0, parent)
+        self._debug(
+            "columns about to be removed: start {}, end {}, "
+            "parent {}, parent rowcount {}, last before removal {}".format(
+                start,
+                end,
+                self._modelindex_debug(parent),
+                self._model.rowCount(parent),
+                self._modelindex_debug(last_index),
+            )
+        )
+
+    def _on_columns_removed(self, parent, start, end):
+        assert self._change_in_flight == _ChangeInFlight.COLUMNS_REMOVED
+        self._change_in_flight = None
+        self._debug(
+            "columns removed: start {}, end {}, parent {}, parent rowcount {}".format(
+                start,
+                end,
+                self._modelindex_debug(parent),
+                self._model.rowCount(parent),
+            )
+        )
+
     def _on_rows_about_to_be_inserted(self, parent, start, end):
         """Store what is about to be inserted.
 
         This gets stored to make sure it actually happens in rowsInserted.
         """
+        assert self._change_in_flight is None
+        self._change_in_flight = _ChangeInFlight.ROWS_INSERTED
+
         last_index = self._model.index(start - 1, 0, parent)
         next_index = self._model.index(start, 0, parent)
         parent_rowcount = self._model.rowCount(parent)
@@ -545,6 +674,9 @@ class ModelTester:
 
     def _on_rows_inserted(self, parent, start, end):
         """Confirm that what was said was going to happen actually did."""
+        assert self._change_in_flight == _ChangeInFlight.ROWS_INSERTED
+        self._change_in_flight = None
+
         c = self._insert.pop()
         last_data = (
             self._model.data(self._model.index(start - 1, 0, parent))
@@ -595,21 +727,72 @@ class ModelTester:
         if next_data is not None:
             assert c.next == next_data
 
+    def _on_rows_about_to_be_moved(
+        self, source_parent, source_start, source_end, dest_parent, dest_row
+    ):
+        assert self._change_in_flight is None
+        self._change_in_flight = _ChangeInFlight.ROWS_MOVED
+        self._debug(
+            "rows about to be moved: source start {}, source end {}, "
+            "source parent {}, destination parent {}, "
+            "destination row {}".format(
+                source_start,
+                source_end,
+                self._modelindex_debug(source_parent),
+                self._modelindex_debug(dest_parent),
+                dest_row,
+            )
+        )
+
+    def _on_rows_moved(
+        self, source_parent, source_start, source_end, dest_parent, dest_row
+    ):
+        assert self._change_in_flight == _ChangeInFlight.ROWS_MOVED
+        self._change_in_flight = None
+        self._debug(
+            "rows moved: source start {}, source end {}, "
+            "source parent {}, destination parent {}, "
+            "destination row {}".format(
+                source_start,
+                source_end,
+                self._modelindex_debug(source_parent),
+                self._modelindex_debug(dest_parent),
+                dest_row,
+            )
+        )
+
     def _on_layout_about_to_be_changed(self):
+        assert self._change_in_flight is None
+        self._change_in_flight = _ChangeInFlight.LAYOUT_CHANGED
+
         for i in range(max(self._model.rowCount(), 100)):
             idx = qt_api.QtCore.QPersistentModelIndex(self._model.index(i, 0))
             self._changing.append(idx)
 
     def _on_layout_changed(self):
+        assert self._change_in_flight == _ChangeInFlight.LAYOUT_CHANGED
+        self._change_in_flight = None
+
         for p in self._changing:
             assert p == self._model.index(p.row(), p.column(), p.parent())
         self._changing = []
+
+    def _on_model_about_to_be_reset(self):
+        assert self._change_in_flight is None
+        self._change_in_flight = _ChangeInFlight.MODEL_RESET
+
+    def _on_model_reset(self):
+        assert self._change_in_flight == _ChangeInFlight.MODEL_RESET
+        self._change_in_flight = None
 
     def _on_rows_about_to_be_removed(self, parent, start, end):
         """Store what is about to be removed to make sure it actually happens.
 
         This gets stored to make sure it actually happens in rowsRemoved.
         """
+        assert self._change_in_flight is None
+        self._change_in_flight = _ChangeInFlight.ROWS_REMOVED
+
         parent_rowcount = self._model.rowCount(parent)
         last_index = (
             self._model.index(start - 1, 0, parent)
@@ -648,6 +831,9 @@ class ModelTester:
 
     def _on_rows_removed(self, parent, start, end):
         """Confirm that what was said was going to happen actually did."""
+        assert self._change_in_flight == _ChangeInFlight.ROWS_REMOVED
+        self._change_in_flight = None
+
         c = self._remove.pop()
         last_data = (
             self._model.data(self._model.index(start - 1, 0, c.parent))
