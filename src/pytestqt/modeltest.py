@@ -1,6 +1,6 @@
 # This file is based on the original C++ qabstractitemmodeltester.cpp from:
 # http://code.qt.io/cgit/qt/qtbase.git/tree/src/testlib/qabstractitemmodeltester.cpp
-# Commit 4af292fe5158c2d19e8ab1351c71c3940c7f1032
+# Commit 1f2f61d80860f55638cfd194bbed5d679a588b1f
 #
 # Licensed under the following terms:
 #
@@ -293,7 +293,7 @@ class ModelTester:
         # QModelIndex when asked for the parent of an invalid index.
         assert not self._parent(qt_api.QtCore.QModelIndex()).isValid()
 
-        if not self._has_children():
+        if self._model.rowCount() == 0 or self._column_count() == 0:
             return
 
         # Column 0                | Column 1      |
@@ -304,11 +304,12 @@ class ModelTester:
         # Common error test #1, make sure that a top level index has a parent
         # that is a invalid QModelIndex.
         top_index = self._model.index(0, 0, qt_api.QtCore.QModelIndex())
+        assert top_index.isValid()
         assert not self._parent(top_index).isValid()
 
         # Common error test #2, make sure that a second level index has a
         # parent that is the first level index.
-        if self._has_children(top_index):
+        if self._model.rowCount(top_index) > 0 and self._column_count(top_index) > 0:
             child_index = self._model.index(0, 0, top_index)
             assert self._parent(child_index) == top_index
 
@@ -317,7 +318,10 @@ class ModelTester:
         # Usually the second column shouldn't have children.
         if self._model.hasIndex(0, 1):
             top_index_1 = self._model.index(0, 1, qt_api.QtCore.QModelIndex())
-            if self._has_children(top_index) and self._has_children(top_index_1):
+            if (
+                self._model.rowCount(top_index) > 0
+                and self._model.rowCount(top_index_1) > 0
+            ):
                 child_index = self._model.index(0, 0, top_index)
                 assert child_index.isValid()
                 child_index_1 = self._model.index(0, 0, top_index_1)
@@ -447,7 +451,7 @@ class ModelTester:
 
     def _test_data(self):
         """Test model's implementation of data()"""
-        if not self._has_children():
+        if self._model.rowCount() == 0 or self._column_count() == 0:
             return
 
         # A valid index should have a valid QVariant data
@@ -607,9 +611,15 @@ class ModelTester:
         This gets stored to make sure it actually happens in rowsRemoved.
         """
         parent_rowcount = self._model.rowCount(parent)
-        last_index = self._model.index(start - 1, 0, parent) if start > 0 else None
+        last_index = (
+            self._model.index(start - 1, 0, parent)
+            if start > 0 and self._column_count(parent) > 0
+            else None
+        )
         next_index = (
-            self._model.index(end + 1, 0, parent) if end < parent_rowcount - 1 else None
+            self._model.index(end + 1, 0, parent)
+            if end < parent_rowcount - 1 and self._column_count(parent) > 0
+            else None
         )
 
         self._debug(
@@ -713,7 +723,7 @@ class ModelTester:
     def _column_count(self, parent=qt_api.QtCore.QModelIndex()):
         """
         Workaround for the fact that ``columnCount`` is a private method in
-        QAbstractListModel/QAbstractTableModel subclasses.
+        QAbstractListModel subclasses.
         """
         if isinstance(self._model, qt_api.QtCore.QAbstractListModel):
             return 1 if parent == qt_api.QtCore.QModelIndex() else 0
