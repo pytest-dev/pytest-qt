@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 from pytestqt.qt_compat import qt_api
@@ -94,12 +96,22 @@ def test_broken_types(check_model, broken_role):
     check_model(BrokenTypeModel(), should_pass=False)
 
 
+xfail_py311_pyside2 = pytest.mark.xfail(
+    sys.version_info[:2] == (3, 11) and qt_api.pytest_qt_api == "pyside2",
+    reason="Fails to OR mask flags",
+)
+
+
 @pytest.mark.parametrize(
     "role_value, should_pass",
     [
-        (qt_api.QtCore.Qt.AlignmentFlag.AlignLeft, True),
-        (qt_api.QtCore.Qt.AlignmentFlag.AlignRight, True),
-        (0xFFFFFF, False),
+        pytest.param(
+            qt_api.QtCore.Qt.AlignmentFlag.AlignLeft, True, marks=xfail_py311_pyside2
+        ),
+        pytest.param(
+            qt_api.QtCore.Qt.AlignmentFlag.AlignRight, True, marks=xfail_py311_pyside2
+        ),
+        pytest.param(0xFFFFFF, False, marks=xfail_py311_pyside2),
         ("foo", False),
         (object(), False),
     ],

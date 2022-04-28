@@ -1,6 +1,7 @@
 UNRELEASED
 ----------
 
+- ``pytest-qt`` now requires Python 3.7+.
 - Improved PEP-8 aliases definition so they have a smaller call stack depth by one and better parameter suggestions in IDEs. (`#383`_). Thanks `@luziferius`_ for the PR.
 
 .. _#383: https://github.com/pytest-dev/pytest-qt/pull/383

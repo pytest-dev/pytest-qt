@@ -10,12 +10,10 @@ jobs:
       fail-fast: false
 
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11-dev"]
         qt-lib: [pyqt5, pyqt6, pyside2, pyside6]
         os: [ubuntu-20.04, windows-latest, macos-latest]
         include:
-          - python-version: "3.6"
-            tox-env: "py36"
           - python-version: "3.7"
             tox-env: "py37"
           - python-version: "3.8"
@@ -24,14 +22,22 @@ jobs:
             tox-env: "py39"
           - python-version: "3.10"
             tox-env: "py310"
+          - python-version: "3.11-dev"
+            tox-env: "py311"
         # https://bugreports.qt.io/browse/PYSIDE-1797
         exclude:
           - qt-lib: pyside6
             os: macos-latest
-            python-version: "3.6"
-          - qt-lib: pyside6
-            os: macos-latest
             python-version: "3.7"
+          - qt-lib: pyside6
+            os: ubuntu-20.04
+            python-version: "3.7"
+          # Not installable so far
+          - qt-lib: pyside6
+            python-version: "3.11-dev"
+          - qt-lib: pyside2
+            os: windows-latest
+            python-version: "3.11-dev"
 
     steps:
     - uses: actions/checkout@v3
