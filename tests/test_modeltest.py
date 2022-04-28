@@ -54,6 +54,23 @@ def test_sort_filter_proxy_model(qtmodeltester):
     qtmodeltester.check(proxy, force_py=True)
 
 
+def test_standard_item_model_zero_columns(qtmodeltester):
+    model = qt_api.QtGui.QStandardItemModel()
+    qtmodeltester.check(model, force_py=True)
+
+    # QTBUG-92220
+    model.insertRows(0, 5)
+    model.removeRows(0, 5)
+
+    # QTBUG-92886
+    model.insertRows(0, 5)
+    model.removeRows(1, 2)
+
+    parent_index = model.index(0, 0)
+    model.insertRows(0, 5, parent_index)
+    model.insertRows(1, 2, parent_index)
+
+
 @pytest.mark.parametrize(
     "broken_role",
     [
