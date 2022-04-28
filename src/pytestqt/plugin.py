@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from pytestqt.exceptions import (
@@ -27,7 +29,30 @@ def qapp_args():
 
 
 @pytest.fixture(scope="session")
-def qapp(qapp_args, pytestconfig):
+def qapp_cls():
+    """
+    Fixture that provides the QApplication subclass to use.
+
+    You can override this fixture to use a custom QApplication subclass from
+    your application for tests:
+
+    .. code-block:: python
+
+       @pytest.fixture(scope="session")
+       def qapp_cls():
+           return myapp.Application
+
+    Or use a ``QCoreApplication`` if you want to test a non-gui Qt application:
+
+       @pytest.fixture(scope="session")
+       def qapp_cls():
+           return qt_api.QtCore.QCoreApplication
+    """
+    return qt_api.QtWidgets.QApplication
+
+
+@pytest.fixture(scope="session")
+def qapp(qapp_args, qapp_cls, pytestconfig):
     """
     Fixture that instantiates the QApplication instance that will be used by
     the tests.
@@ -38,12 +63,17 @@ def qapp(qapp_args, pytestconfig):
     app = qt_api.QtWidgets.QApplication.instance()
     if app is None:
         global _qapp_instance
-        _qapp_instance = qt_api.QtWidgets.QApplication(qapp_args)
+        _qapp_instance = qapp_cls(qapp_args)
         name = pytestconfig.getini("qt_qapp_name")
         _qapp_instance.setApplicationName(name)
         return _qapp_instance
     else:
-        return app  # pragma: no cover
+        if not isinstance(app, qapp_cls):
+            warnings.warn(
+                f"Existing QApplication {app} is not an instance of qapp_cls: "
+                f"{qapp_cls}"
+            )
+        return app
 
 
 # holds a global QApplication instance created in the qapp fixture; keeping
