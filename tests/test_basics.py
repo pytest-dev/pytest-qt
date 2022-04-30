@@ -42,6 +42,90 @@ def test_qapp_name(testdir):
     res.stdout.fnmatch_lines("*1 passed*")
 
 
+def test_qapp_cls(testdir):
+    testdir.makepyfile(
+        app="""
+        from pytestqt.qt_compat import qt_api
+
+        # Gets run before the plugin via conftest.py
+        qt_api.set_qt_api(None)
+
+        class CustomQApp(qt_api.QtWidgets.QApplication):
+            pass
+        """
+    )
+    testdir.makeconftest(
+        """
+        import pytest
+        from app import CustomQApp
+
+        @pytest.fixture(scope="session")
+        def qapp_cls():
+            return CustomQApp
+        """
+    )
+    testdir.makepyfile(
+        """
+        from app import CustomQApp
+
+        def test_cls(qapp):
+            assert isinstance(qapp, CustomQApp)
+    """
+    )
+    res = testdir.runpytest_subprocess()
+    res.stdout.fnmatch_lines("*1 passed*")
+
+
+def test_qapp_reuse_existing(testdir):
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qt_api
+
+        app_instance = qt_api.QtWidgets.QApplication([])
+
+        def test_instances(qapp):
+            assert qapp is app_instance
+            assert qapp is qt_api.QtWidgets.QApplication.instance()
+        """
+    )
+    res = testdir.runpytest_subprocess()
+    res.stdout.fnmatch_lines("*1 passed*")
+
+
+def test_qapp_reuse_wrong_type(testdir):
+    testdir.makeconftest(
+        """
+        import pytest
+        from pytestqt.qt_compat import qt_api
+
+        # Gets run before the plugin
+        qt_api.set_qt_api(None)
+
+        class CustomQApp(qt_api.QtWidgets.QApplication):
+            pass
+
+        @pytest.fixture(scope="session")
+        def qapp_cls():
+            return CustomQApp
+        """
+    )
+    testdir.makepyfile(
+        """
+        from pytestqt.qt_compat import qt_api
+
+        app_instance = qt_api.QtWidgets.QApplication([])
+
+        def test_wrong_type(qapp):
+            pass
+        """
+    )
+    res = testdir.runpytest_subprocess()
+    res.stdout.fnmatch_lines(
+        "*Existing QApplication <*.QtWidgets.QApplication* at 0x*> is not an "
+        "instance of qapp_cls: <class 'conftest.CustomQApp'>"
+    )
+
+
 def test_key_events(qtbot, event_recorder):
     """
     Basic key events test.

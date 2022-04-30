@@ -64,13 +64,16 @@ custom application like below:
 
 If your tests require access to app-level functions, like
 ``CustomQApplication.custom_function()``, you can override the built-in
-``qapp`` fixture in your ``conftest.py`` to use your own app:
+``qapp_cls`` fixture in your ``conftest.py`` to return your custom class:
 
 .. code-block:: python
 
     @pytest.fixture(scope="session")
-    def qapp():
-        yield CustomQApplication([])
+    def qapp_cls():
+        return CustomQApplication
+
+The ``qapp`` fixture will then use the returned class instead of the default
+``QApplication`` from ``QtWidgets``.
 
 Setting a QApplication name
 ---------------------------
