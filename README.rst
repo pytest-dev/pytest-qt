@@ -86,7 +86,7 @@ this order:
 - ``PyQt5``
 
 To force a particular API, set the configuration variable ``qt_api`` in your ``pytest.ini`` file to
-``pyqt6``, ``pyside2``, ``pyqt6`` or ```pyqt5``:
+``pyqt5``, ``pyside2``, or ``pyqt6``:
 
 .. code-block:: ini
 
