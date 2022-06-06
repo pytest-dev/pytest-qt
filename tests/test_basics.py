@@ -1,7 +1,6 @@
 import weakref
 
 import pytest
-
 from pytestqt import qt_compat
 from pytestqt.qt_compat import qt_api
 
@@ -165,7 +164,9 @@ def test_mouse_events(qtbot, event_recorder):
 
     event_recorder.registerEvent(qt_api.QtGui.QMouseEvent, extract)
 
-    qtbot.mousePress(event_recorder, qt_api.QtCore.Qt.MouseButton.LeftButton)
+    qtbot.mousePress(
+        widget=event_recorder, button=qt_api.QtCore.Qt.MouseButton.LeftButton
+    )
     assert event_recorder.event_data == (
         qt_api.QtCore.QEvent.Type.MouseButtonPress,
         qt_api.QtCore.Qt.MouseButton.LeftButton,
@@ -173,9 +174,9 @@ def test_mouse_events(qtbot, event_recorder):
     )
 
     qtbot.mousePress(
-        event_recorder,
-        qt_api.QtCore.Qt.MouseButton.RightButton,
-        qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
+        widget=event_recorder,
+        button=qt_api.QtCore.Qt.MouseButton.RightButton,
+        modifiers=qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
     )
     assert event_recorder.event_data == (
         qt_api.QtCore.QEvent.Type.MouseButtonPress,

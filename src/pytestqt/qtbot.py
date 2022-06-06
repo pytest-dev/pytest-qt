@@ -1,16 +1,16 @@
 import contextlib
-import weakref
 import warnings
+import weakref
 
 from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
 from pytestqt.wait_signal import (
-    SignalBlocker,
-    MultiSignalBlocker,
-    SignalEmittedSpy,
-    SignalEmittedError,
     CallbackBlocker,
     CallbackCalledTwiceError,
+    MultiSignalBlocker,
+    SignalBlocker,
+    SignalEmittedError,
+    SignalEmittedSpy,
 )
 
 
@@ -636,25 +636,85 @@ class QtBot:
             raise NotImplementedError("This method isn't available on PyQt5.")
         qt_api.QtTest.QTest.keyToAscii(key)
 
-    @staticmethod
-    def mouseClick(*args, **kwargs):
-        qt_api.QtTest.QTest.mouseClick(*args, **kwargs)
+    def mouseClick(self, widget, button, pos=None, modifiers=None):
+        if pos is None:
+            pos = widget.rect().center()
+        self.mouseMove(widget, pos)
+        self.mousePress(widget, button, pos, modifiers)
+        self.mouseRelease(widget, button, pos, modifiers)
 
-    @staticmethod
-    def mouseDClick(*args, **kwargs):
-        qt_api.QtTest.QTest.mouseDClick(*args, **kwargs)
+    def mouseDClick(self, widget, button, pos=None, modifiers=None):
+        if pos is None:
+            pos = widget.rect().center()
+        self.mouseClick(widget, button, pos, modifiers)
+        self.mouseClick(widget, button, pos, modifiers)
 
-    @staticmethod
-    def mouseMove(*args, **kwargs):
-        qt_api.QtTest.QTest.mouseMove(*args, **kwargs)
+    def mouseDrag(self, widget, button, pos1, pos2, modifiers=None):
+        self.mouseMove(widget, pos1)
+        self.mousePress(widget, pos1, button, modifiers)
+        self.mouseMove(widget, pos2, button, modifiers)
+        self.mouseRelease(widget, pos2, button, modifiers)
 
-    @staticmethod
-    def mousePress(*args, **kwargs):
-        qt_api.QtTest.QTest.mousePress(*args, **kwargs)
+    def mouseMove(self, widget, pos, modifiers=None):
+        if isinstance(widget, qt_api.QtWidgets.QGraphicsView):
+            widget = widget.viewport()
+        if modifiers is None:
+            modifiers = qt_api.QtCore.Qt.KeyboardModifier.NoModifier
+        if isinstance(pos, qt_api.QtCore.QPoint):
+            pos = qt_api.QtCore.QPointF(pos)  # PyQt6 requires `QPointF`
+        buttons = qt_api.QtCore.Qt.MouseButton.NoButton
+        # `QMouseEvent` does not accept keyword arguments. Results in `TypeError:
+        # not enough arguments`. Use positional instead.
+        event = qt_api.QtGui.QMouseEvent(
+            qt_api.QtCore.QEvent.Type.MouseMove,
+            pos,
+            qt_api.QtCore.Qt.MouseButton.NoButton,
+            buttons,
+            modifiers,
+        )
+        qt_api.QtWidgets.QApplication.sendEvent(widget, event)
 
-    @staticmethod
-    def mouseRelease(*args, **kwargs):
-        qt_api.QtTest.QTest.mouseRelease(*args, **kwargs)
+    def mousePress(self, widget, button, pos=None, modifiers=None):
+        if isinstance(widget, qt_api.QtWidgets.QGraphicsView):
+            widget = widget.viewport()
+        if modifiers is None:
+            modifiers = qt_api.QtCore.Qt.KeyboardModifier.NoModifier
+        if pos is None:
+            pos = widget.rect().center()
+        if isinstance(pos, qt_api.QtCore.QPoint):
+            pos = qt_api.QtCore.QPointF(pos)  # PyQt6 requires `QPointF`
+        buttons = qt_api.QtCore.Qt.MouseButton.NoButton
+        # `QMouseEvent` does not accept keyword arguments. Results in `TypeError:
+        # not enough arguments`. Use positional instead.
+        event = qt_api.QtGui.QMouseEvent(
+            qt_api.QtCore.QEvent.Type.MouseButtonPress,
+            pos,
+            button,
+            buttons,
+            modifiers,
+        )
+        qt_api.QtWidgets.QApplication.sendEvent(widget, event)
+
+    def mouseRelease(self, widget, button, pos=None, modifiers=None):
+        if isinstance(widget, qt_api.QtWidgets.QGraphicsView):
+            widget = widget.viewport()
+        if modifiers is None:
+            modifiers = qt_api.QtCore.Qt.KeyboardModifier.NoModifier
+        if pos is None:
+            pos = widget.rect().center()
+        if isinstance(pos, qt_api.QtCore.QPoint):
+            pos = qt_api.QtCore.QPointF(pos)  # PyQt6 requires `QPointF`
+        buttons = qt_api.QtCore.Qt.MouseButton.NoButton
+        # `QMouseEvent` does not accept keyword arguments. Results in `TypeError:
+        # not enough arguments`. Use positional instead.
+        event = qt_api.QtGui.QMouseEvent(
+            qt_api.QtCore.QEvent.Type.MouseButtonRelease,
+            pos,
+            button,
+            buttons,
+            modifiers,
+        )
+        qt_api.QtWidgets.QApplication.sendEvent(widget, event)
 
 
 # provide easy access to exceptions to qtbot fixtures

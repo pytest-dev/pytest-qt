@@ -9,11 +9,10 @@ Based on from https://github.com/epage/PythonUtils.
 """
 
 
-from collections import namedtuple
 import os
+from collections import namedtuple
 
 import pytest
-
 
 VersionTuple = namedtuple("VersionTuple", "qt_api, qt_api_version, runtime, compiled")
 
