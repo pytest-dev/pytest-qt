@@ -178,8 +178,9 @@ Many thanks to:
 
 **Powered by**
 
-.. |pycharm| image:: https://www.jetbrains.com/pycharm/docs/logo_pycharm.png
+.. |pycharm| image:: https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png
   :target: https://www.jetbrains.com/pycharm
+  :width: 400
 
 .. |pydev| image:: http://www.pydev.org/images/pydev_banner3.png
   :target: https://www.pydev.org
