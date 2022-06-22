@@ -2,7 +2,7 @@ import contextlib
 import weakref
 import warnings
 
-from pytestqt.exceptions import TimeoutError
+from pytestqt.exceptions import TimeoutError, ScreenshotError
 from pytestqt.qt_compat import qt_api
 from pytestqt.wait_signal import (
     SignalBlocker,
@@ -39,6 +39,7 @@ class QtBot:
     .. automethod:: waitExposed
     .. automethod:: waitForWindowShown
     .. automethod:: stop
+    .. automethod:: screenshot
     .. automethod:: wait
 
     **Signals and Events**
@@ -603,6 +604,56 @@ class QtBot:
             yield exceptions
 
     capture_exceptions = captureExceptions
+
+    def screenshot(self, widget, suffix="", region=None):
+        """
+        .. versionadded:: 4.1
+
+        Take a screenshot of the given widget and save it.
+
+        The file is saved in a test-specific directory using pytest's ``tmp_path``
+        fixture. The filename is ensured to be unique using a counter, and contains the
+        ``objectName()`` of the widget if set, as well as its class name. A custom
+        ``suffix`` can be given to add to the generated name.
+
+        :param QWidget widget:
+            The widget to take a screenshot of.
+        :param str suffix:
+            An optional suffix to add to the filename.
+        :param QRect region:
+            The region of the widget to screeshot. By default, the entire widget is
+            contained.
+        :returns:
+            A ``pathlib.Path`` object with the taken screenshot.
+        :raises ScreenshotError: if taking the screenshot or saving the file failed.
+        """
+        pixmap = widget.grab() if region is None else widget.grab(region)
+        if pixmap.isNull():
+            raise ScreenshotError("Got null pixmap from Qt")
+
+        tmp_path = self._request.getfixturevalue("tmp_path")
+
+        parts = ["screenshot", widget.__class__.__name__]
+        name = widget.objectName()
+        if name:
+            parts.append(name)
+        if suffix:
+            parts.append(suffix)
+
+        for i in range(1, 500):
+            counter = [] if i == 1 else [str(i)]
+
+            path = tmp_path / ("_".join(parts + counter) + ".png")
+            if path.exists():
+                continue
+
+            ok = pixmap.save(str(path))
+            if not ok:
+                raise ScreenshotError(f"Saving to {path} failed")
+
+            return path
+
+        raise ScreenshotError(f"Failed to find unique filename, last try: {path}")
 
     @staticmethod
     def keyClick(*args, **kwargs):

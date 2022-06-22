@@ -20,6 +20,7 @@ pytest-qt
     modeltester
     qapplication
     note_dialogs
+    debugging
     troubleshooting
     reference
     changelog

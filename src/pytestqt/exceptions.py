@@ -101,3 +101,14 @@ class TimeoutError(Exception):
     """
 
     pass
+
+
+class ScreenshotError(Exception):
+    """
+    .. versionadded:: 4.1
+
+    Exception thrown by :method:`pytestqt.qtbot.QtBot.screenshot` if taking the
+    screenshot failed.
+    """
+
+    pass
