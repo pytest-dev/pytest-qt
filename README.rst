@@ -74,7 +74,7 @@ Features
 Requirements
 ============
 
-Since version 4.0.0, ``pytest-qt`` requires Python 3.6+.
+Since version 4.1.0, ``pytest-qt`` requires Python 3.7+.
 
 Works with either PySide6_, PySide2_, PyQt6_ or PyQt5_, picking whichever
 is available on the system, giving preference to the first one installed in
