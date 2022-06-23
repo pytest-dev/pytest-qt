@@ -8,6 +8,9 @@ UNRELEASED
   making it easier to use a custom subclass without having to override the
   whole ``qapp`` fixture. Thanks `@The-Compiler`_ for the PR.
 - Updated model tester to track/verify in-flight changes based on Qt's updates.
+  Thanks `@The-Compiler`_ for the PR.
+- New ``qtbot.screenshot()`` method which can be used to take a screenshot of
+  the given widget. Thanks `@The-Compiler`_ for the PR.
 
 .. _#383: https://github.com/pytest-dev/pytest-qt/pull/383
 .. _@luziferius: https://github.com/luziferius
