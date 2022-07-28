@@ -84,14 +84,14 @@ As an example, here is a working config :
         strategy:
           matrix:
             os : [ubuntu-latest]
-            python: [3.7]
+            python: ["3.10"]
         env:
           DISPLAY: ':99.0'
         steps:
         - name: get repo
-          uses: actions/checkout@v1
+          uses: actions/checkout@v3
         - name: Set up Python
-          uses: actions/setup-python@v1
+          uses: actions/setup-python@v4
           with:
             python-version: ${{ matrix.python }}
         - name: setup ${{ matrix.os }}
