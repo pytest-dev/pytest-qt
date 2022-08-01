@@ -19,11 +19,11 @@ repos:
     -   id: check-yaml
     -   id: debug-statements
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v2.37.2
+    rev: v2.37.3
     hooks:
     - id: pyupgrade
 -   repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: 5.0.2
     hooks:
     - id: flake8
 -   repo: https://github.com/pre-commit/pygrep-hooks
