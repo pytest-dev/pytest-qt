@@ -241,7 +241,7 @@ class QtBot:
             This method does **not** raise ``TimeoutError`` if the window wasn't shown.
 
         .. deprecated:: 4.0
-            Use the qtbot.waitForWindowExposed context manager instead.
+            Use the ``qtbot.waitExposed`` context manager instead.
 
         :param QWidget widget:
             Widget to wait on.
