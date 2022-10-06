@@ -1,6 +1,9 @@
 UNRELEASED
 ----------
 
+- Use ``pytest.hookimpl`` to configure hooks, avoiding a deprecation warning in
+  the upcoming pytest 7.2.0.
+
 4.1.0 (2022-06-23)
 ------------------
 

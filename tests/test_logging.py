@@ -541,7 +541,7 @@ def test_logging_broken_makereport(testdir):
         conftest="""
         import pytest
 
-        @pytest.mark.hookwrapper(tryfirst=True)
+        @pytest.hookimpl(hookwrapper=True, tryfirst=True)
         def pytest_runtest_makereport(call):
             if call.when == 'call':
                 raise Exception("This should not be hidden")
