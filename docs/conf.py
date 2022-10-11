@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # pytest-qt documentation build configuration file, created by
 # sphinx-quickstart on Mon Mar 04 22:54:36 2013.
