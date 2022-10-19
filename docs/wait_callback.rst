@@ -25,8 +25,8 @@ For example:
 Anything following the ``with`` block will be run only after the callback has been called.
 
 If the callback doesn't get called during the given timeout,
-:class:`qtbot.TimeoutError <TimeoutError>` is raised. If it is called more than once,
-:class:`qtbot.CallbackCalledTwiceError <CallbackCalledTwiceError>` is raised.
+:class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>` is raised. If it is called more than once,
+:class:`qtbot.CallbackCalledTwiceError <pytestqt.wait_signal.CallbackCalledTwiceError>` is raised.
 
 raising parameter
 -----------------

@@ -11,7 +11,14 @@ UNRELEASED
 - Now ``pytest-qt`` will check if any of the Qt libraries is already imported by the time the plugin loads,
   and use it if that is the case (`#412`_). Thanks `@eyllanesc`_ for the PR.
 
+- Most custom ``pytest-qt`` exceptions can be accessed via ``qtbot`` (for example ``qtbot.TimeoutError``),
+  but it was not always explicit in the documentation that this is the recommended way to access those exceptions, instead
+  of importing them from ``pytestqt.exceptions``.
+  This is now clarified in the documentation and examples, and an alias to ``ScreenshotError`` has been
+  added to ``qtbot`` so it can be accessed in the same way (`#460`_).
+
 .. _#412: https://github.com/pytest-dev/pytest-qt/pull/412
+.. _#460: https://github.com/pytest-dev/pytest-qt/pull/460
 .. _@eyllanesc: https://github.com/eyllanesc
 
 4.1.0 (2022-06-23)

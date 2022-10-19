@@ -21,7 +21,7 @@ ensuring the results are correct:
             app.worker.start()
             # Test will block at this point until either the "finished" or the
             # "failed" signal is emitted. If 10 seconds passed without a signal,
-            # TimeoutError will be raised.
+            # qtbot.TimeoutError will be raised.
 
         assert_application_results(app)
 
@@ -34,7 +34,7 @@ raising parameter
 .. versionchanged:: 2.0
 
 You can pass ``raising=False`` to avoid raising a
-:class:`qtbot.TimeoutError <TimeoutError>` if the timeout is
+:class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>` if the timeout is
 reached before the signal is triggered:
 
 .. code-block:: python

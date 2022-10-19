@@ -1,7 +1,5 @@
 import pytest
 
-from pytestqt.exceptions import TimeoutError
-
 
 def test_wait_until(qtbot, wait_4_ticks_callback, tick_counter):
     tick_counter.start(100)
@@ -11,7 +9,7 @@ def test_wait_until(qtbot, wait_4_ticks_callback, tick_counter):
 
 def test_wait_until_timeout(qtbot, wait_4_ticks_callback, tick_counter):
     tick_counter.start(200)
-    with pytest.raises(TimeoutError):
+    with pytest.raises(qtbot.TimeoutError):
         qtbot.waitUntil(wait_4_ticks_callback, timeout=100)
     assert tick_counter.ticks < 4
 

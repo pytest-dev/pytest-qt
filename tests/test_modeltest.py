@@ -267,7 +267,6 @@ def test_changing_model_sort(qtmodeltester):
 
 def test_nop(qtmodeltester):
     """We should not get a crash on cleanup with no model."""
-    pass
 
 
 def test_overridden_methods(qtmodeltester):
