@@ -611,24 +611,24 @@ def test_already_loaded_backend(monkeypatch, option_api, backend):
     if backend in ("PyQt5", "PyQt6"):
         pyqt_version = 0x050B00 if backend == "PyQt5" else 0x060000
         qtcore.PYQT_VERSION = pyqt_version + 1
-        setattr(qtcore, "pyqtSignal", object())
-        setattr(qtcore, "pyqtSlot", object())
-        setattr(qtcore, "pyqtProperty", object())
+        qtcore.pyqtSignal = object()
+        qtcore.pyqtSlot = object()
+        qtcore.pyqtProperty = object()
     else:
-        setattr(qtcore, "Signal", object())
-        setattr(qtcore, "Slot", object())
-        setattr(qtcore, "Property", object())
+        qtcore.Signal = object()
+        qtcore.Slot = object()
+        qtcore.Property = object()
 
     qtwidgets = Mock()
     qapplication = Mock()
-    setattr(qapplication, "instance", lambda *_: None)
-    setattr(qtwidgets, "QApplication", qapplication)
+    qapplication.instance = lambda *_: None
+    qtwidgets.QApplication = qapplication
 
     qbackend = Mock()
-    setattr(qbackend, "QtCore", qtcore)
-    setattr(qbackend, "QtGui", object())
-    setattr(qbackend, "QtTest", object())
-    setattr(qbackend, "QtWidgets", qtwidgets)
+    qbackend.QtCore = qtcore
+    qbackend.QtGui = object()
+    qbackend.QtTest = object()
+    qbackend.QtWidgets = qtwidgets
 
     import_orig = builtins.__import__
 
