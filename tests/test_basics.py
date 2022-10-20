@@ -563,8 +563,12 @@ def test_importerror(monkeypatch):
     def _fake_import(name, *args):
         raise ModuleNotFoundError(f"Failed to import {name}")
 
+    def _fake_is_library_loaded(name, *args):
+        return False
+
     monkeypatch.delenv("PYTEST_QT_API", raising=False)
     monkeypatch.setattr(qt_compat, "_import", _fake_import)
+    monkeypatch.setattr(qt_compat, "_is_library_loaded", _fake_is_library_loaded)
 
     expected = (
         "pytest-qt requires either PySide2, PySide6, PyQt5 or PyQt6 installed.\n"
@@ -576,6 +580,73 @@ def test_importerror(monkeypatch):
 
     with pytest.raises(pytest.UsageError, match=expected):
         qt_api.set_qt_api(api=None)
+
+
+@pytest.mark.parametrize(
+    "option_api, backend",
+    [
+        ("pyqt5", "PyQt5"),
+        ("pyqt6", "PyQt6"),
+        ("pyside2", "PySide2"),
+        ("pyside6", "PySide6"),
+    ],
+)
+def test_already_loaded_backend(monkeypatch, option_api, backend):
+
+    import builtins
+
+    class Mock:
+        pass
+
+    qtcore = Mock()
+    for method_name in (
+        "qInstallMessageHandler",
+        "qDebug",
+        "qWarning",
+        "qCritical",
+        "qFatal",
+    ):
+        setattr(qtcore, method_name, lambda *_: None)
+
+    if backend in ("PyQt5", "PyQt6"):
+        pyqt_version = 0x050B00 if backend == "PyQt5" else 0x060000
+        qtcore.PYQT_VERSION = pyqt_version + 1
+        qtcore.pyqtSignal = object()
+        qtcore.pyqtSlot = object()
+        qtcore.pyqtProperty = object()
+    else:
+        qtcore.Signal = object()
+        qtcore.Slot = object()
+        qtcore.Property = object()
+
+    qtwidgets = Mock()
+    qapplication = Mock()
+    qapplication.instance = lambda *_: None
+    qtwidgets.QApplication = qapplication
+
+    qbackend = Mock()
+    qbackend.QtCore = qtcore
+    qbackend.QtGui = object()
+    qbackend.QtTest = object()
+    qbackend.QtWidgets = qtwidgets
+
+    import_orig = builtins.__import__
+
+    def _fake_import(name, *args, **kwargs):
+        if name == backend:
+            return qbackend
+        return import_orig(name, *args, **kwargs)
+
+    def _fake_is_library_loaded(name, *args):
+        return name == backend
+
+    monkeypatch.delenv("PYTEST_QT_API", raising=False)
+    monkeypatch.setattr(qt_compat, "_is_library_loaded", _fake_is_library_loaded)
+    monkeypatch.setattr(builtins, "__import__", _fake_import)
+
+    qt_api.set_qt_api(api=None)
+
+    assert qt_api.pytest_qt_api == option_api
 
 
 def test_before_close_func(testdir):

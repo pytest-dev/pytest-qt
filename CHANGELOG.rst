@@ -4,6 +4,12 @@ UNRELEASED
 - Use ``pytest.hookimpl`` to configure hooks, avoiding a deprecation warning in
   the upcoming pytest 7.2.0.
 
+- Now ``pytest-qt`` will check if any of the Qt libraries is already imported by the time the plugin loads,
+  and use it if that is the case (`#412`_). Thanks `@eyllanesc`_ for the PR.
+
+.. _#412: https://github.com/pytest-dev/pytest-qt/pull/412
+.. _@eyllanesc: https://github.com/eyllanesc
+
 4.1.0 (2022-06-23)
 ------------------
 
