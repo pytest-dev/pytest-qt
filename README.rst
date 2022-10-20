@@ -76,9 +76,11 @@ Requirements
 
 Since version 4.1.0, ``pytest-qt`` requires Python 3.7+.
 
-Works with either PySide6_, PySide2_, PyQt6_ or PyQt5_, picking whichever
-is available on the system, giving preference to the first one installed in
-this order:
+Works with either PySide6_, PySide2_, PyQt6_ or PyQt5_.
+
+If any of the above libraries is already imported by the time the tests execute, that library will be used.
+
+If not, pytest-qt will try to import and use the Qt APIs, in this order:
 
 - ``PySide6``
 - ``PySide2``
