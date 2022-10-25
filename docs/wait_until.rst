@@ -46,7 +46,7 @@ assertion:
 
 ``qtbot.waitUntil`` will periodically call ``check_label`` until it no longer raises
 ``AssertionError`` or a timeout is reached. If a timeout is reached, a
-:class:`qtbot.TimeoutError <TimeoutError>`
+:class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>`
 is raised from the last assertion error and the test will fail:
 
 ::

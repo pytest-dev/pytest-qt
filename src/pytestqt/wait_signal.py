@@ -164,7 +164,8 @@ class SignalBlocker(_AbstractSignalBlocker):
         this is set to ``None``.
 
     :ivar bool raising:
-        If :class:`TimeoutError` should be raised if a timeout occurred.
+        If :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>` should be raised
+        if a timeout occurred.
 
         .. note:: contrary to the parameter of same name in
             :meth:`pytestqt.qtbot.QtBot.waitSignal`, this parameter does not
@@ -626,7 +627,8 @@ class CallbackBlocker:
     :ivar int timeout: maximum time to wait for the callback to be called.
 
     :ivar bool raising:
-        If :class:`TimeoutError` should be raised if a timeout occurred.
+        If :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>` should be raised if
+        a timeout occurred.
 
         .. note:: contrary to the parameter of same name in
             :meth:`pytestqt.qtbot.QtBot.waitCallback`, this parameter does not
@@ -722,8 +724,6 @@ class SignalEmittedError(Exception):
     signal was emitted unexpectedly.
     """
 
-    pass
-
 
 class CallbackCalledTwiceError(Exception):
     """
@@ -732,8 +732,6 @@ class CallbackCalledTwiceError(Exception):
     The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitCallback` if a
     callback was called twice.
     """
-
-    pass
 
 
 def _silent_disconnect(signal, slot):

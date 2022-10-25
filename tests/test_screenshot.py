@@ -3,7 +3,6 @@ import pathlib
 import pytest
 
 from pytestqt.qt_compat import qt_api
-from pytestqt.exceptions import ScreenshotError
 
 
 @pytest.fixture
@@ -60,12 +59,12 @@ def test_filename_both(qtbot, widget):
 
 def test_filename_endless(qtbot, widget, monkeypatch):
     monkeypatch.setattr(pathlib.Path, "exists", lambda _self: True)
-    with pytest.raises(ScreenshotError, match="Failed to find unique filename"):
+    with pytest.raises(qtbot.ScreenshotError, match="Failed to find unique filename"):
         qtbot.screenshot(widget, suffix="before")
 
 
 def test_filename_invalid(qtbot, widget):
-    with pytest.raises(ScreenshotError, match="Saving to .* failed"):
+    with pytest.raises(qtbot.ScreenshotError, match="Saving to .* failed"):
         qtbot.screenshot(widget, suffix=r"invalid/path\everywhere")
 
 

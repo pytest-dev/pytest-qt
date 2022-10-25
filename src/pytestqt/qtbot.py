@@ -182,7 +182,8 @@ class QtBot:
     def waitActive(self, widget, *, timeout=5000):
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is active.
-        If window is not exposed within ``timeout`` milliseconds, raise ``TimeoutError``.
+        If window is not exposed within ``timeout`` milliseconds, raise
+        :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>`
 
         This is mainly useful for asynchronous systems like X11, where a window will be mapped to screen
         some time after  being asked to show itself on the screen.
@@ -208,7 +209,8 @@ class QtBot:
     def waitExposed(self, widget, *, timeout=5000):
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is exposed.
-        If the window is not exposed within ``timeout`` milliseconds, raise ``TimeoutError``.
+        If the window is not exposed within ``timeout`` milliseconds, raise
+        :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>`
 
         This is mainly useful for asynchronous systems like X11, where a window will be mapped to screen
         some time after  being asked to show itself on the screen.
@@ -238,7 +240,8 @@ class QtBot:
         show itself on the screen.
 
         .. warning::
-            This method does **not** raise ``TimeoutError`` if the window wasn't shown.
+            This method does **not** raise :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>` if
+            the window wasn't shown.
 
         .. deprecated:: 4.0
             Use the ``qtbot.waitExposed`` context manager instead.
@@ -255,7 +258,7 @@ class QtBot:
         warnings.warn(
             "waitForWindowShown is deprecated, as the underlying Qt method was "
             "obsoleted in Qt 5.0 and removed in Qt 6.0. Its name is imprecise and "
-            "the pytest-qt wrapper does not raise TimeoutError if the window "
+            "the pytest-qt wrapper does not raise qtbot.TimeoutError if the window "
             "wasn't shown. Please use the qtbot.waitExposed context manager "
             "instead.",
             DeprecationWarning,
@@ -315,11 +318,11 @@ class QtBot:
 
         :param Signal signal:
             A signal to wait for, or a tuple ``(signal, signal_name_as_str)`` to improve the error message that is part
-            of ``TimeoutError``.
+            of :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>`.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
-            If :class:`QtBot.TimeoutError <pytestqt.plugin.TimeoutError>`
+            If :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_default_raising = false``
             is set in the config.
@@ -376,11 +379,11 @@ class QtBot:
 
         :param list signals:
             A list of :class:`Signal` objects to wait for. Alternatively: a list of (``Signal, str``) tuples of the form
-            ``(signal, signal_name_as_str)`` to improve the error message that is part of ``TimeoutError``.
+            ``(signal, signal_name_as_str)`` to improve the error message that is part of ``qtbot.TimeoutError``.
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
-            If :class:`QtBot.TimeoutError <pytestqt.plugin.TimeoutError>`
+            If :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_default_raising = false``
             is set in the config.
@@ -566,7 +569,7 @@ class QtBot:
         :param int timeout:
             How many milliseconds to wait before resuming control flow.
         :param bool raising:
-            If :class:`QtBot.TimeoutError <pytestqt.plugin.TimeoutError>`
+            If :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_default_raising = false``
             is set in the config.
@@ -616,6 +619,9 @@ class QtBot:
         ``objectName()`` of the widget if set, as well as its class name. A custom
         ``suffix`` can be given to add to the generated name.
 
+        Raises :class:`qtbot.ScreenshotError <pytestqt.exceptions.ScreenshotError>`
+        if taking the screenshot or saving the file failed.
+
         :param QWidget widget:
             The widget to take a screenshot of.
         :param str suffix:
@@ -625,7 +631,6 @@ class QtBot:
             contained.
         :returns:
             A ``pathlib.Path`` object with the taken screenshot.
-        :raises ScreenshotError: if taking the screenshot or saving the file failed.
         """
         pixmap = widget.grab() if region is None else widget.grab(region)
         if pixmap.isNull():
@@ -711,6 +716,7 @@ class QtBot:
 # provide easy access to exceptions to qtbot fixtures
 QtBot.SignalEmittedError = SignalEmittedError
 QtBot.TimeoutError = TimeoutError
+QtBot.ScreenshotError = ScreenshotError
 QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError
 
 

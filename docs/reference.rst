@@ -12,6 +12,24 @@ TimeoutError
 
 .. autoclass:: TimeoutError
 
+ScreenshotError
+------------------
+
+.. autoclass:: ScreenshotError
+
+
+SignalEmittedError
+------------------
+
+.. autoclass:: SignalEmittedError
+
+
+CallbackCalledTwiceError
+------------------------
+
+.. autoclass:: CallbackCalledTwiceError
+
+
 SignalBlocker
 -------------
 
@@ -23,10 +41,6 @@ MultiSignalBlocker
 
 .. autoclass:: MultiSignalBlocker
 
-SignalEmittedError
-------------------
-
-.. autoclass:: SignalEmittedError
 
 Record
 ------

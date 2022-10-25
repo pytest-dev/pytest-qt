@@ -98,17 +98,19 @@ class TimeoutError(Exception):
     .. versionadded:: 2.1
 
     Exception thrown by :class:`pytestqt.qtbot.QtBot` methods.
-    """
 
-    pass
+    Access via ``qtbot.TimeoutError``.
+    """
 
 
 class ScreenshotError(Exception):
     """
     .. versionadded:: 4.1
 
-    Exception thrown by :method:`pytestqt.qtbot.QtBot.screenshot` if taking the
+    Exception thrown by :meth:`pytestqt.qtbot.QtBot.screenshot` if taking the
     screenshot failed.
-    """
 
-    pass
+    .. versionchanged:: 4.2
+
+        Access via ``qtbot.ScreenshotError``.
+    """
