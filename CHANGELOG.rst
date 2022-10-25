@@ -1,8 +1,12 @@
 UNRELEASED
 ----------
 
+- Import the ``code`` sub-package from the correct location rather than the
+  deprecated ``py`` package, restoring compatibility with pytest 7.2.0, where
+  ``py`` was dropped. Thanks `@The-Compiler`_ for the PR.
+
 - Use ``pytest.hookimpl`` to configure hooks, avoiding a deprecation warning in
-  the upcoming pytest 7.2.0.
+  pytest 7.2.0. Thanks `@The-Compiler`_ for the PR.
 
 - Now ``pytest-qt`` will check if any of the Qt libraries is already imported by the time the plugin loads,
   and use it if that is the case (`#412`_). Thanks `@eyllanesc`_ for the PR.

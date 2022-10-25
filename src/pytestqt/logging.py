@@ -2,7 +2,7 @@ from collections import namedtuple
 from contextlib import contextmanager
 import datetime
 import re
-from py._code.code import TerminalRepr, ReprFileLocation
+from _pytest._code.code import TerminalRepr, ReprFileLocation
 import pytest
 from pytestqt.qt_compat import qt_api
 from pytestqt.utils import get_marker
