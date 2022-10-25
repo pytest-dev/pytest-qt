@@ -1,5 +1,5 @@
-UNRELEASED
-----------
+4.2.0 (2022-10-25)
+------------------
 
 - Import the ``code`` sub-package from the correct location rather than the
   deprecated ``py`` package, restoring compatibility with pytest 7.2.0, where
