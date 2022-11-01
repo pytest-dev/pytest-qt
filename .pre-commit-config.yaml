@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/PyCQA/autoflake
-    rev: v1.7.6
+    rev: v1.7.7
     hooks:
     -   id: autoflake
         name: autoflake
@@ -15,7 +15,7 @@ repos:
     -   id: check-yaml
     -   id: debug-statements
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.1.0
+    rev: v3.2.0
     hooks:
     - id: pyupgrade
 -   repo: https://github.com/psf/black
