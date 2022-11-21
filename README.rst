@@ -88,7 +88,7 @@ If not, pytest-qt will try to import and use the Qt APIs, in this order:
 - ``PyQt5``
 
 To force a particular API, set the configuration variable ``qt_api`` in your ``pytest.ini`` file to
-``pyqt5``, ``pyside2``, or ``pyqt6``:
+``pyside6``, ``pyside2``, ``pyqt6`` or ``pyqt5``:
 
 .. code-block:: ini
 
