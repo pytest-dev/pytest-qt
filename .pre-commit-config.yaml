@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/PyCQA/autoflake
-    rev: v1.7.7
+    rev: v2.0.0
     hooks:
     -   id: autoflake
         name: autoflake
@@ -8,7 +8,7 @@ repos:
         language: python
         files: \.py$
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.4.0
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
@@ -31,7 +31,7 @@ repos:
         additional_dependencies: [black==20.8b1]
         language_version: python3
 -   repo: https://github.com/PyCQA/flake8
-    rev: 5.0.4
+    rev: 6.0.0
     hooks:
     - id: flake8
 -   repo: https://github.com/pre-commit/pygrep-hooks
