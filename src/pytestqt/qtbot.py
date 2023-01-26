@@ -59,30 +59,30 @@ class QtBot:
 
     Below are methods used to simulate sending key events to widgets:
 
-    .. staticmethod:: keyClick (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
-    .. staticmethod:: keyClicks (widget, key_sequence[, modifier=Qt.NoModifier[, delay=-1]])
-    .. staticmethod:: keyEvent (action, widget, key[, modifier=Qt.NoModifier[, delay=-1]])
-    .. staticmethod:: keyPress (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
-    .. staticmethod:: keyRelease (widget, key[, modifier=Qt.NoModifier[, delay=-1]])
+    .. staticmethod:: keyClick (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
+    .. staticmethod:: keyClicks (widget, key_sequence[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
+    .. staticmethod:: keyEvent (action, widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
+    .. staticmethod:: keyPress (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
+    .. staticmethod:: keyRelease (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
 
         Sends one or more keyboard events to a widget.
 
         :param QWidget widget: the widget that will receive the event
 
-        :param str|int key: key to send, it can be either a Qt.Key_* constant or a single character string.
+        :param str|int key: key to send, it can be either a Qt.Key.Key_* constant or a single character string.
 
         .. _keyboard modifiers:
 
         :param Qt.KeyboardModifier modifier: flags OR'ed together representing other modifier keys
             also pressed. Possible flags are:
 
-            * ``Qt.NoModifier``: No modifier key is pressed.
-            * ``Qt.ShiftModifier``: A Shift key on the keyboard is pressed.
-            * ``Qt.ControlModifier``: A Ctrl key on the keyboard is pressed.
-            * ``Qt.AltModifier``: An Alt key on the keyboard is pressed.
-            * ``Qt.MetaModifier``: A Meta key on the keyboard is pressed.
-            * ``Qt.KeypadModifier``: A keypad button is pressed.
-            * ``Qt.GroupSwitchModifier``: X11 only. A Mode_switch key on the keyboard is pressed.
+            * ``Qt.KeyboardModifier.NoModifier``: No modifier key is pressed.
+            * ``Qt.KeyboardModifier.ShiftModifier``: A Shift key on the keyboard is pressed.
+            * ``Qt.KeyboardModifier.ControlModifier``: A Ctrl key on the keyboard is pressed.
+            * ``Qt.KeyboardModifier.AltModifier``: An Alt key on the keyboard is pressed.
+            * ``Qt.KeyboardModifier.MetaModifier``: A Meta key on the keyboard is pressed.
+            * ``Qt.KeyboardModifier.KeypadModifier``: A keypad button is pressed.
+            * ``Qt.KeyboardModifier.GroupSwitchModifier``: X11 only. A Mode_switch key on the keyboard is pressed.
 
         :param int delay: after the event, delay the test for this milliseconds (if > 0).
 
@@ -91,7 +91,7 @@ class QtBot:
 
         Auxiliary method that converts the given constant to its equivalent ascii.
 
-        :param Qt.Key_* key: one of the constants for keys in the Qt namespace.
+        :param Qt.Key.Key_* key: one of the constants for keys in the Qt namespace.
 
         :return type: str
         :returns: the equivalent character string.
@@ -102,11 +102,11 @@ class QtBot:
 
     Below are methods used to simulate sending mouse events to widgets.
 
-    .. staticmethod:: mouseClick (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
-    .. staticmethod:: mouseDClick (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
+    .. staticmethod:: mouseClick (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
+    .. staticmethod:: mouseDClick (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
     .. staticmethod:: mouseMove (widget[, pos=QPoint()[, delay=-1]])
-    .. staticmethod:: mousePress (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
-    .. staticmethod:: mouseRelease (widget, button[, stateKey=0[, pos=QPoint()[, delay=-1]]])
+    .. staticmethod:: mousePress (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
+    .. staticmethod:: mouseRelease (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
 
         Sends a mouse moves and clicks to a widget.
 
@@ -128,9 +128,11 @@ class QtBot:
         :param Qt.KeyboardModifier modifier: flags OR'ed together representing other modifier keys
             also pressed. See `keyboard modifiers`_.
 
-        :param QPoint position: position of the mouse pointer.
+        :param QPoint pos: position of the mouse pointer.
 
         :param int delay: after the event, delay the test for this milliseconds (if > 0).
+
+        .. note:: In the PySide bindings, the *modifier* argument is called *stateKey*.
 
 
     .. _QTest API: http://doc.qt.io/qt-5/qtest.html
