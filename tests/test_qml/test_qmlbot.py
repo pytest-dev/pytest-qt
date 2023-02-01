@@ -6,7 +6,7 @@ import pytest
 from pytestqt import QmlBot
 
 
-def test_load_from_string_wrong_syntax(qmlbot):
+def test_load_from_string_wrong_syntax(qmlbot: QmlBot) -> None:
     qml = "import QtQuick 2.0 Rectangle{"
     with pytest.raises(RuntimeError):
         qmlbot.loads(qml)

@@ -95,7 +95,7 @@ def qtbot(qapp, request):
 
 
 @pytest.fixture
-def qmlbot(qapp):
+def qmlbot(qapp) -> QmlBot:
     return QmlBot()
 
 
