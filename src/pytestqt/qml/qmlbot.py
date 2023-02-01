@@ -4,7 +4,7 @@ from pytestqt.qt_compat import qt_api
 
 
 class QmlBot:
-    def __init__(self):
+    def __init__(self) -> None:
         self.engine = qt_api.QtQml.QQmlApplicationEngine()
         main = Path(__file__).parent / "botloader.qml"
         self.engine.load(main.resolve(True))
