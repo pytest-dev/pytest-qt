@@ -8,6 +8,8 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     entry_points={"pytest11": ["pytest-qt = pytestqt.plugin"]},
+    include_package_data=True,
+    package_data={"pytestqt": ["**/*.qml"]},
     install_requires=["pytest>=3.0.0"],
     extras_require={
         "doc": ["sphinx", "sphinx_rtd_theme"],
