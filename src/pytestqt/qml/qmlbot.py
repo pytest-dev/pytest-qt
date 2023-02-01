@@ -22,7 +22,8 @@ class QmlBot:
         """
         :returns: `QQuickItem` - the initialized component
         """
-        return self.loads(path.read_text(encoding="UTF-8"))
+        self._loader.setProperty("source", str(path.resolve(True)))
+        return self._loader.property("item")
 
     def loads(self, content: str) -> Any:
         """
