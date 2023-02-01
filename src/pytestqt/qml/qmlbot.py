@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 from pytestqt.qt_compat import qt_api
 
@@ -10,18 +11,18 @@ class QmlBot:
         self.engine.load(main.resolve(True))
 
     @property
-    def _loader(self):
+    def _loader(self) -> Any:
         self.root = self.engine.rootObjects()[0]
         return self.root.findChild(qt_api.QtQuick.QQuickItem, "contentloader")
 
-    def load(self, path: Path):
+    def load(self, path: Path) -> Any:
         """
         :returns: `QQuickItem` - the initialized component
         """
         self._loader.setProperty("source", str(path.resolve(True)))
         return self._loader.property("item")
 
-    def loads(self, content: str):
+    def loads(self, content: str) -> Any:
         """
         :returns: `QQuickItem` - the initialized component
         """
