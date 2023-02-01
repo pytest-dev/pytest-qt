@@ -7,6 +7,7 @@ from pytestqt.exceptions import (
     _QtExceptionCaptureManager,
 )
 from pytestqt.logging import QtLoggingPlugin, _QtMessageCapture
+from pytestqt.qml.qmlbot import QmlBot
 from pytestqt.qt_compat import qt_api
 from pytestqt.qtbot import QtBot, _close_widgets
 
@@ -91,6 +92,11 @@ def qtbot(qapp, request):
     """
     result = QtBot(request)
     return result
+
+
+@pytest.fixture
+def qmlbot(qapp):
+    return QmlBot()
 
 
 @pytest.fixture
