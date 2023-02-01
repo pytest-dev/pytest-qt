@@ -26,6 +26,6 @@ Rectangle{
     assert item.property("hello") == text
 
 
-def test_load_from_file(qmlbot):
+def test_load_from_file(qmlbot: pytestqt.QmlBot) -> None:
     item = qmlbot.load(Path(__file__).parent / "sample.qml")
     assert item.property("hello") == "world"
