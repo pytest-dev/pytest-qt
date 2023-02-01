@@ -18,12 +18,6 @@ class QmlBot:
         ]  # self is needed for it not to be collected by the gc
         return self._root.findChild(qt_api.QtQuick.QQuickItem, "contentloader")
 
-    def load(self, path: Path) -> Any:
-        """
-        :returns: `QQuickItem` - the initialized component
-        """
-        return self.loads(path.read_text(encoding="UTF-8"))
-
     def loads(self, content: str) -> Any:
         """
         :returns: `QQuickItem` - the initialized component

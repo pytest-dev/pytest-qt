@@ -1,4 +1,3 @@
-from pathlib import Path
 from textwrap import dedent
 
 import pytest
@@ -27,8 +26,3 @@ def test_load_from_string(qmlbot: QmlBot) -> None:
     )
     item = qmlbot.loads(qml)
     assert item.property("hello") == text
-
-
-def test_load_from_file(qmlbot: QmlBot) -> None:
-    item = qmlbot.load(Path(__file__).parent / "sample.qml")
-    assert item.property("hello") == "world"
