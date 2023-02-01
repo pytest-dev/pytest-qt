@@ -5,6 +5,7 @@ qmlbot
 Fixture that helps interacting with QML.
 
 Example - load qml from string:
+
 .. code-block:: python
 
     def test_say_hello(qmlbot):
@@ -19,9 +20,11 @@ Example - load qml from string:
         item = qmlbot.loads(qml)
         assert item.property("hello") == "world"
 
-Example - load qml from file
+
+Example - load qml from file:
 
 .. code-block:: python
+
     from pathlib import Path
 
 
