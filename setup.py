@@ -8,7 +8,7 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     entry_points={"pytest11": ["pytest-qt = pytestqt.plugin"]},
-    install_requires=["pytest>=3.0.0"],
+    install_requires=["pytest>=3.0.0", "qtpy"],
     extras_require={
         "doc": ["sphinx", "sphinx_rtd_theme"],
         "dev": ["pre-commit", "tox"],
