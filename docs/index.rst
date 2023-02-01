@@ -19,6 +19,7 @@ pytest-qt
     virtual_methods
     modeltester
     qapplication
+    qmlbot
     note_dialogs
     debugging
     troubleshooting
