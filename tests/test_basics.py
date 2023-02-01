@@ -446,7 +446,7 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
     """
     from pytestqt.qt_compat import qt_api
 
-    monkeypatch.delenv("PYTEST_QT_API", raising=False)
+    monkeypatch.delenv("QT_API", raising=False)
 
     testdir.makeini(
         """
@@ -467,7 +467,7 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
     )
 
     result = testdir.runpytest_subprocess()
-    if qt_api.pytest_qt_api == option_api:
+    if qt_api.QT_API == option_api:
         result.stdout.fnmatch_lines(["* 1 passed in *"])
     else:
         try:
@@ -492,7 +492,7 @@ def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
         )
     )
 
-    monkeypatch.setenv("PYTEST_QT_API", envvar)
+    monkeypatch.setenv("QT_API", envvar)
 
     testdir.makepyfile(
         """
@@ -504,7 +504,7 @@ def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
     )
 
     result = testdir.runpytest_subprocess()
-    if qt_api.pytest_qt_api == envvar:
+    if qt_api.QT_API == envvar:
         result.stdout.fnmatch_lines(["* 1 passed in *"])
     else:
         try:
@@ -529,10 +529,10 @@ def test_invalid_qt_api_envvar(testdir, monkeypatch):
             pass
     """
     )
-    monkeypatch.setenv("PYTEST_QT_API", "piecute")
+    monkeypatch.setenv("QT_API", "piecute")
     result = testdir.runpytest_subprocess()
     result.stderr.fnmatch_lines(
-        ["* Invalid value for $PYTEST_QT_API: piecute, expected one of *"]
+        ["* Invalid value for $QT_API: piecute, expected one of *"]
     )
 
 
@@ -566,7 +566,7 @@ def test_importerror(monkeypatch):
     def _fake_is_library_loaded(name, *args):
         return False
 
-    monkeypatch.delenv("PYTEST_QT_API", raising=False)
+    monkeypatch.delenv("QT_API", raising=False)
     monkeypatch.setattr(qt_compat, "_import", _fake_import)
     monkeypatch.setattr(qt_compat, "_is_library_loaded", _fake_is_library_loaded)
 
@@ -640,13 +640,13 @@ def test_already_loaded_backend(monkeypatch, option_api, backend):
     def _fake_is_library_loaded(name, *args):
         return name == backend
 
-    monkeypatch.delenv("PYTEST_QT_API", raising=False)
+    monkeypatch.delenv("QT_API", raising=False)
     monkeypatch.setattr(qt_compat, "_is_library_loaded", _fake_is_library_loaded)
     monkeypatch.setattr(builtins, "__import__", _fake_import)
 
     qt_api.set_qt_api(api=None)
 
-    assert qt_api.pytest_qt_api == option_api
+    assert qt_api.QT_API == option_api
 
 
 def test_before_close_func(testdir):

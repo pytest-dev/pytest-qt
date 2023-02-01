@@ -114,7 +114,7 @@ def test_broken_types(check_model, broken_role):
 
 
 xfail_py311_pyside2 = pytest.mark.xfail(
-    sys.version_info[:2] == (3, 11) and qt_api.pytest_qt_api == "pyside2",
+    sys.version_info[:2] == (3, 11) and qt_api.QT_API == "pyside2",
     reason="Fails to OR mask flags",
 )
 
