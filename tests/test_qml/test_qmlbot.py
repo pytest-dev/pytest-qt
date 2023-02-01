@@ -9,7 +9,7 @@ def test_load_from_string_wrong_syntax(qmlbot):
         qmlbot.loads(qml)
 
 
-def test_load_from_string(qmlbot):
+def test_load_from_string(qmlbot: pytestqt.QmlBot) -> None:
     text = "that's a template!"
     qml = (
         """
