@@ -12,8 +12,10 @@ class QmlBot:
 
     @property
     def _loader(self) -> Any:
-        self.root = self.engine.rootObjects()[0]
-        return self.root.findChild(qt_api.QtQuick.QQuickItem, "contentloader")
+        self._root = self.engine.rootObjects()[
+            0
+        ]  # self is needed for it not to be collected by the gc
+        return self._root.findChild(qt_api.QtQuick.QQuickItem, "contentloader")
 
     def load(self, path: Path) -> Any:
         """
