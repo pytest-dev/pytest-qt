@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Any
 
@@ -8,7 +9,7 @@ class QmlBot:
     def __init__(self) -> None:
         self.engine = qt_api.QtQml.QQmlApplicationEngine()
         main = Path(__file__).parent / "botloader.qml"
-        self.engine.load(main.resolve(True))
+        self.engine.load(os.fspath(main))
 
     @property
     def _loader(self) -> Any:
@@ -21,8 +22,7 @@ class QmlBot:
         """
         :returns: `QQuickItem` - the initialized component
         """
-        self._loader.setProperty("source", str(path.resolve(True)))
-        return self._loader.property("item")
+        return self.loads(path.read_text(encoding="UTF-8"))
 
     def loads(self, content: str) -> Any:
         """
