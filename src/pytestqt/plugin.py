@@ -1,3 +1,4 @@
+import os
 import warnings
 
 import pytest
@@ -226,18 +227,4 @@ def pytest_configure(config):
 
     if config.getoption("qt_log") and config.getoption("capture") != "no":
         config.pluginmanager.register(QtLoggingPlugin(config), "_qt_logging")
-
-    qt_api.set_qt_api(config.getini("qt_api"))
-
-
-def pytest_report_header():
-    from pytestqt.qt_compat import qt_api
-
-    v = qt_api.get_versions()
-    fields = [
-        f"{v.qt_api} {v.qt_api_version}",
-        "Qt runtime %s" % v.runtime,
-        "Qt compiled %s" % v.compiled,
-    ]
-    version_line = " -- ".join(fields)
-    return [version_line]
+    os.environ.setdefault("QT_API", config.getini("qt_api"))
