@@ -22,7 +22,9 @@ class QmlBot:
         """
         :returns: `QQuickItem` - the initialized component
         """
-        self._loader.setProperty("source", path.resolve(True).as_uri())
+        self._loader.setProperty(
+            "source", qt_api.QtCore.QUrl(path.resolve(True).as_uri())
+        )
         return self._loader.property("item")
 
     def loads(self, content: str) -> Any:
