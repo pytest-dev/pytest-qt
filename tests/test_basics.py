@@ -592,7 +592,6 @@ def test_importerror(monkeypatch):
     ],
 )
 def test_already_loaded_backend(monkeypatch, option_api, backend):
-
     import builtins
 
     class Mock:
@@ -628,6 +627,8 @@ def test_already_loaded_backend(monkeypatch, option_api, backend):
     qbackend.QtCore = qtcore
     qbackend.QtGui = object()
     qbackend.QtTest = object()
+    qbackend.QtQml = object()
+    qbackend.QtQuick = object()
     qbackend.QtWidgets = qtwidgets
 
     import_orig = builtins.__import__

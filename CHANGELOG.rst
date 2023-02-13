@@ -1,3 +1,12 @@
+4.3.0 (UNRELEASED)
+------------------
+
+- New ``qmlbot`` fixture to help test QtQuick applications (`#476`_). Thanks `@nrbnlulu`_ for the PR.
+
+.. _#476: https://github.com/pytest-dev/pytest-qt/pull/476
+.. _@nrbnlulu: https://github.com/nrbnlulu
+
+
 4.2.0 (2022-10-25)
 ------------------
 

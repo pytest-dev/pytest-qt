@@ -110,6 +110,8 @@ class _QtApi:
         self.QtGui = _import_module("QtGui")
         self.QtTest = _import_module("QtTest")
         self.QtWidgets = _import_module("QtWidgets")
+        self.QtQml = _import_module("QtQml")
+        self.QtQuick = _import_module("QtQuick")
 
         self._check_qt_api_version()
 

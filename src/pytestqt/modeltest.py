@@ -54,7 +54,6 @@ HAS_QT_TESTER = hasattr(qt_api.QtTest, "QAbstractItemModelTester")
 
 
 class _ChangeInFlight(enum.Enum):
-
     COLUMNS_INSERTED = enum.auto()
     COLUMNS_MOVED = enum.auto()
     COLUMNS_REMOVED = enum.auto()
