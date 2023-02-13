@@ -918,7 +918,7 @@ class TestAllSignalsAndArgs:
         Tests that all_signals_and_args is empty even though expected signals are emitted, but signal names aren't
         available.
         """
-        if qt_api.pytest_qt_api != "pyside2":
+        if qt_api.QT_API != "pyside2":
             pytest.skip(
                 "test only makes sense for PySide2, whose signals don't contain a name!"
             )
@@ -1202,7 +1202,7 @@ class TestWaitSignalsTimeoutErrorMessage:
         by the user. This degenerate messages doesn't contain the signals' names, and includes a hint to the user how
         to fix the situation.
         """
-        if qt_api.pytest_qt_api != "pyside2":
+        if qt_api.QT_API != "pyside2":
             pytest.skip(
                 "test only makes sense for PySide, whose signals don't contain a name!"
             )
