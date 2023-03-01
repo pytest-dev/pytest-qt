@@ -1,16 +1,46 @@
+import asyncio
 import functools
 
 from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
 
+class _EventLoop:
+    def __init__(self):
+        self._async = False
+        try:
+            self._loop = asyncio.get_running_loop()
+            # No RuntimeError so we're in async mode and there's a
+            # running loop already
+            self._async = True
+            self._done = asyncio.Event()
+            # no need to pass a QObject as we're in a running loop
+            self._qobj = None
+        except RuntimeError:
+            self._loop = qt_api.QtCore.QEventLoop()
+            self._qobj = self._loop
+
+    def quit(self):
+        if self._async:
+            self._done.set()
+        else:
+            self._loop.quit()
+    def timer(self):
+        return qt_api.QtCore.QTimer(self._qobj)
+    def exec(self):
+        return qt_api.exec(self._loop)
+    async def aexec(self):
+        await self._done.wait()
+
 
 class _AbstractSignalBlocker:
-    """
-    Base class for :class:`SignalBlocker` and :class:`MultiSignalBlocker`.
+    """Base class for :class:`SignalBlocker` and :class:`MultiSignalBlocker`.
 
     Provides :meth:`wait` and a context manager protocol, but no means to add
     new signals and to detect when the signals should be considered "done".
     This needs to be implemented by subclasses.
+
+    For asyncio usage there is :meth:`a_wait` and an asynchronous context
+    manager.
 
     Subclasses also need to provide ``self._signals`` which should evaluate to
     ``False`` if no signals were configured.
@@ -18,7 +48,7 @@ class _AbstractSignalBlocker:
     """
 
     def __init__(self, timeout=5000, raising=True):
-        self._loop = qt_api.QtCore.QEventLoop()
+        self._loop = _EventLoop()
         self.timeout = timeout
         self.signal_triggered = False
         self.raising = raising
@@ -27,9 +57,20 @@ class _AbstractSignalBlocker:
         if timeout is None or timeout == 0:
             self._timer = None
         else:
-            self._timer = qt_api.QtCore.QTimer(self._loop)
+            self._timer = self._loop.timer()
             self._timer.setSingleShot(True)
             self._timer.setInterval(timeout)
+
+    def _wait(self):
+        __tracebackhide__ = True
+        if self.signal_triggered:
+            return True
+        if self.timeout is None and not self._signals:
+            raise ValueError("No signals or timeout specified.")
+        if self._timer is not None:
+            self._timer.timeout.connect(self._quit_loop_by_timeout)
+            self._timer.start()
+        return False
 
     def wait(self):
         """
@@ -38,17 +79,25 @@ class _AbstractSignalBlocker:
         :raise ValueError: if no signals are connected and timeout is None; in
             this case it would wait forever.
         """
-        __tracebackhide__ = True
-        if self.signal_triggered:
+        if self._wait():
             return
-        if self.timeout is None and not self._signals:
-            raise ValueError("No signals or timeout specified.")
-        if self._timer is not None:
-            self._timer.timeout.connect(self._quit_loop_by_timeout)
-            self._timer.start()
-
         if self.timeout != 0:
-            qt_api.exec(self._loop)
+            self._loop.exec()
+
+        if not self.signal_triggered and self.raising:
+            raise TimeoutError(self._timeout_message)
+
+    async def a_wait(self):
+        """
+        Waits asyncronously until either a connected signal is triggered or timeout is reached.
+
+        :raise ValueError: if no signals are connected and timeout is None; in
+            this case it would wait forever.
+        """
+        if self._wait():
+            return
+        if self.timeout != 0:
+            await self._loop.aexec()
 
         if not self.signal_triggered and self.raising:
             raise TimeoutError(self._timeout_message)
@@ -150,18 +199,27 @@ class _AbstractSignalBlocker:
             # only wait if no exception happened inside the "with" block
             self.wait()
 
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, type, value, traceback):
+        __tracebackhide__ = True
+        if value is None:
+            # only wait if no exception happened inside the "with" block
+            await self.a_wait()
+
 
 class SignalBlocker(_AbstractSignalBlocker):
     """
     Returned by :meth:`pytestqt.qtbot.QtBot.waitSignal` method.
 
     :ivar int timeout: maximum time to wait for a signal to be triggered. Can
-        be changed before :meth:`wait` is called.
+        be changed before :meth:`wait` or :meth:`a_wait` are called.
 
     :ivar bool signal_triggered: set to ``True`` if a signal (or all signals in
         case of :class:`MultipleSignalBlocker`) was triggered, or
-        ``False`` if timeout was reached instead. Until :meth:`wait` is called,
-        this is set to ``None``.
+        ``False`` if timeout was reached instead. Until :meth:`wait`
+        or :meth:`a_wait` are called, this is set to ``None``.
 
     :ivar bool raising:
         If :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>` should be raised
@@ -179,6 +237,7 @@ class SignalBlocker(_AbstractSignalBlocker):
        The *args* attribute.
 
     .. automethod:: wait
+    .. automethod:: a_wait
     .. automethod:: connect
     """
 
@@ -192,11 +251,11 @@ class SignalBlocker(_AbstractSignalBlocker):
 
     def connect(self, signal):
         """
-        Connects to the given signal, making :meth:`wait()` return once
-        this signal is emitted.
+        Connects to the given signal, making :meth:`wait()` or :meth:`a_wait`
+        return once this signal is emitted.
 
         More than one signal can be connected, in which case **any** one of
-        them will make ``wait()`` return.
+        them will make ``wait()`` or ``a_wait()`` return.
 
         :param signal: QtCore.Signal or tuple (QtCore.Signal, str)
         """
@@ -329,8 +388,8 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
 
     def add_signals(self, signals):
         """
-        Adds the given signal to the list of signals which :meth:`wait()` waits
-        for.
+        Adds the given signal to the list of signals which :meth:`wait()` or
+        :meth:`a_wait` waits for.
 
         :param list signals: list of QtCore.Signal`s or tuples (QtCore.Signal, str)
         """
@@ -649,13 +708,20 @@ class CallbackBlocker:
         self.args = None
         self.kwargs = None
         self.called = False
-        self._loop = qt_api.QtCore.QEventLoop()
+        self._loop = _EventLoop()
         if timeout is None:
             self._timer = None
         else:
-            self._timer = qt_api.QtCore.QTimer(self._loop)
+            self._timer = self._loop.timer()
             self._timer.setSingleShot(True)
             self._timer.setInterval(timeout)
+
+    def _wait(self):
+        if self.called:
+            return True
+        if self._timer is not None:
+            self._timer.timeout.connect(self._quit_loop_by_timeout)
+            self._timer.start()
 
     def wait(self):
         """
@@ -663,12 +729,21 @@ class CallbackBlocker:
         reached.
         """
         __tracebackhide__ = True
-        if self.called:
+        if self._wait():
             return
-        if self._timer is not None:
-            self._timer.timeout.connect(self._quit_loop_by_timeout)
-            self._timer.start()
-        qt_api.exec(self._loop)
+        self._loop.exec()
+        if not self.called and self.raising:
+            raise TimeoutError("Callback wasn't called after %sms." % self.timeout)
+
+    async def a_wait(self):
+        """
+        Waits asyncronously until either the returned callback is called
+        or timeout is reached.
+        """
+        __tracebackhide__ = True
+        if self._wait():
+            return
+        await self._loop.aexec()
         if not self.called and self.raising:
             raise TimeoutError("Callback wasn't called after %sms." % self.timeout)
 
@@ -714,6 +789,15 @@ class CallbackBlocker:
         if value is None:
             # only wait if no exception happened inside the "with" block
             self.wait()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, type, value, traceback):
+        __tracebackhide__ = True
+        if value is None:
+            # only wait if no exception happened inside the "with" block
+            await self.a_wait()
 
 
 class SignalEmittedError(Exception):
