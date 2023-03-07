@@ -495,6 +495,44 @@ class QtBot:
             yield
         spy.assert_not_emitted()
 
+    class Timeout:
+        import time
+        def __init__(self, timeout):
+            self.timeout = timeout
+            self.start = self.time.time()
+
+        def timed_out(self):
+            elapsed = self.time.time() - self.start
+            elapsed_ms = elapsed * 1000
+            return elapsed_ms > self.timeout
+
+        def msg(self):
+            return f"waitUntil timed out in {self.timeout} milliseconds"
+
+    def _waitUntil(self, callback, timeout):
+        __tracebackhide__ = True
+        try:
+            result = callback()
+        except AssertionError as e:
+            if timeout.timed_out():
+                raise TimeoutError(timeout.msg()) from e
+            return True
+        else:
+            if result not in (None, True, False):
+                msg = "waitUntil() callback must return None, True or False, returned %r"
+                raise ValueError(msg % result)
+
+            # 'assert' form
+            if result is None:
+                return False
+
+            # 'True/False' form
+            if result:
+                return False
+            if timeout.timed_out():
+                raise TimeoutError(timeout.msg())
+            return True
+
     def waitUntil(self, callback, *, timeout=5000):
         """
         .. versionadded:: 2.0
@@ -533,38 +571,53 @@ class QtBot:
         .. note:: This method is also available as ``wait_until`` (pep-8 alias)
         """
         __tracebackhide__ = True
-        import time
-
-        start = time.time()
-
-        def timed_out():
-            elapsed = time.time() - start
-            elapsed_ms = elapsed * 1000
-            return elapsed_ms > timeout
-
-        timeout_msg = f"waitUntil timed out in {timeout} milliseconds"
-
-        while True:
-            try:
-                result = callback()
-            except AssertionError as e:
-                if timed_out():
-                    raise TimeoutError(timeout_msg) from e
-            else:
-                if result not in (None, True, False):
-                    msg = "waitUntil() callback must return None, True or False, returned %r"
-                    raise ValueError(msg % result)
-
-                # 'assert' form
-                if result is None:
-                    return
-
-                # 'True/False' form
-                if result:
-                    return
-                if timed_out():
-                    raise TimeoutError(timeout_msg)
+        timeout = self.Timeout(timeout)
+        while self._waitUntil(callback, timeout):
             self.wait(10)
+
+    async def a_waitUntil(self, callback, *, timeout=5000):
+        """
+        .. versionadded:: 2.0
+
+        Wait in a busy loop, calling the given callback periodically until timeout is reached.
+
+        ``callback()`` should raise ``AssertionError`` to indicate that the desired condition
+        has not yet been reached, or just return ``None`` when it does. Useful to ``assert`` until
+        some condition is satisfied:
+
+        .. code-block:: python
+
+            def view_updated():
+                assert view_model.count() > 10
+
+
+            qtbot.waitUntil(view_updated)
+
+        Another possibility is for ``callback()`` to return ``True`` when the desired condition
+        is met, ``False`` otherwise. Useful specially with ``lambda`` for terser code, but keep
+        in mind that the error message in those cases is usually not very useful because it is
+        not using an ``assert`` expression.
+
+        .. code-block:: python
+
+            qtbot.waitUntil(lambda: view_model.count() > 10)
+
+        Note that this usage only accepts returning actual ``True`` and ``False`` values,
+        so returning an empty list to express "falseness" raises a ``ValueError``.
+
+        :param callback: callable that will be called periodically.
+        :param timeout: timeout value in ms.
+        :raises ValueError: if the return value from the callback is anything other than ``None``,
+            ``True`` or ``False``.
+
+        .. note:: This method is also available as ``wait_until`` (pep-8 alias)
+        """
+        __tracebackhide__ = True
+        import asyncio
+
+        timeout = self.Timeout(timeout)
+        while self._waitUntil(callback, timeout):
+            await asyncio.sleep(0.01)
 
     def waitCallback(self, *, timeout=5000, raising=None):
         """
