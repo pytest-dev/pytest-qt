@@ -191,6 +191,8 @@ class _AbstractSignalBlocker:
         return signal_tuple
 
     def __enter__(self):
+        if self._loop._async:
+            raise RuntimeError("use 'async with qtbot...' in an async context")
         return self
 
     def __exit__(self, type, value, traceback):
@@ -200,6 +202,7 @@ class _AbstractSignalBlocker:
             self.wait()
 
     async def __aenter__(self):
+        assert self._loop._async, "qtbot can only be awaited in an async context"
         return self
 
     async def __aexit__(self, type, value, traceback):
@@ -788,6 +791,8 @@ class CallbackBlocker:
             self._loop.quit()
 
     def __enter__(self):
+        if self._loop._async:
+            raise RuntimeError("use 'async with qtbot...' in an async context")
         return self
 
     def __exit__(self, type, value, traceback):
@@ -797,6 +802,7 @@ class CallbackBlocker:
             self.wait()
 
     async def __aenter__(self):
+        assert self._loop._async, "qtbot can only be awaited in an async context"
         return self
 
     async def __aexit__(self, type, value, traceback):
