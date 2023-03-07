@@ -663,6 +663,12 @@ class SignalEmittedSpy:
     def __exit__(self, type, value, traceback):
         self.signal.disconnect(self.slot)
 
+    async def __aenter__(self):
+        self.__enter__()
+
+    async def __aexit__(self, type, value, traceback):
+        self.__exit__(type, value, traceback)
+
     def assert_not_emitted(self):
         if self.emitted:
             if self.args:

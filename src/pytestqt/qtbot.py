@@ -473,6 +473,28 @@ class QtBot:
             yield
         spy.assert_not_emitted()
 
+    @contextlib.asynccontextmanager
+    async def a_assertNotEmitted(self, signal, *, wait=0):
+        """
+        .. versionadded:: 1.11
+
+        Make sure the given ``signal`` doesn't get emitted.
+
+        :param int wait:
+            How many milliseconds to wait to make sure the signal isn't emitted
+            asynchronously. By default, this method returns immediately and only
+            catches signals emitted inside the ``with``-block.
+
+        This is intended to be used as a context manager.
+
+        .. note:: This method is also available as ``assert_not_emitted``
+                  (pep-8 alias)
+        """
+        spy = SignalEmittedSpy(signal)
+        async with spy, self.waitSignal(signal, timeout=wait, raising=False):
+            yield
+        spy.assert_not_emitted()
+
     def waitUntil(self, callback, *, timeout=5000):
         """
         .. versionadded:: 2.0
