@@ -592,7 +592,6 @@ def test_importerror(monkeypatch):
     ],
 )
 def test_already_loaded_backend(monkeypatch, option_api, backend):
-
     import builtins
 
     class Mock:

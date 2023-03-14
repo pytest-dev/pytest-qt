@@ -79,7 +79,7 @@ def format_captured_exceptions(exceptions):
     stream.write("Exceptions caught in Qt event loop:\n")
     sep = "_" * 80 + "\n"
     stream.write(sep)
-    for (exc_type, value, tback) in exceptions:
+    for exc_type, value, tback in exceptions:
         traceback.print_exception(exc_type, value, tback, file=stream)
         stream.write(sep)
     return stream.getvalue()
