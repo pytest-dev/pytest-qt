@@ -3,9 +3,18 @@ import sys
 import pytest
 
 from pytestqt.exceptions import capture_exceptions, format_captured_exceptions
+from pytestqt.qt_compat import qt_api
+
+
+xfail_pyside_2335 = pytest.mark.skipif(
+    "qt_api.pytest_qt_api == 'pyside6'",
+    reason="PySide6 issue: https://bugreports.qt.io/browse/PYSIDE-2335 (#488)",
+    run=False,
+)
 
 
 @pytest.mark.parametrize("raise_error", [False, True])
+@xfail_pyside_2335
 def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
     """
     Catch exceptions that happen inside Qt's event loop and make the
@@ -84,6 +93,7 @@ def test_format_captured_exceptions_chained():
 
 
 @pytest.mark.parametrize("no_capture_by_marker", [True, False])
+@xfail_pyside_2335
 def test_no_capture(testdir, no_capture_by_marker):
     """
     Make sure options that disable exception capture are working (either marker
@@ -128,6 +138,7 @@ def test_no_capture(testdir, no_capture_by_marker):
     res.stdout.fnmatch_lines(["*1 passed*"])
 
 
+@xfail_pyside_2335
 def test_no_capture_preserves_custom_excepthook(testdir):
     """
     Capturing must leave custom excepthooks alone when disabled.
@@ -157,6 +168,7 @@ def test_no_capture_preserves_custom_excepthook(testdir):
     res.stdout.fnmatch_lines(["*2 passed*"])
 
 
+@xfail_pyside_2335
 def test_exception_capture_on_call(testdir):
     """
     Exceptions should also be captured during test execution.
@@ -183,6 +195,7 @@ def test_exception_capture_on_call(testdir):
     res.stdout.fnmatch_lines(["*RuntimeError('event processed')*", "*1 failed*"])
 
 
+@xfail_pyside_2335
 def test_exception_capture_on_widget_close(testdir):
     """
     Exceptions should also be captured when widget is being closed.
@@ -210,6 +223,7 @@ def test_exception_capture_on_widget_close(testdir):
 
 
 @pytest.mark.parametrize("mode", ["setup", "teardown"])
+@xfail_pyside_2335
 def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
     """
     Setup/teardown exception capturing as early/late as possible to catch
@@ -265,13 +279,13 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
 
 
 @pytest.mark.qt_no_exception_capture
+@xfail_pyside_2335
 def test_capture_exceptions_context_manager(qapp):
     """Test capture_exceptions() context manager.
 
     While not used internally anymore, it is still part of the API and therefore
     should be properly tested.
     """
-    from pytestqt.qt_compat import qt_api
     from pytestqt.exceptions import capture_exceptions
 
     class Receiver(qt_api.QtCore.QObject):
@@ -319,12 +333,12 @@ def test_capture_exceptions_qtbot_context_manager(testdir):
     result.stdout.fnmatch_lines(["*1 passed*"])
 
 
+@xfail_pyside_2335
 def test_exceptions_to_stderr(qapp, capsys):
     """
     Exceptions should still be reported to stderr.
     """
     called = []
-    from pytestqt.qt_compat import qt_api
 
     class MyWidget(qt_api.QtWidgets.QWidget):
         def event(self, ev):
@@ -345,6 +359,7 @@ def test_exceptions_to_stderr(qapp, capsys):
     condition=sys.version_info[:2] == (3, 4),
     reason="failing in Python 3.4, which is about to be dropped soon anyway",
 )
+@xfail_pyside_2335
 def test_exceptions_dont_leak(testdir):
     """
     Ensure exceptions are cleared when an exception occurs and don't leak (#187).
