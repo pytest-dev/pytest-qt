@@ -2,6 +2,11 @@ name: build
 
 on: [push, pull_request]
 
+# Cancel running jobs for the same workflow and branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
 
@@ -12,7 +17,7 @@ jobs:
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         qt-lib: [pyqt5, pyqt6, pyside2, pyside6]
-        os: [ubuntu-20.04, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - python-version: "3.7"
             tox-env: "py37"
@@ -24,20 +29,12 @@ jobs:
             tox-env: "py310"
           - python-version: "3.11"
             tox-env: "py311"
-        # https://bugreports.qt.io/browse/PYSIDE-1797
         exclude:
-          - qt-lib: pyside6
-            os: macos-latest
-            python-version: "3.7"
-          - qt-lib: pyside6
-            os: ubuntu-20.04
-            python-version: "3.7"
-          # Not installable so far
-          - qt-lib: pyside6
-            python-version: "3.11"
-          - qt-lib: pyside2
+          # Not installable:
+          # ERROR: Could not find a version that satisfies the requirement pyside2 (from versions: none)
+          - python-version: "3.11"
+            qt-lib: pyside2
             os: windows-latest
-            python-version: "3.11"
 
     steps:
     - uses: actions/checkout@v3
@@ -50,7 +47,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install tox
-        if [ "${{ matrix.os }}" == "ubuntu-20.04" ]; then
+        if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
           sudo apt-get update -y
           sudo apt-get install -y libgles2-mesa-dev
         fi
