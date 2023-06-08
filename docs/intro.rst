@@ -6,8 +6,7 @@ pytest-qt is a `pytest`_ plugin that allows programmers to write tests
 for `PyQt5`_, `PyQt6`_, `PySide2`_ and `PySide6`_ applications.
 
 The main usage is to use the ``qtbot`` fixture, responsible for handling ``qApp``
-creation as needed and provides methods to simulate user interaction,
-like key presses and mouse clicks:
+creation as needed, and registering widgets for testing:
 
 
 .. code-block:: python
@@ -16,8 +15,8 @@ like key presses and mouse clicks:
         widget = HelloWidget()
         qtbot.addWidget(widget)
 
-        # click in the Greet button and make sure it updates the appropriate label
-        qtbot.mouseClick(widget.button_greet, QtCore.Qt.LeftButton)
+        # Click the greet button and make sure the appropriate label is updated.
+        widget.button_greet.click()
 
         assert widget.greet_label.text() == "Hello!"
 

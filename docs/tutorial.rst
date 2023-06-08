@@ -18,17 +18,19 @@ to search for and a button to browse for the desired directory. Its source code 
 
 .. _here: https://github.com/nicoddemus/PySide-Examples/blob/master/examples/dialogs/findfiles.py
 
-To test this widget's basic functionality, create a test function::
+To test this widget's basic functionality, create a test function:
 
-    def test_basic_search(qtbot, tmpdir):
-        '''
+.. code-block:: python
+
+    def test_basic_search(qtbot, tmp_path):
+        """
         test to ensure basic find files functionality is working.
-        '''
-        tmpdir.join('video1.avi').ensure()
-        tmpdir.join('video1.srt').ensure()
+        """
+        tmp_path.joinpath("video1.avi").touch()
+        tmp_path.joinpath("video1.srt").touch()
 
-        tmpdir.join('video2.avi').ensure()
-        tmpdir.join('video2.srt').ensure()
+        tmp_path.joinpath("video2.avi").touch()
+        tmp_path.joinpath("video2.srt").touch()
 
 Here the first parameter indicates that we will be using a ``qtbot`` fixture to control our widget.
 The other parameter is pytest's standard tmpdir_ that we use to create some files that will be
@@ -36,7 +38,9 @@ used during our test.
 
 .. _tmpdir: http://pytest.org/latest/tmpdir.html
 
-Now we create the widget to test and register it::
+Now we create the widget to test and register it:
+
+.. code-block:: python
 
     window = Window()
     window.show()
@@ -45,24 +49,50 @@ Now we create the widget to test and register it::
 .. tip:: Registering widgets is not required, but recommended because it will ensure those widgets get
     properly closed after each test is done.
 
-Now we use ``qtbot`` methods to simulate user interaction with the dialog::
+Now we can interact with the widgets directly:
+
+.. code-block:: python
 
     window.fileComboBox.clear()
-    qtbot.keyClicks(window.fileComboBox, '*.avi')
+    window.fileComboBox.setCurrentText("*.avi")
 
     window.directoryComboBox.clear()
-    qtbot.keyClicks(window.directoryComboBox, str(tmpdir))
+    window.directoryComboBox.setCurrentText(str(tmp_path))
 
-The method ``keyClicks`` is used to enter text in the editable combo box, selecting the desired mask
-and directory.
 
-We then simulate a user clicking the button with the ``mouseClick`` method::
+We use the ``QComboBox.setCurrentText`` method to change the current item selected in the combo box.
 
-    qtbot.mouseClick(window.findButton, QtCore.Qt.LeftButton)
+
+.. _note-about-qtbot-methods:
+
+.. note::
+
+    In general, prefer to use a widget's own methods to interact with it: ``QComboBox.setCurrentIndex``, ``QLineEdit.setText``,
+    etc. Those methods will emit the appropriate signal, so the test will work just the same as if the user themselves
+    have interacted with the controls.
+
+    Note that ``qtbot`` provides a number of methods to simulate actual interaction, for example ``keyClicks``, ``mouseClick``,
+    etc. Those methods should be used only in specialized situations, for example if you are creating a custom drawing widget
+    and want to simulate actual clicks.
+
+    For normal interactions, always prefer widget methods (``setCurrentIndex``, ``setText``, etc) -- ``qtbot``'s methods
+    (``keyClicks``, ``mouseClick``, etc) will trigger an actual event, which will then need to be processed in the next
+    pass of the event loop, making the test unreliable and flaky. Also some operations are hard to simulate using
+    raw clicks, for example selecting an item on a ``QComboBox``, which will need two ``mouseClick``
+    calls to simulate properly, while figuring out where to click.
+
+
+We then simulate a user clicking the button:
+
+.. code-block:: python
+
+    window.findButton.click()
 
 Once this is done, we inspect the results widget to ensure that it contains the expected files we
-created earlier::
+created earlier:
+
+.. code-block:: python
 
     assert window.filesTable.rowCount() == 2
-    assert window.filesTable.item(0, 0).text() == 'video1.avi'
-    assert window.filesTable.item(1, 0).text() == 'video2.avi'
+    assert window.filesTable.item(0, 0).text() == "video1.avi"
+    assert window.filesTable.item(1, 0).text() == "video2.avi"

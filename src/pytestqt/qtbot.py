@@ -55,6 +55,13 @@ class QtBot:
     Those methods are just forwarded directly to the `QTest API`_. Consult the documentation for more
     information.
 
+    .. note::
+        These methods should be rarely be used, in general prefer to interact with widgets
+        using their own methods such as ``QComboBox.setCurrentText``, ``QLineEdit.setText``, etc.
+        Doing so will have the same effect as users interacting with the widget, but are more reliable.
+
+        See :ref:`this note in the tutorial <note-about-qtbot-methods>` for more information.
+
     ---
 
     Below are methods used to simulate sending key events to widgets:

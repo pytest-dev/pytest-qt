@@ -7,13 +7,14 @@ It is common in Qt programming to override virtual C++ methods to customize
 behavior, like listening for mouse events, implement drawing routines, etc.
 
 Fortunately, all Python bindings for Qt support overriding these virtual methods
-naturally in your Python code::
+naturally in your Python code:
+
+.. code-block:: python
 
     class MyWidget(QWidget):
-
         # mouseReleaseEvent
         def mouseReleaseEvent(self, ev):
-            print('mouse released at: %s' % ev.pos())
+            print(f"mouse released at: {ev.pos()}")
 
 In ``PyQt5`` and ``PyQt6``, exceptions in virtual methods will by default call
 abort(), which will crash the interpreter. All other Qt wrappers will print the
@@ -22,12 +23,14 @@ value is required).
 
 This might be surprising for Python users which are used to exceptions
 being raised at the calling point: For example, the following code will just
-print a stack trace without raising any exception::
+print a stack trace without raising any exception:
+
+.. code-block:: python
 
     class MyWidget(QWidget):
-
         def mouseReleaseEvent(self, ev):
-            raise RuntimeError('unexpected error')
+            raise RuntimeError("unexpected error")
+
 
     w = MyWidget()
     QTest.mouseClick(w, QtCore.Qt.LeftButton)
@@ -49,7 +52,9 @@ Disabling the automatic exception hook
 --------------------------------------
 
 You can disable the automatic exception hook on individual tests by using a
-``qt_no_exception_capture`` marker::
+``qt_no_exception_capture`` marker:
+
+.. code-block:: python
 
     @pytest.mark.qt_no_exception_capture
     def test_buttons(qtbot):
