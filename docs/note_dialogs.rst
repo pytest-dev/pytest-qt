@@ -49,12 +49,14 @@ And now it is also easy to mock ``AskNameAndAgeDialog.ask`` when testing the for
 .. code-block:: python
 
     def test_form_registration(qtbot, monkeypatch):
-        form = RegistrationForm()
+        user = User.empty_user()
+        form = RegistrationForm(user)
 
         monkeypatch.setattr(
-            AskNameAndAgeDialog, "ask", classmethod(lambda *args: ("Jonh", 30))
+            AskNameAndAgeDialog, "ask", classmethod(lambda *args: ("John", 30))
         )
-        qtbot.click(form.enter_info())
-        # calls AskNameAndAgeDialog.ask
-        # test that the rest of the form correctly behaves as if
-        # user entered "Jonh" and 30 as name and age
+        # Clicking on the button will call AskNameAndAgeDialog.ask in its slot.
+        form.enter_info_button.click()
+
+        assert user.name == "John"
+        assert user.age == 30

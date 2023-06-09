@@ -26,7 +26,7 @@ For example:
         exit_calls = []
         monkeypatch.setattr(QApplication, "exit", lambda: exit_calls.append(1))
         button = get_app_exit_button()
-        qtbot.click(button)
+        button.click()
         assert exit_calls == [1]
 
 
@@ -37,7 +37,7 @@ Or using the ``mock`` package:
     def test_exit_button(qtbot):
         with mock.patch.object(QApplication, "exit"):
             button = get_app_exit_button()
-            qtbot.click(button)
+            button.click()
             assert QApplication.exit.call_count == 1
 
 
