@@ -48,6 +48,8 @@ Record
 .. module:: pytestqt.logging
 .. autoclass:: Record
 
+.. _qapp-fixture:
+
 qapp fixture
 ------------
 
