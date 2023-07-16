@@ -33,9 +33,18 @@ To test this widget's basic functionality, create a test function:
         tmp_path.joinpath("video2.srt").touch()
 
 Here the first parameter indicates that we will be using a ``qtbot`` fixture to control our widget.
+
+.. note::
+
+    It is not necessary to create a QApplication instance, since the ``qtbot`` fixture will
+    do this for you. The ``QApplication`` object is accessible through the
+    ``QApplication.instance()``_ function that returns a pointer equivalent to the global
+    ``qApp`` pointer.
+
 The other parameter is pytest's standard tmpdir_ that we use to create some files that will be
 used during our test.
 
+.. _QApplication.instance(): https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QApplication.html
 .. _tmpdir: http://pytest.org/latest/tmpdir.html
 
 Now we create the widget to test and register it:
