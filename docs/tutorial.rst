@@ -38,7 +38,7 @@ Here the first parameter indicates that we will be using a ``qtbot`` fixture to 
 
     It is not necessary to create a QApplication instance, since the ``qtbot`` fixture will
     do this for you. The ``QApplication`` object is accessible through the
-    ``QApplication.instance()``_ function that returns a pointer equivalent to the global
+    :ref:`qapp fixture<qapp-fixture>` that returns a pointer equivalent to the global
     ``qApp`` pointer.
 
 The other parameter is pytest's standard tmpdir_ that we use to create some files that will be
