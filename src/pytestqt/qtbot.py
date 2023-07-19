@@ -603,7 +603,9 @@ class QtBot:
         .. code-block:: python
 
             with qtbot.capture_exceptions() as exceptions:
-                qtbot.click(button)
+                qtbot.mouseClick(
+                    button, QtCore.MouseButton.LeftButton  # for PyQt6
+                )  # ... or QtCore.LeftButton in PyQt5
 
             # exception is a list of sys.exc_info tuples
             assert len(exceptions) == 1
