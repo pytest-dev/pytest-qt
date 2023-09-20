@@ -564,12 +564,6 @@ def test_qapp_args_default(testdir):
     Test QApplication default arguments.
     """
 
-    #    testdir.makeini(
-    #        """
-    #        [pytest]
-    #        qt_qapp_name = frobnicator
-    #        """
-    #    )
     testdir.makepyfile(
         """
         def test_args(qapp):

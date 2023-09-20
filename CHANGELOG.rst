@@ -1,5 +1,5 @@
-4.3.0 (2023-09-20)
-------------------
+UNRELEASED
+-----------
 
 - ``qapp`` now sets up the ``QApplication`` instance with a command line argument like this
   ``QApplication([prog_name])`` instead of using an empty list ``QApplication([])``.
