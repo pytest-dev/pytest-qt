@@ -546,13 +546,29 @@ def test_qapp_args(testdir):
 
         @pytest.fixture(scope='session')
         def qapp_args():
-            return ['--test-arg']
+            return ['prog_name', '--test-arg']
         """
     )
     testdir.makepyfile(
         """
         def test_args(qapp):
             assert '--test-arg' in list(qapp.arguments())
+    """
+    )
+    result = testdir.runpytest_subprocess()
+    result.stdout.fnmatch_lines(["*= 1 passed in *"])
+
+
+def test_qapp_args_default(testdir):
+    """
+    Test QApplication default arguments.
+    """
+
+    testdir.makepyfile(
+        """
+        def test_args(qapp):
+            args = qapp.arguments()
+            assert args[0] == 'pytest-qt-qapp'
     """
     )
     result = testdir.runpytest_subprocess()

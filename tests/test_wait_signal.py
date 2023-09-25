@@ -617,7 +617,7 @@ class TestCallback:
     @staticmethod
     def get_signal_from_code(signaller, code):
         """Converts a code such as 'A1' to a signal (signaller.signal_args for example)."""
-        assert type(code) == str and len(code) == 2
+        assert type(code) is str and len(code) == 2
         signal = signaller.signal_args if code[0] == "A" else signaller.signal_args_2
         return signal
 

@@ -12,7 +12,7 @@ from pytestqt.qtbot import QtBot, _close_widgets
 
 
 @pytest.fixture(scope="session")
-def qapp_args():
+def qapp_args(pytestconfig):
     """
     Fixture that provides QApplication arguments to use.
 
@@ -23,9 +23,19 @@ def qapp_args():
 
        @pytest.fixture(scope="session")
        def qapp_args():
-           return ["--arg"]
+           return ["prog_name", "--arg=foo"]
+
+
+    Note that it can only be overridden once at session scope.
+    It is not possible to override this per unit test since a QApplication
+    cannot be destroyed and recreated within the same app.
+
+    The default value is a list with one element which is determined the same
+    way as for ``QApplication.applicationName()``,
+    see :ref:`qapp fixture<setting-qapp-name>` for more information.
+
     """
-    return []
+    return [pytestconfig.getini("qt_qapp_name")]
 
 
 @pytest.fixture(scope="session")

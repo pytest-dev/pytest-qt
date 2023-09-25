@@ -75,6 +75,8 @@ If your tests require access to app-level functions, like
 The ``qapp`` fixture will then use the returned class instead of the default
 ``QApplication`` from ``QtWidgets``.
 
+.. _setting-qapp-name:
+
 Setting a QApplication name
 ---------------------------
 

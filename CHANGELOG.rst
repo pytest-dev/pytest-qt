@@ -1,3 +1,20 @@
+UNRELEASED
+-----------
+
+- ``qapp`` now sets up the ``QApplication`` instance with a command line argument like this
+  ``QApplication([prog_name])`` instead of using an empty list ``QApplication([])``.
+  Here ``prog_name`` is the name of the app which defaults to ``pytest-qt-app``, but can
+  be redefined in the ``pytest.ini`` file, see :ref:`qapp fixture<setting-qapp-name>`.
+  Alternatively, the arguments that will be passed to ``QApplication`` can be defined
+  explicitly using the ``qapp_args`` fixture. This means that the default behavior of
+  the ``qapp_args`` fixture is now also changed accordingly: it now returns the list
+  ``[prog_name]`` instead of an empty list. Thanks to `@The-Compiler`_ (`#483`_) and
+  `@hakonhagland`_ (`#515`_).
+
+..  _#515: https://github.com/pytest-dev/pytest-qt/pull/515
+..  _#483: https://github.com/pytest-dev/pytest-qt/issues/483
+
+
 4.2.0 (2022-10-25)
 ------------------
 
@@ -731,6 +748,7 @@ First working version.
 .. _@fabioz: https://github.com/fabioz
 .. _@fogo: https://github.com/fogo
 .. _@gqmelo: https://github.com/gqmelo
+.. _@hakonhagland: https://github.com/hakonhagland
 .. _@itghisi: https://github.com/itghisi
 .. _@jdreaver: https://github.com/jdreaver
 .. _@mitya57: https://github.com/mitya57
