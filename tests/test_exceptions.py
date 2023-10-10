@@ -3,6 +3,15 @@ import sys
 import pytest
 
 from pytestqt.exceptions import capture_exceptions, format_captured_exceptions
+from pytestqt.qt_compat import qt_api
+
+# PySide6 is automatically captures exceptions during the event loop,
+# and re-raises them when control gets back to Python, so the related
+# functionality does not work, nor is needed for the end user.
+exception_capture_pyside6 = pytest.mark.skipif(
+    qt_api.pytest_qt_api == "pyside6",
+    reason="pytest-qt capture not working/needed on PySide6",
+)
 
 
 @pytest.mark.parametrize("raise_error", [False, True])
@@ -42,10 +51,24 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
     )
     result = testdir.runpytest()
     if raise_error:
-        expected_lines = ["*Exceptions caught in Qt event loop:*"]
-        if sys.version_info.major == 3:
-            expected_lines.append("RuntimeError: original error")
-        expected_lines.extend(["*ValueError: mistakes were made*", "*1 failed*"])
+        if qt_api.pytest_qt_api == "pyside6":
+            # PySide6 automatically captures exceptions during the event loop,
+            # and re-raises them when control gets back to Python.
+            # This results in the exception not being captured by
+            # us, and a more natural traceback which includes the app.sendEvent line.
+            expected_lines = [
+                "*RuntimeError: original error",
+                "*app.sendEvent*",
+                "*ValueError: mistakes were made*",
+                "*1 failed*",
+            ]
+        else:
+            expected_lines = [
+                "*Exceptions caught in Qt event loop:*",
+                "RuntimeError: original error",
+                "*ValueError: mistakes were made*",
+                "*1 failed*",
+            ]
         result.stdout.fnmatch_lines(expected_lines)
         assert "pytest.fail" not in "\n".join(result.outlines)
     else:
@@ -84,6 +107,7 @@ def test_format_captured_exceptions_chained():
 
 
 @pytest.mark.parametrize("no_capture_by_marker", [True, False])
+@exception_capture_pyside6
 def test_no_capture(testdir, no_capture_by_marker):
     """
     Make sure options that disable exception capture are working (either marker
@@ -99,15 +123,15 @@ def test_no_capture(testdir, no_capture_by_marker):
             """
             [pytest]
             qt_no_exception_capture = 1
-        """
+            """
         )
     testdir.makepyfile(
-        """
+        f"""
         import pytest
         import sys
         from pytestqt.qt_compat import qt_api
 
-        # PyQt 5.5+ will crash if there's no custom exception handler installed
+        # PyQt 5.5+ will crash if there's no custom exception handler installed.
         sys.excepthook = lambda *args: None
 
         class MyWidget(qt_api.QtWidgets.QWidget):
@@ -120,9 +144,7 @@ def test_no_capture(testdir, no_capture_by_marker):
             w = MyWidget()
             qtbot.addWidget(w)
             qtbot.mouseClick(w, qt_api.QtCore.Qt.MouseButton.LeftButton)
-    """.format(
-            marker_code=marker_code
-        )
+        """
     )
     res = testdir.runpytest()
     res.stdout.fnmatch_lines(["*1 passed*"])
@@ -265,6 +287,7 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
 
 
 @pytest.mark.qt_no_exception_capture
+@exception_capture_pyside6
 def test_capture_exceptions_context_manager(qapp):
     """Test capture_exceptions() context manager.
 
@@ -319,6 +342,7 @@ def test_capture_exceptions_qtbot_context_manager(testdir):
     result.stdout.fnmatch_lines(["*1 passed*"])
 
 
+@exception_capture_pyside6
 def test_exceptions_to_stderr(qapp, capsys):
     """
     Exceptions should still be reported to stderr.
@@ -341,10 +365,7 @@ def test_exceptions_to_stderr(qapp, capsys):
     assert 'raise RuntimeError("event processed")' in err
 
 
-@pytest.mark.xfail(
-    condition=sys.version_info[:2] == (3, 4),
-    reason="failing in Python 3.4, which is about to be dropped soon anyway",
-)
+@exception_capture_pyside6
 def test_exceptions_dont_leak(testdir):
     """
     Ensure exceptions are cleared when an exception occurs and don't leak (#187).
