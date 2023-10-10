@@ -88,7 +88,6 @@ def test_format_captured_exceptions():
     assert "ValueError: errors were made" in lines
 
 
-@pytest.mark.skipif(sys.version_info.major == 2, reason="Python 3 only")
 def test_format_captured_exceptions_chained():
     try:
         try:
