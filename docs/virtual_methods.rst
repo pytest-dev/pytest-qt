@@ -3,6 +3,12 @@ Exceptions in virtual methods
 
 .. versionadded:: 1.1
 
+.. note::
+
+    ``PySide6 6.5.2+`` automatically captures exceptions that happen during the Qt event loop and
+    re-raises them when control is moved back to Python, so the functionality described here
+    does not work with ``PySide6`` (nor is necessary).
+
 It is common in Qt programming to override virtual C++ methods to customize
 behavior, like listening for mouse events, implement drawing routines, etc.
 
@@ -76,3 +82,9 @@ This might be desirable if you plan to install a custom exception hook.
     actually trigger an ``abort()``, crashing the Python interpreter. For this
     reason, disabling exception capture in ``PyQt5.5+`` and ``PyQt6`` is not
     recommended unless you install your own exception hook.
+
+.. note::
+
+    As explained in the note at the top of the page, ``PySide6 6.5.2+`` has its own
+    exception capture mechanism, so this option has no effect when using this
+    library.
