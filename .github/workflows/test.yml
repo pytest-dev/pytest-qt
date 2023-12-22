@@ -27,19 +27,6 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         qt-lib: [pyqt5, pyqt6, pyside2, pyside6]
         os: [ubuntu-latest, windows-latest, macos-latest]
-        include:
-          - python-version: "3.7"
-            tox-env: "py37"
-          - python-version: "3.8"
-            tox-env: "py38"
-          - python-version: "3.9"
-            tox-env: "py39"
-          - python-version: "3.10"
-            tox-env: "py310"
-          - python-version: "3.11"
-            tox-env: "py311"
-          - python-version: "3.12"
-            tox-env: "py312"
         exclude:
           # Not installable:
           # ERROR: Could not find a version that satisfies the requirement pyside2 (from versions: none)
@@ -74,4 +61,4 @@ jobs:
     - name: Test
       shell: bash
       run: |
-        tox -e ${{ matrix.tox-env }}-${{ matrix.qt-lib }} --installpkg `find dist/*.tar.gz` -- -ra
+        tox -e py-${{ matrix.qt-lib }} --installpkg `find dist/*.tar.gz` -- -ra
