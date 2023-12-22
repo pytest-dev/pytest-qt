@@ -1,4 +1,4 @@
-4.3.0 (2023-12-22)
+4.3.1 (2023-12-22)
 ------------------
 
 - Added official support for Python 3.12.
@@ -16,6 +16,11 @@
 
 ..  _#515: https://github.com/pytest-dev/pytest-qt/pull/515
 ..  _#483: https://github.com/pytest-dev/pytest-qt/issues/483
+
+4.3.0 (2023-12-22)
+------------------
+
+- Failure during publish.
 
 
 4.2.0 (2022-10-25)
