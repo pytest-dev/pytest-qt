@@ -41,5 +41,4 @@ jobs:
     - name: GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        body_path: scripts/latest-release-notes.md
         files: dist/*
