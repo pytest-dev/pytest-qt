@@ -7,30 +7,38 @@ on:
 
 jobs:
 
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build and Check Package
+        uses: hynek/build-and-inspect-python-package@v1.5
+
   deploy:
+    needs: [package]
+
     if: github.repository == 'pytest-dev/pytest-qt'
 
     runs-on: ubuntu-latest
 
+    permissions:
+      id-token: write  # For PyPI trusted publishers.
+      contents: write  # For release.
+
     steps:
     - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        persist-credentials: false
 
-    - name: Set up Python
-      uses: actions/setup-python@v3
+    - name: Download Package
+      uses: actions/download-artifact@v3
       with:
-        python-version: "3.11"
-
-    - name: Build package
-      run: |
-        python -m pip install --upgrade pip
-        pip install build
-        python -m build
+        name: Packages
+        path: dist
 
     - name: Publish package to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.5.1
+      uses: pypa/gh-action-pypi-publish@v1.8.5
+
+    - name: GitHub Release
+      uses: softprops/action-gh-release@v1
       with:
-        user: __token__
-        password: ${{ secrets.pypi_token }}
+        body_path: scripts/latest-release-notes.md
+        files: dist/*

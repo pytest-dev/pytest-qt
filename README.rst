@@ -36,7 +36,7 @@ This allows you to test and make sure your view layer is behaving the way you ex
 .. |conda-forge| image:: https://img.shields.io/conda/vn/conda-forge/pytest-qt.svg
     :target: https://anaconda.org/conda-forge/pytest-qt
 
-.. |ci| image:: https://github.com/pytest-dev/pytest-qt/workflows/build/badge.svg
+.. |ci| image:: https://github.com/pytest-dev/pytest-qt/workflows/test/badge.svg
   :target: https://github.com/pytest-dev/pytest-qt/actions
 
 .. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-qt.svg
