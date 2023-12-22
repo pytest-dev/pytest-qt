@@ -1,5 +1,5 @@
-UNRELEASED
------------
+4.3.0 (2023-12-22)
+------------------
 
 - Added official support for Python 3.12.
 - Python 3.7 is no longer supported.
