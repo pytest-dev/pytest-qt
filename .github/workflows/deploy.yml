@@ -20,6 +20,7 @@ jobs:
     if: github.repository == 'pytest-dev/pytest-qt'
 
     runs-on: ubuntu-latest
+    environment: deploy
 
     permissions:
       id-token: write  # For PyPI trusted publishers.
@@ -40,5 +41,4 @@ jobs:
     - name: GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        body_path: scripts/latest-release-notes.md
         files: dist/*
