@@ -33,6 +33,8 @@ jobs:
           - python-version: "3.11"
             qt-lib: pyside2
             os: windows-latest
+          - python-version: "3.12"
+            qt-lib: pyside2
 
     steps:
     - uses: actions/checkout@v3
