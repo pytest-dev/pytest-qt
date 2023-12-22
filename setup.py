@@ -18,6 +18,7 @@ setup(
     author_email="nicoddemus@gmail.com",
     description="pytest support for PyQt and PySide applications",
     long_description=Path("README.rst").read_text(encoding="UTF-8"),
+    long_description_content_type="text/x-rst",
     license="MIT",
     keywords="pytest qt test unittest",
     url="http://github.com/pytest-dev/pytest-qt",
