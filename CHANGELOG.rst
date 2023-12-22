@@ -1,6 +1,9 @@
 UNRELEASED
 -----------
 
+- Added official support for Python 3.12.
+- Python 3.7 is no longer supported.
+
 - ``qapp`` now sets up the ``QApplication`` instance with a command line argument like this
   ``QApplication([prog_name])`` instead of using an empty list ``QApplication([])``.
   Here ``prog_name`` is the name of the app which defaults to ``pytest-qt-app``, but can
