@@ -365,9 +365,6 @@ def test_exceptions_to_stderr(qapp, capsys):
 
 
 @exception_capture_pyside6
-@pytest.mark.skipif(
-    sys.version_info[:2] == (3, 12), reason="#532 requires investigation"
-)
 def test_exceptions_dont_leak(testdir):
     """
     Ensure exceptions are cleared when an exception occurs and don't leak (#187).
