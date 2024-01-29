@@ -65,7 +65,6 @@ class _ChangeInFlight(enum.Enum):
 
 
 class ModelTester:
-
     """A tester for Qt's QAbstractItemModels."""
 
     def __init__(self, config):
