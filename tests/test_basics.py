@@ -385,7 +385,6 @@ def test_qtbot_wait(qtbot, stop_watch):
 @pytest.fixture
 def event_recorder(qtbot):
     class EventRecorder(qt_api.QtWidgets.QWidget):
-
         """
         Widget that records some kind of events sent to it.
 

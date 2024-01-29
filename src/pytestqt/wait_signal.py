@@ -616,7 +616,6 @@ class SignalEmittedSpy:
 
 
 class CallbackBlocker:
-
     """
     .. versionadded:: 3.1
 
