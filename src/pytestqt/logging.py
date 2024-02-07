@@ -39,16 +39,14 @@ class QtLoggingPlugin:
         item.qt_log_capture = _QtMessageCapture(ignore_regexes)
         item.qt_log_capture._start()
 
-    @pytest.hookimpl(hookwrapper=True)
+    @pytest.hookimpl(wrapper=True)
     def pytest_runtest_makereport(self, item, call):
         """Add captured Qt messages to test item report if the call failed."""
-        outcome = yield
+        report = yield
         if not hasattr(item, "qt_log_capture"):
-            return
+            return report
 
         if call.when == "call":
-            report = outcome.get_result()
-
             m = get_marker(item, "qt_log_level_fail")
             if m:
                 log_fail_level = m.args[0]
@@ -111,6 +109,7 @@ class QtLoggingPlugin:
 
             item.qt_log_capture._stop()
             del item.qt_log_capture
+        return report
 
 
 class _QtMessageCapture:
