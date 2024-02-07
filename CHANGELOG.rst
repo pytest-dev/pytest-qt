@@ -1,5 +1,5 @@
-UNRELEASED
-----------
+4.4.0 (2024-02-07)
+------------------
 
 - ``pluggy >=1.1`` is now required: we now use new-style hook wrappers, which are less error prone.
 
