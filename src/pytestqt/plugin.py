@@ -167,7 +167,7 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+@pytest.hookimpl(wrapper=True, tryfirst=True)
 def pytest_runtest_setup(item):
     """
     Hook called after before test setup starts, to start capturing exceptions
@@ -177,22 +177,24 @@ def pytest_runtest_setup(item):
     if capture_enabled:
         item.qt_exception_capture_manager = _QtExceptionCaptureManager()
         item.qt_exception_capture_manager.start()
-    yield
+    result = yield
     _process_events()
     if capture_enabled:
         item.qt_exception_capture_manager.fail_if_exceptions_occurred("SETUP")
+    return result
 
 
-@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+@pytest.hookimpl(wrapper=True, tryfirst=True)
 def pytest_runtest_call(item):
-    yield
+    result = yield
     _process_events()
     capture_enabled = _is_exception_capture_enabled(item)
     if capture_enabled:
         item.qt_exception_capture_manager.fail_if_exceptions_occurred("CALL")
+    return result
 
 
-@pytest.hookimpl(hookwrapper=True, trylast=True)
+@pytest.hookimpl(wrapper=True, trylast=True)
 def pytest_runtest_teardown(item):
     """
     Hook called after each test tear down, to process any pending events and
@@ -202,12 +204,13 @@ def pytest_runtest_teardown(item):
     _process_events()
     _close_widgets(item)
     _process_events()
-    yield
+    result = yield
     _process_events()
     capture_enabled = _is_exception_capture_enabled(item)
     if capture_enabled:
         item.qt_exception_capture_manager.fail_if_exceptions_occurred("TEARDOWN")
         item.qt_exception_capture_manager.finish()
+    return result
 
 
 def _process_events():

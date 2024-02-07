@@ -1,6 +1,8 @@
 UNRELEASED
 ----------
 
+- ``pluggy >=1.1`` is now required: we now use new-style hook wrappers, which are less error prone.
+
 - Fixed exception handling so they are properly cleared in Python 3.12, due to the new `sys.last_exc <https://docs.python.org/3/library/sys.html#sys.last_exc>`__ attribute (`#532`_).
 
 ..  _#532: https://github.com/pytest-dev/pytest-qt/issues/532
