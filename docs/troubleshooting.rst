@@ -61,18 +61,23 @@ More details can be found in `issue #206`_.
 
 .. _issue #206: https://github.com/pytest-dev/pytest-qt/issues/206
 
-GitHub Actions
---------------
+GitHub Actions, Azure pipelines, Travis-CI and GitLab CI/CD
+-----------------------------------------------------------
 
-When using ``ubuntu-latest`` on Github Actions, the package ``libxkbcommon-x11-0`` has to be installed, ``DISPLAY`` should be set and ``xvfb`` run. More details can be found in `issue #293`_.
+When using ``ubuntu-latest`` on Github Actions, the package ``libxkbcommon-x11-0`` has to be installed, ``DISPLAY`` should be set and ``xvfb`` run. More details can be found in issues `#293`_ and `#550`_.
 
-.. _issue #293: https://github.com/pytest-dev/pytest-qt/issues/293
+.. _#293: https://github.com/pytest-dev/pytest-qt/issues/293
+.. _#550: https://github.com/pytest-dev/pytest-qt/issues/550
 
 Since Qt in version 5.15 ``xcb`` libraries are not distributed with Qt so this library in version at least 1.11 on runner. See more in https://codereview.qt-project.org/c/qt/qtbase/+/253905
 
-For Github Actions, Azure pipelines and Travis-CI you will need to install ``libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils``
+Since Qt in version 6.5 ``xcb-cursor0`` is a requirement. See all Qt6 requirements in https://doc.qt.io/qt-6/linux-requirements.html
 
-As an example, here is a working config :
+For GitHub Actions, Azure pipelines, Travis-CI and GitLab CI/CD you will need to install ``libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils``
+
+You might need to install ``libgl1 libegl1 libdbus-1-3`` as well.
+
+As an example, here is a working Github Actions config :
 
 .. code-block:: yaml
 
@@ -98,6 +103,25 @@ As an example, here is a working config :
           run: |
             sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils
             /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+
+And here is a working Qt6 GitLab CI/CD config :
+
+.. code-block:: yaml
+
+    variables:
+      DISPLAY: ':99.0'
+
+    test:
+      stage: test
+      image: python:3.11
+      script:
+        - apt update
+        - apt install -y libgl1 libegl1 libdbus-1-3 libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils xvfb
+        - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+        - python -m pip install pyqt6 pytest-qt
+
+        - python -m pytest test.py
+
 
 ``tlambert03/setup-qt-libs``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
