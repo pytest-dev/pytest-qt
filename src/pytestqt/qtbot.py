@@ -185,7 +185,13 @@ class QtBot:
         .. note:: This method is also available as ``add_widget`` (pep-8 alias)
         """
         if not isinstance(widget, qt_api.QtWidgets.QWidget):
-            raise TypeError("Need to pass a QWidget to addWidget!")
+            try:
+                name = widget.__class__.__module__ + "." + widget.__class__.__qualname__
+            except Exception:  # Probably AttributeError but be safe anyway
+                extra = ""
+            else:
+                extra = f", got {name}"
+            raise TypeError(f"Need to pass a QWidget to addWidget{extra}!")
         _add_widget(self._request.node, widget, before_close_func=before_close_func)
 
     def waitActive(self, widget, *, timeout=5000):
