@@ -1,10 +1,10 @@
 name: test
 
-on: 
+on:
   push:
-    branches: 
+    branches:
       - main
-      
+
   pull_request:
 
 # Cancel running jobs for the same workflow and branch.
