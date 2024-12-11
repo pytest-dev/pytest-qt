@@ -10,9 +10,9 @@ jobs:
   package:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build and Check Package
-        uses: hynek/build-and-inspect-python-package@v1.5
+        uses: hynek/build-and-inspect-python-package@v2.10
 
   deploy:
     needs: [package]
@@ -27,18 +27,18 @@ jobs:
       contents: write  # For release.
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Download Package
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: Packages
         path: dist
 
     - name: Publish package to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.8.5
+      uses: pypa/gh-action-pypi-publish@v1.12.3
 
     - name: GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: dist/*
