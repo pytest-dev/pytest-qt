@@ -40,6 +40,10 @@ jobs:
             os: windows-latest
           - python-version: "3.12"
             qt-lib: pyside2
+          - python-version: "3.13"
+            qt-lib: pyside2
+          - qt-lib: pyside2
+            os: macos-latest
 
     steps:
     - uses: actions/checkout@v3
