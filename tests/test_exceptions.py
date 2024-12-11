@@ -59,7 +59,7 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
             expected_lines = [
                 "*RuntimeError: original error",
                 "*app.sendEvent*",
-                "*ValueError: mistakes were made*",
+                "*ValueError:*mistakes were made*",
                 "*1 failed*",
             ]
         else:
