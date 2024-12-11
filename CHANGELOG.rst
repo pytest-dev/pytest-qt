@@ -3,6 +3,7 @@ UNRELEASED
 
 * Added official support for Python 3.13.
 * Dropped support for EOL Python 3.8.
+* Dropped support for EOL PySide 2.
 
 4.4.0 (2024-02-07)
 ------------------

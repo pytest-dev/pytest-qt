@@ -881,7 +881,7 @@ class TestAllArgs:
 def get_mixed_signals_with_guaranteed_name(signaller):
     """
     Returns a list of signals with the guarantee that the signals have names (i.e. the names are
-    manually provided in case of using PySide2, where the signal names cannot be determined at run-time).
+    manually provided in case of using PySide6, where the signal names cannot be determined at run-time).
     """
     if qt_api.is_pyside:
         signals = [
@@ -918,9 +918,9 @@ class TestAllSignalsAndArgs:
         Tests that all_signals_and_args is empty even though expected signals are emitted, but signal names aren't
         available.
         """
-        if qt_api.pytest_qt_api != "pyside2":
+        if qt_api.pytest_qt_api != "pyside6":
             pytest.skip(
-                "test only makes sense for PySide2, whose signals don't contain a name!"
+                "test only makes sense for PySide6, whose signals don't contain a name"
             )
 
         with qtbot.waitSignals(
@@ -1198,13 +1198,13 @@ class TestWaitSignalsTimeoutErrorMessage:
 
     def test_degenerate_error_msg(self, qtbot, signaller):
         """
-        Tests that the TimeoutError message is degenerate when using PySide2 signals for which no name is provided
+        Tests that the TimeoutError message is degenerate when using PySide6 signals for which no name is provided
         by the user. This degenerate messages doesn't contain the signals' names, and includes a hint to the user how
         to fix the situation.
         """
-        if qt_api.pytest_qt_api != "pyside2":
+        if qt_api.pytest_qt_api != "pyside6":
             pytest.skip(
-                "test only makes sense for PySide, whose signals don't contain a name!"
+                "test only makes sense for PySide, whose signals don't contain a name"
             )
 
         with pytest.raises(TimeoutError) as excinfo:

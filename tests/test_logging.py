@@ -75,7 +75,7 @@ def test_qinfo(qtlog):
     if qt_api.is_pyside:
         assert (
             qt_api.qInfo is None
-        ), "pyside2/6 does not expose qInfo. If it does, update this test."
+        ), "pyside6 does not expose qInfo. If it does, update this test."
         return
 
     qt_api.qInfo("this is an INFO message")

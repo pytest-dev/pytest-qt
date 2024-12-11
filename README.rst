@@ -3,7 +3,7 @@ pytest-qt
 =========
 
 pytest-qt is a `pytest`_ plugin that allows programmers to write tests
-for `PyQt5`_, `PyQt6`_, `PySide2`_ and `PySide6`_ applications.
+for `PyQt5`_, `PyQt6`_, and `PySide6`_ applications.
 
 The main usage is to use the ``qtbot`` fixture, responsible for handling ``qApp``
 creation as needed and provides methods to simulate user interaction,
@@ -22,7 +22,6 @@ like key presses and mouse clicks:
         assert widget.greet_label.text() == "Hello!"
 
 
-.. _PySide2: https://pypi.org/project/PySide2/
 .. _PySide6: https://pypi.org/project/PySide6/
 .. _PyQt5: https://pypi.org/project/PyQt5/
 .. _PyQt6: https://pypi.org/project/PyQt6/
@@ -74,24 +73,23 @@ Features
 Requirements
 ============
 
-Works with either PySide6_, PySide2_, PyQt6_ or PyQt5_.
+Works with either PySide6_, PyQt6_ or PyQt5_.
 
 If any of the above libraries is already imported by the time the tests execute, that library will be used.
 
 If not, pytest-qt will try to import and use the Qt APIs, in this order:
 
 - ``PySide6``
-- ``PySide2``
 - ``PyQt6``
 - ``PyQt5``
 
 To force a particular API, set the configuration variable ``qt_api`` in your ``pytest.ini`` file to
-``pyside6``, ``pyside2``, ``pyqt6`` or ``pyqt5``:
+``pyside6``, ``pyqt6`` or ``pyqt5``:
 
 .. code-block:: ini
 
     [pytest]
-    qt_api=pyqt5
+    qt_api=pyqt6
 
 
 Alternatively, you can set the ``PYTEST_QT_API`` environment
@@ -144,7 +142,7 @@ Running tests
 
 Tests are run using `tox`_::
 
-    $ tox -e py37-pyside2,py37-pyqt5
+    $ tox -e py-pyside6,py-pyqt5
 
 ``pytest-qt`` is formatted using `black <https://github.com/ambv/black>`_ and uses
 `pre-commit <https://github.com/pre-commit/pre-commit>`_ for linting checks before commits. You
