@@ -30,20 +30,8 @@ jobs:
 
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        qt-lib: [pyqt5, pyqt6, pyside2, pyside6]
+        qt-lib: [pyqt5, pyqt6, pyside6]
         os: [ubuntu-latest, windows-latest, macos-latest]
-        exclude:
-          # Not installable:
-          # ERROR: Could not find a version that satisfies the requirement pyside2 (from versions: none)
-          - python-version: "3.11"
-            qt-lib: pyside2
-            os: windows-latest
-          - python-version: "3.12"
-            qt-lib: pyside2
-          - python-version: "3.13"
-            qt-lib: pyside2
-          - qt-lib: pyside2
-            os: macos-latest
 
     steps:
     - uses: actions/checkout@v4

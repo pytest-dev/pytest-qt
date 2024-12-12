@@ -1,6 +1,6 @@
 """
 Provide a common way to import Qt classes used by pytest-qt in a unique manner,
-abstracting API differences between PyQt5/6 and PySide2/6.
+abstracting API differences between PyQt5/6 and PySide6.
 
 .. note:: This module is not part of pytest-qt public API, hence its interface
 may change between releases and users should not rely on it.
@@ -19,7 +19,6 @@ VersionTuple = namedtuple("VersionTuple", "qt_api, qt_api_version, runtime, comp
 
 QT_APIS = OrderedDict()
 QT_APIS["pyside6"] = "PySide6"
-QT_APIS["pyside2"] = "PySide2"
 QT_APIS["pyqt6"] = "PyQt6"
 QT_APIS["pyqt5"] = "PyQt5"
 
@@ -85,7 +84,7 @@ class _QtApi:
             or self._guess_qt_api()
         )
 
-        self.is_pyside = self.pytest_qt_api in ["pyside2", "pyside6"]
+        self.is_pyside = self.pytest_qt_api in ["pyside6"]
         self.is_pyqt = self.pytest_qt_api in ["pyqt5", "pyqt6"]
 
         if not self.pytest_qt_api:  # pragma: no cover
@@ -94,7 +93,7 @@ class _QtApi:
                 for module, reason in sorted(self._import_errors.items())
             )
             msg = (
-                "pytest-qt requires either PySide2, PySide6, PyQt5 or PyQt6 installed.\n"
+                "pytest-qt requires either PySide6, PyQt5 or PyQt6 installed.\n"
                 + errors
             )
             raise pytest.UsageError(msg)
@@ -112,7 +111,7 @@ class _QtApi:
 
         self._check_qt_api_version()
 
-        # qInfo is not exposed in PySide2/6 (#232)
+        # qInfo is not exposed in PySide6 (#232)
         if hasattr(QtCore, "QMessageLogger"):
             self.qInfo = lambda msg: QtCore.QMessageLogger().info(msg)
         elif hasattr(QtCore, "qInfo"):
@@ -151,8 +150,8 @@ class _QtApi:
             )
 
     def exec(self, obj, *args, **kwargs):
-        # exec was a keyword in Python 2, so PySide2 (and also PySide6 6.0)
-        # name the corresponding method "exec_" instead.
+        # exec was a keyword in Python 2, so PySide6 6.0
+        # names the corresponding method "exec_" instead.
         #
         # The old _exec() alias is removed in PyQt6 and also deprecated as of
         # PySide 6.1:
@@ -169,14 +168,6 @@ class _QtApi:
 
             return VersionTuple(
                 "PySide6", version, self.QtCore.qVersion(), self.QtCore.__version__
-            )
-        elif self.pytest_qt_api == "pyside2":
-            import PySide2
-
-            version = PySide2.__version__
-
-            return VersionTuple(
-                "PySide2", version, self.QtCore.qVersion(), self.QtCore.__version__
             )
         elif self.pytest_qt_api == "pyqt6":
             return VersionTuple(
