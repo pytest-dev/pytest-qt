@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build and Check Package
-        uses: hynek/build-and-inspect-python-package@v2.11
+        uses: hynek/build-and-inspect-python-package@v2.12
 
   deploy:
     needs: [package]
@@ -36,7 +36,7 @@ jobs:
         path: dist
 
     - name: Publish package to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.12.3
+      uses: pypa/gh-action-pypi-publish@v1.12.4
 
     - name: GitHub Release
       uses: softprops/action-gh-release@v2
