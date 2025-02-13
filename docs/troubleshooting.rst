@@ -123,6 +123,22 @@ And here is a working Qt6 GitLab CI/CD config :
         - python -m pytest test.py
 
 
+And here is a working Qt6 Azure Pipelines CI/CD config for ``ubuntu-latest`` :
+
+.. code-block:: yaml
+
+    # this was tested with ``ubuntu-latest`` image
+    - script: |
+        sudo apt update
+        sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libxcb-shape0 libglib2.0-0 libgl1-mesa-dev
+        sudo apt-get install -y '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
+        sudo apt-get install -y x11-utils
+        /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+      displayName: 'Install and start xvfb and other dependencies on Linux for Qt GUI tests'
+      condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+    # After this step, assuming you have ``pytest-qt`` installed, just run ``pytest`` and your PyQt6 tests will work
+
+
 ``tlambert03/setup-qt-libs``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Instead manually curate list of used packages you may use ``tlambert03/setup-qt-libs`` github action: https://github.com/tlambert03/setup-qt-libs
