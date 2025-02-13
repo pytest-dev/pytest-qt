@@ -127,15 +127,25 @@ And here is a working Qt6 Azure Pipelines CI/CD config for ``ubuntu-latest`` :
 
 .. code-block:: yaml
 
-    # this was tested with ``ubuntu-latest`` image
-    - script: |
-        sudo apt update
-        sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libxcb-shape0 libglib2.0-0 libgl1-mesa-dev
-        sudo apt-get install -y '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
-        sudo apt-get install -y x11-utils
-        /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
-      displayName: 'Install and start xvfb and other dependencies on Linux for Qt GUI tests'
-      condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+    # Set these environment variables for the job that runs tests
+
+    variables:
+      DISPLAY: ':99.0'  # This is needed for pytest-qt not to crash as mentioned above
+      # Python fault handler is enabled in case UI tests crash without meaningful error messages
+      PYTHONFAULTHANDLER: 'enabled'  # https://docs.python.org/3/library/faulthandler.html
+
+    # Add this step to your CI pipeline before running your pytest-qt-based Qt6 tests with pytest
+
+        # this was tested with ``ubuntu-latest`` image
+        - script: |
+            sudo apt update
+            sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libxcb-shape0 libglib2.0-0 libgl1-mesa-dev
+            sudo apt-get install -y '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
+            sudo apt-get install -y x11-utils
+            /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+          displayName: 'Install and start xvfb and other dependencies on Linux for Qt GUI tests'
+          condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
     # After this step, assuming you have ``pytest-qt`` installed, just run ``pytest`` and your PyQt6 tests will work
 
 
