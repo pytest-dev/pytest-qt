@@ -613,6 +613,7 @@ def test_already_loaded_backend(monkeypatch, option_api, backend):
     qtcore = Mock()
     for method_name in (
         "qInstallMessageHandler",
+        "qInfo",
         "qDebug",
         "qWarning",
         "qCritical",
