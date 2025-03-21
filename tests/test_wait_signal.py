@@ -1378,7 +1378,8 @@ def test_signal_raised_from_thread(pytester: pytest.Pytester) -> None:
     # takes ~1s in total.
     count = 1500
 
-    pytester.makepyfile(f"""
+    pytester.makepyfile(
+        f"""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -1400,7 +1401,8 @@ def test_signal_raised_from_thread(pytester: pytest.Pytester) -> None:
             finally:
                 thread.quit()
                 thread.wait()
-    """)
+    """
+    )
 
     res = pytester.runpytest_subprocess()
     res.assert_outcomes(passed=count)
