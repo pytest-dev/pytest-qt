@@ -24,12 +24,12 @@ class _AbstractSignalBlocker:
         self.raising = raising
         self._signals = None  # will be initialized by inheriting implementations
         self._timeout_message = ""
-        if timeout is None or timeout == 0:
-            self._timer = None
-        else:
-            self._timer = qt_api.QtCore.QTimer(self._loop)
-            self._timer.setSingleShot(True)
+
+        self._timer = qt_api.QtCore.QTimer(self._loop)
+        self._timer.setSingleShot(True)
+        if timeout is not None:
             self._timer.setInterval(timeout)
+        self._timer.timeout.connect(self._quit_loop_by_timeout)
 
     def wait(self):
         """
@@ -43,11 +43,13 @@ class _AbstractSignalBlocker:
             return
         if self.timeout is None and not self._signals:
             raise ValueError("No signals or timeout specified.")
-        if self._timer is not None:
-            self._timer.timeout.connect(self._quit_loop_by_timeout)
-            self._timer.start()
 
         if self.timeout != 0:
+            if self.timeout is not None:
+                # asserts as a stop-gap for possible multithreading issues
+                assert not self.signal_triggered
+                self._timer.start()
+                assert not self.signal_triggered
             qt_api.exec(self._loop)
 
         if not self.signal_triggered and self.raising:
@@ -62,10 +64,7 @@ class _AbstractSignalBlocker:
     def _cleanup(self):
         # store timeout message before the data to construct it is lost
         self._timeout_message = self._get_timeout_error_message()
-        if self._timer is not None:
-            _silent_disconnect(self._timer.timeout, self._quit_loop_by_timeout)
-            self._timer.stop()
-            self._timer = None
+        self._timer.stop()
 
     def _get_timeout_error_message(self):
         """Subclasses have to implement this, returning an appropriate error message for a TimeoutError."""
@@ -649,12 +648,12 @@ class CallbackBlocker:
         self.kwargs = None
         self.called = False
         self._loop = qt_api.QtCore.QEventLoop()
-        if timeout is None:
-            self._timer = None
-        else:
-            self._timer = qt_api.QtCore.QTimer(self._loop)
-            self._timer.setSingleShot(True)
+
+        self._timer = qt_api.QtCore.QTimer(self._loop)
+        self._timer.setSingleShot(True)
+        if timeout is not None:
             self._timer.setInterval(timeout)
+        self._timer.timeout.connect(self._quit_loop_by_timeout)
 
     def wait(self):
         """
@@ -664,8 +663,7 @@ class CallbackBlocker:
         __tracebackhide__ = True
         if self.called:
             return
-        if self._timer is not None:
-            self._timer.timeout.connect(self._quit_loop_by_timeout)
+        if self.timeout is not None:
             self._timer.start()
         qt_api.exec(self._loop)
         if not self.called and self.raising:
@@ -687,10 +685,7 @@ class CallbackBlocker:
             self._loop.quit()
 
     def _cleanup(self):
-        if self._timer is not None:
-            _silent_disconnect(self._timer.timeout, self._quit_loop_by_timeout)
-            self._timer.stop()
-            self._timer = None
+        self._timer.stop()
 
     def __call__(self, *args, **kwargs):
         # Not inside the try: block, as if self.called is True, we did quit the

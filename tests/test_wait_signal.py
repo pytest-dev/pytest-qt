@@ -1364,3 +1364,132 @@ class TestWaitCallback:
         assert not callback.called
         assert callback.args is None
         assert callback.kwargs is None
+
+
+@pytest.mark.parametrize(
+    "check_stderr, count",
+    [
+        # Checking stderr messages
+        pytest.param(
+            True,  # check stderr
+            200,  # gets output reliably even with only few runs (often the first)
+            id="stderr",
+        ),
+        # Triggering AttributeError
+        pytest.param(
+            False,  # don't check stderr
+            # Hopefully enough to trigger the AttributeError race condition reliably.
+            # With 500 runs, only 1 of 5 Windows PySide6 CI jobs triggered it (but all
+            # Ubuntu/macOS jobs did).  With 1500 runs, Windows jobs still only triggered
+            # it 0-2 times.
+            #
+            # On my machine (Linux, Intel Core Ultra 9 185H), 500 runs trigger it
+            # reliably and take ~1s in total.
+            2500 if sys.platform == "win32" else 500,
+            id="attributeerror",
+        ),
+    ],
+)
+@pytest.mark.parametrize("multi_blocker", [True, False])
+def test_signal_raised_from_thread(
+    pytester: pytest.Pytester, check_stderr: bool, multi_blocker: bool, count: int
+) -> None:
+    """Wait for a signal with a thread.
+
+    Extracted from https://github.com/pytest-dev/pytest-qt/issues/586
+    """
+    pytester.makepyfile(
+        f"""
+        import pytest
+        from pytestqt.qt_compat import qt_api
+
+
+        class Worker(qt_api.QtCore.QObject):
+            signal = qt_api.Signal()
+
+
+        @pytest.mark.parametrize("_", range({count}))
+        def test_thread(qtbot, capfd, _):
+            worker = Worker()
+            thread = qt_api.QtCore.QThread()
+            worker.moveToThread(thread)
+            thread.start()
+
+            try:
+                if {multi_blocker}:  # multi_blocker
+                    with qtbot.waitSignals([worker.signal], timeout=500) as blocker:
+                        worker.signal.emit()
+                else:
+                    with qtbot.waitSignal(worker.signal, timeout=500) as blocker:
+                        worker.signal.emit()
+            finally:
+                thread.quit()
+                thread.wait()
+
+            if {check_stderr}:  # check_stderr
+                out, err = capfd.readouterr()
+                assert not err
+    """
+    )
+
+    res = pytester.runpytest_subprocess("-x", "-s")
+    outcomes = res.parseoutcomes()
+
+    if outcomes.get("failed", 0) and check_stderr and qt_api.pytest_qt_api == "pyside6":
+        # The test succeeds on PyQt (unsure why!), but we can't check
+        # qt_api.pytest_qt_api at import time, so we can't use
+        # pytest.mark.xfail conditionally.
+        pytest.xfail(
+            "Qt error: QObject::killTimer: "
+            "Timers cannot be stopped from another thread"
+        )
+
+    res.assert_outcomes(passed=outcomes["passed"])  # no failed/error
+
+
+@pytest.mark.skip(reason="Runs ~1min to reproduce bug reliably")
+def test_callback_in_thread(pytester: pytest.Pytester) -> None:
+    """Wait for a callback with a thread.
+
+    Inspired by https://github.com/pytest-dev/pytest-qt/issues/586
+    """
+    # Hopefully enough to trigger the bug reliably.
+    #
+    # On my machine (Linux, Intel Core Ultra 9 185H), sometimes the bug only
+    # triggers after ~30k runs (~44s). Thus, we skip this test by default.
+    count = 50_000
+
+    pytester.makepyfile(
+        f"""
+        import pytest
+        from pytestqt.qt_compat import qt_api
+
+
+        class Worker(qt_api.QtCore.QObject):
+            def __init__(self, callback):
+                super().__init__()
+                self.callback = callback
+
+            def call_callback(self):
+                self.callback()
+
+
+        @pytest.mark.parametrize("_", range({count}))
+        def test_thread(qtbot, _):
+            thread = qt_api.QtCore.QThread()
+
+            try:
+                with qtbot.waitCallback() as callback:
+                    worker = Worker(callback)
+                    worker.moveToThread(thread)
+                    thread.started.connect(worker.call_callback)
+                    thread.start()
+            finally:
+                thread.quit()
+                thread.wait()
+    """
+    )
+
+    res = pytester.runpytest_subprocess("-x")
+    outcomes = res.parseoutcomes()
+    res.assert_outcomes(passed=outcomes["passed"])  # no failed/error
