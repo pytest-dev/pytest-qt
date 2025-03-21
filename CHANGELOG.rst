@@ -1,9 +1,20 @@
 UNRELEASED
 ----------
 
-* Added official support for Python 3.13.
-* Dropped support for EOL Python 3.8.
-* Dropped support for EOL PySide 2.
+- Added official support for Python 3.13.
+- Dropped support for EOL Python 3.8.
+- Dropped support for EOL PySide 2.
+- Fixed PySide6 exceptions / warnings about being unable to disconnect signals
+  with ``qtbot.waitSignal`` (`#552`_, `#558`_).
+- Reduced the likelyhood of trouble when using ``qtbot.waitSignal(s)`` and
+  ``qtbot.waitCallback`` where the signal/callback is emitted from a non-main
+  thread. In theory, more problems remain and this isn't a proper fix yet. In
+  practice, it seems impossible to provoke any problems in pytest-qt's testsuite.
+  (`#586`_)
+
+..  _#552: https://github.com/pytest-dev/pytest-qt/issues/552
+..  _#558: https://github.com/pytest-dev/pytest-qt/issues/558
+..  _#586: https://github.com/pytest-dev/pytest-qt/issues/586
 
 4.4.0 (2024-02-07)
 ------------------
