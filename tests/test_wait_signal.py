@@ -1364,3 +1364,43 @@ class TestWaitCallback:
         assert not callback.called
         assert callback.args is None
         assert callback.kwargs is None
+
+
+def test_signal_raised_from_thread(pytester: pytest.Pytester) -> None:
+    """Wait for a signal with a thread.
+
+    Extracted from https://github.com/pytest-dev/pytest-qt/issues/586
+    """
+    # Hopefully enough to trigger the bug reliably. With 500 runs, only 1 of 5
+    # Windows PySide6 CI jobs triggered it (but all Ubuntu/macOS jobs did).
+    #
+    # On my machine (Intel Core Ultra 9 185H), this triggers it ~50 times and
+    # takes ~1s in total.
+    count = 1500
+
+    pytester.makepyfile(f"""
+        import pytest
+        from pytestqt.qt_compat import qt_api
+
+
+        class Worker(qt_api.QtCore.QObject):
+            signal = qt_api.Signal()
+
+
+        @pytest.mark.parametrize("_", range({count}))
+        def test_thread(qtbot, _):
+            worker = Worker()
+            thread = qt_api.QtCore.QThread()
+            worker.moveToThread(thread)
+            thread.start()
+
+            try:
+                with qtbot.waitSignal(worker.signal, timeout=500) as blocker:
+                    worker.signal.emit()
+            finally:
+                thread.quit()
+                thread.wait()
+    """)
+
+    res = pytester.runpytest_subprocess()
+    res.assert_outcomes(passed=count)
