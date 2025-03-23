@@ -124,6 +124,8 @@ class SignalEmittedError(Exception):
 
     The exception thrown by :meth:`pytestqt.qtbot.QtBot.assertNotEmitted` if a
     signal was emitted unexpectedly.
+
+    Access via ``qtbot.SignalEmittedError``.
     """
 
 
@@ -133,5 +135,7 @@ class CallbackCalledTwiceError(Exception):
 
     The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitCallback` if a
     callback was called twice.
+
+    Access via ``qtbot.CallbackCalledTwiceError``.
     """
 
