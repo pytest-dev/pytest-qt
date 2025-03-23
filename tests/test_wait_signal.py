@@ -5,10 +5,10 @@ import pytest
 import sys
 
 from pytestqt.qt_compat import qt_api
-from pytestqt.wait_signal import (
+from pytestqt.wait_signal import SignalAndArgs
+from pytestqt.exceptions import (
     SignalEmittedError,
     TimeoutError,
-    SignalAndArgs,
     CallbackCalledTwiceError,
 )
 

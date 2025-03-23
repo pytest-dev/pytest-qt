@@ -2,15 +2,18 @@ import contextlib
 import weakref
 import warnings
 
-from pytestqt.exceptions import TimeoutError, ScreenshotError
+from pytestqt.exceptions import (
+    TimeoutError,
+    ScreenshotError,
+    SignalEmittedError,
+    CallbackCalledTwiceError,
+)
 from pytestqt.qt_compat import qt_api
 from pytestqt.wait_signal import (
     SignalBlocker,
     MultiSignalBlocker,
     SignalEmittedSpy,
-    SignalEmittedError,
     CallbackBlocker,
-    CallbackCalledTwiceError,
 )
 
 

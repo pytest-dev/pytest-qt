@@ -1,6 +1,10 @@
 import functools
 
-from pytestqt.exceptions import TimeoutError
+from pytestqt.exceptions import (
+    TimeoutError,
+    SignalEmittedError,
+    CallbackCalledTwiceError,
+)
 from pytestqt.qt_compat import qt_api
 
 
@@ -708,24 +712,6 @@ class CallbackBlocker:
         if value is None:
             # only wait if no exception happened inside the "with" block
             self.wait()
-
-
-class SignalEmittedError(Exception):
-    """
-    .. versionadded:: 1.11
-
-    The exception thrown by :meth:`pytestqt.qtbot.QtBot.assertNotEmitted` if a
-    signal was emitted unexpectedly.
-    """
-
-
-class CallbackCalledTwiceError(Exception):
-    """
-    .. versionadded:: 3.1
-
-    The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitCallback` if a
-    callback was called twice.
-    """
 
 
 def _silent_disconnect(signal, slot):
