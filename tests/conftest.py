@@ -1,4 +1,3 @@
-import functools
 import time
 
 import pytest
@@ -63,10 +62,9 @@ def timer():
         def single_shot(self, signal, delay):
             t = qt_api.QtCore.QTimer(self)
             t.setSingleShot(True)
-            slot = functools.partial(self._emit, signal)
-            t.timeout.connect(slot)
+            t.timeout.connect(signal)
             t.start(delay)
-            self.timers_and_slots.append((t, slot))
+            self.timers_and_slots.append((t, signal))
 
         def single_shot_callback(self, callback, delay):
             t = qt_api.QtCore.QTimer(self)
@@ -74,9 +72,6 @@ def timer():
             t.timeout.connect(callback)
             t.start(delay)
             self.timers_and_slots.append((t, callback))
-
-        def _emit(self, signal):
-            signal.emit()
 
     timer = Timer()
     yield timer
