@@ -9,12 +9,7 @@ from pytestqt.exceptions import (
     CallbackCalledTwiceError,
 )
 from pytestqt.qt_compat import qt_api
-from pytestqt.wait_signal import (
-    SignalBlocker,
-    MultiSignalBlocker,
-    SignalEmittedSpy,
-    CallbackBlocker,
-)
+from pytestqt import wait_signal
 
 
 def _parse_ini_boolean(value):
@@ -353,7 +348,7 @@ class QtBot:
                 f"Passing None as signal isn't supported anymore, use qtbot.wait({timeout}) instead."
             )
         raising = self._should_raise(raising)
-        blocker = SignalBlocker(
+        blocker = wait_signal.SignalBlocker(
             timeout=timeout, raising=raising, check_params_cb=check_params_cb
         )
         blocker.connect(signal)
@@ -440,7 +435,7 @@ class QtBot:
                         len(check_params_cbs), len(signals)
                     )
                 )
-        blocker = MultiSignalBlocker(
+        blocker = wait_signal.MultiSignalBlocker(
             timeout=timeout,
             raising=raising,
             order=order,
@@ -458,7 +453,7 @@ class QtBot:
         While waiting, events will be processed and your test will stay
         responsive to user interface events or network communication.
         """
-        blocker = MultiSignalBlocker(timeout=ms, raising=False)
+        blocker = wait_signal.MultiSignalBlocker(timeout=ms, raising=False)
         blocker.wait()
 
     @contextlib.contextmanager
@@ -478,7 +473,7 @@ class QtBot:
         .. note:: This method is also available as ``assert_not_emitted``
                   (pep-8 alias)
         """
-        spy = SignalEmittedSpy(signal)
+        spy = wait_signal.SignalEmittedSpy(signal)
         with spy, self.waitSignal(signal, timeout=wait, raising=False):
             yield
         spy.assert_not_emitted()
@@ -592,7 +587,7 @@ class QtBot:
         .. note:: This method is also available as ``wait_callback`` (pep-8 alias)
         """
         raising = self._should_raise(raising)
-        blocker = CallbackBlocker(timeout=timeout, raising=raising)
+        blocker = wait_signal.CallbackBlocker(timeout=timeout, raising=raising)
         return blocker
 
     @contextlib.contextmanager
