@@ -1,4 +1,6 @@
 import functools
+import dataclasses
+from typing import Any
 
 from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
@@ -257,12 +259,12 @@ class SignalBlocker(_AbstractSignalBlocker):
             )
 
 
+@dataclasses.dataclass
 class SignalAndArgs:
-    def __init__(self, signal_name, args):
-        self.signal_name = signal_name
-        self.args = args
+    signal_name: str
+    args: list[Any]
 
-    def _get_readable_signal_with_optional_args(self):
+    def __str__(self) -> str:
         args = repr(self.args) if self.args else ""
 
         # remove signal parameter signature, e.g. turn "some_signal(str,int)" to "some_signal", because we're adding
@@ -272,18 +274,9 @@ class SignalAndArgs:
 
         return signal_name + args
 
-    def __str__(self):
-        return self._get_readable_signal_with_optional_args()
 
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        else:
-            return False
-
-
-# Returns e.g. "3rd" for 3, or "21st" for 21
-def get_ordinal_str(n):
+def get_ordinal_str(n: int) -> str:
+    """Return e.g. "3rd" for 3, or "21st" for 21."""
     return "%d%s" % (n, {1: "st", 2: "nd", 3: "rd"}.get(n if n < 20 else n % 10, "th"))
 
 
