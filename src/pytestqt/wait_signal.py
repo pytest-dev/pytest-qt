@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from pytestqt.exceptions import SignalEmittedError
-from pytestqt.utils import SignalAndArgs as SignalAndArgs
+
 if TYPE_CHECKING:
     from pytestqt.wait_signal_impl import (
         SignalBlocker as SignalBlocker,
@@ -17,6 +17,7 @@ def __getattr__(name: str) -> type:
         MultiSignalBlocker,
         CallbackBlocker,
     )
+
     if name == "SignalBlocker":
         return SignalBlocker
     elif name == "MultiSignalBlocker":

@@ -138,4 +138,3 @@ class CallbackCalledTwiceError(Exception):
 
     Access via ``qtbot.CallbackCalledTwiceError``.
     """
-
