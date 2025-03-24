@@ -563,9 +563,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
 
     def _cleanup(self):
         super()._cleanup()
-        for i in range(len(self._signals)):
-            signal = self._signals[i]
-            slot = self._slots[i]
+        for signal, slot in zip(self._signals, self._slots):
             _silent_disconnect(signal, slot)
         del self._signals_emitted[:]
         self._signals_map.clear()
