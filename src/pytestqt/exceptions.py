@@ -116,3 +116,25 @@ class ScreenshotError(Exception):
 
         Access via ``qtbot.ScreenshotError``.
     """
+
+
+class SignalEmittedError(Exception):
+    """
+    .. versionadded:: 1.11
+
+    The exception thrown by :meth:`pytestqt.qtbot.QtBot.assertNotEmitted` if a
+    signal was emitted unexpectedly.
+
+    Access via ``qtbot.SignalEmittedError``.
+    """
+
+
+class CallbackCalledTwiceError(Exception):
+    """
+    .. versionadded:: 3.1
+
+    The exception thrown by :meth:`pytestqt.qtbot.QtBot.waitCallback` if a
+    callback was called twice.
+
+    Access via ``qtbot.CallbackCalledTwiceError``.
+    """
