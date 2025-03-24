@@ -1367,17 +1367,17 @@ class TestWaitCallback:
 
 
 @pytest.mark.parametrize(
-    "check_stderr, count",
+    "check_warnings, count",
     [
-        # Checking stderr messages
+        # Checking for warnings
         pytest.param(
-            True,  # check stderr
+            True,  # check warnings
             200,  # gets output reliably even with only few runs (often the first)
             id="stderr",
         ),
         # Triggering AttributeError
         pytest.param(
-            False,  # don't check stderr
+            False,  # don't check warnings
             # Hopefully enough to trigger the AttributeError race condition reliably.
             # With 500 runs, only 1 of 5 Windows PySide6 CI jobs triggered it (but all
             # Ubuntu/macOS jobs did).  With 1500 runs, Windows jobs still only triggered
@@ -1392,7 +1392,11 @@ class TestWaitCallback:
 )
 @pytest.mark.parametrize("multi_blocker", [True, False])
 def test_signal_raised_from_thread(
-    pytester: pytest.Pytester, check_stderr: bool, multi_blocker: bool, count: int
+    monkeypatch: pytest.MonkeyPatch,
+    pytester: pytest.Pytester,
+    check_warnings: bool,
+    multi_blocker: bool,
+    count: int,
 ) -> None:
     """Wait for a signal with a thread.
 
@@ -1409,7 +1413,7 @@ def test_signal_raised_from_thread(
 
 
         @pytest.mark.parametrize("_", range({count}))
-        def test_thread(qtbot, capfd, _):
+        def test_thread(qtbot, _):
             worker = Worker()
             thread = qt_api.QtCore.QThread()
             worker.moveToThread(thread)
@@ -1425,25 +1429,23 @@ def test_signal_raised_from_thread(
             finally:
                 thread.quit()
                 thread.wait()
-
-            if {check_stderr}:  # check_stderr
-                out, err = capfd.readouterr()
-                assert not err
     """
     )
-
+    if check_warnings:
+        monkeypatch.setenv("QT_FATAL_WARNINGS", "1")
     res = pytester.runpytest_subprocess("-x", "-s")
+
+    qtimer_message = "QObject::killTimer: Timers cannot be stopped from another thread"
+    if (
+        qtimer_message in res.stderr.str()
+        and multi_blocker
+        and check_warnings
+        and qt_api.pytest_qt_api == "pyside6"
+    ):
+        # We haven't fixed MultiSignalBlocker yet...
+        pytest.xfail(f"Qt error: {qtimer_message}")
+
     outcomes = res.parseoutcomes()
-
-    if outcomes.get("failed", 0) and check_stderr and qt_api.pytest_qt_api == "pyside6":
-        # The test succeeds on PyQt (unsure why!), but we can't check
-        # qt_api.pytest_qt_api at import time, so we can't use
-        # pytest.mark.xfail conditionally.
-        pytest.xfail(
-            "Qt error: QObject::killTimer: "
-            "Timers cannot be stopped from another thread"
-        )
-
     res.assert_outcomes(passed=outcomes["passed"])  # no failed/error
 
 

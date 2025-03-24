@@ -47,6 +47,7 @@ class _AbstractSignalBlocker(qt_api.QtCore.QObject):
     """
 
     def __init__(self, timeout=5000, raising=True):
+        super().__init__()
         self._loop = qt_api.QtCore.QEventLoop()
         self.timeout = timeout
         self.signal_triggered = False
@@ -54,7 +55,7 @@ class _AbstractSignalBlocker(qt_api.QtCore.QObject):
         self._signals = None  # will be initialized by inheriting implementations
         self._timeout_message = ""
 
-        self._timer = qt_api.QtCore.QTimer(self._loop)
+        self._timer = qt_api.QtCore.QTimer(self)
         self._timer.setSingleShot(True)
         if timeout is not None:
             self._timer.setInterval(timeout)
@@ -84,6 +85,7 @@ class _AbstractSignalBlocker(qt_api.QtCore.QObject):
         if not self.signal_triggered and self.raising:
             raise TimeoutError(self._timeout_message)
 
+    @qt_api.Slot()
     def _quit_loop_by_timeout(self):
         try:
             self._cleanup()
@@ -91,6 +93,7 @@ class _AbstractSignalBlocker(qt_api.QtCore.QObject):
             self._loop.quit()
 
     def _cleanup(self):
+        # assert self._timer.thread() == qt_api.QtCore.QThread.currentThread()
         # store timeout message before the data to construct it is lost
         self._timeout_message = self._get_timeout_error_message()
         self._timer.stop()
@@ -234,6 +237,7 @@ class SignalBlocker(_AbstractSignalBlocker):
         actual_signal.connect(self._quit_loop_by_signal)
         self._signals.append(actual_signal)
 
+    @qt_api.Slot()
     def _quit_loop_by_signal(self, *args):
         """
         quits the event loop and marks that we finished because of a signal.
@@ -251,6 +255,8 @@ class SignalBlocker(_AbstractSignalBlocker):
 
     def _cleanup(self):
         super()._cleanup()
+        # FIXME move to _AbstractSignalBlocker once we got MultiSignalBlocker correct
+        assert self._timer.thread() == qt_api.QtCore.QThread.currentThread()
         for signal in self._signals:
             _silent_disconnect(signal, self._quit_loop_by_signal)
         self._signals = []
@@ -567,7 +573,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         del self._slots[:]
 
 
-class CallbackBlocker:
+class CallbackBlocker(qt_api.QtCore.QObject):
     """
     .. versionadded:: 3.1
 
@@ -595,6 +601,7 @@ class CallbackBlocker:
     """
 
     def __init__(self, timeout=5000, raising=True):
+        super().__init__()
         self.timeout = timeout
         self.raising = raising
         self.args = None
@@ -602,7 +609,7 @@ class CallbackBlocker:
         self.called = False
         self._loop = qt_api.QtCore.QEventLoop()
 
-        self._timer = qt_api.QtCore.QTimer(self._loop)
+        self._timer = qt_api.QtCore.QTimer(self)
         self._timer.setSingleShot(True)
         if timeout is not None:
             self._timer.setInterval(timeout)
@@ -631,6 +638,7 @@ class CallbackBlocker:
         assert self.args == list(args)
         assert self.kwargs == kwargs
 
+    @qt_api.Slot()
     def _quit_loop_by_timeout(self):
         try:
             self._cleanup()
@@ -638,6 +646,7 @@ class CallbackBlocker:
             self._loop.quit()
 
     def _cleanup(self):
+        assert self._timer.thread() == qt_api.QtCore.QThread.currentThread()
         self._timer.stop()
 
     def __call__(self, *args, **kwargs):
