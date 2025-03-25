@@ -111,7 +111,7 @@ class _QtApi:
 
         self._check_qt_api_version()
 
-        # qInfo is not exposed in PySide6 (#232)
+        # qInfo is not exposed in PySide6 < 6.8.2 (#232)
         if hasattr(QtCore, "QMessageLogger"):
             self.qInfo = lambda msg: QtCore.QMessageLogger().info(msg)
         elif hasattr(QtCore, "qInfo"):
