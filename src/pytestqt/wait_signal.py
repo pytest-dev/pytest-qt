@@ -301,22 +301,17 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         super().__init__(timeout, raising=raising)
         self._order = order
         self._check_params_callbacks = check_params_cbs
-        self._signals_emitted = (
-            []
-        )  # list of booleans, indicates whether the signal was already emitted
-        self._signals_map = (
-            {}
-        )  # maps from a unique Signal to a list of indices where to expect signal instance emits
-        self._signals = (
-            []
-        )  # list of all Signals (for compatibility with _AbstractSignalBlocker)
+        self._signals_emitted: list[bool] = []  # whether the signal was already emitted
+        # maps from a unique Signal to a list of indices where to expect signal instance emits
+        self._signals_map = {}
+        # list of all Signals (for compatibility with _AbstractSignalBlocker)
+        self._signals = []
         self._slots = []  # list of slot functions
         self._signal_expected_index = 0  # only used when forcing order
         self._strict_order_violated = False
         self._actual_signal_and_args_at_violation = None
-        self._signal_names = (
-            {}
-        )  # maps from the unique Signal to the name of the signal (as string)
+        # maps from the unique Signal to the name of the signal (as string)
+        self._signal_names = {}
         self.all_signals_and_args = []  # list of SignalAndArgs instances
 
     def add_signals(self, signals):
