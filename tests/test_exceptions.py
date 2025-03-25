@@ -5,11 +5,18 @@ import pytest
 from pytestqt.exceptions import capture_exceptions, format_captured_exceptions
 from pytestqt.qt_compat import qt_api
 
+
+def has_pyside6_exception_capture():
+    return qt_api.pytest_qt_api == "pyside6" and tuple(
+        int(part) for part in qt_api.get_versions().qt_api_version.split(".")
+    ) >= (6, 5, 2)
+
+
 # PySide6 is automatically captures exceptions during the event loop,
 # and re-raises them when control gets back to Python, so the related
 # functionality does not work, nor is needed for the end user.
 exception_capture_pyside6 = pytest.mark.skipif(
-    qt_api.pytest_qt_api == "pyside6",
+    has_pyside6_exception_capture(),
     reason="pytest-qt capture not working/needed on PySide6",
 )
 
@@ -51,7 +58,7 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
     )
     result = testdir.runpytest()
     if raise_error:
-        if qt_api.pytest_qt_api == "pyside6":
+        if has_pyside6_exception_capture():
             # PySide6 automatically captures exceptions during the event loop,
             # and re-raises them when control gets back to Python.
             # This results in the exception not being captured by
