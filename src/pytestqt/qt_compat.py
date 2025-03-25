@@ -24,7 +24,7 @@ QT_APIS["pyqt5"] = "PyQt5"
 
 
 def _import(name):
-    """Think call so we can mock it during testing"""
+    """Thin call so we can mock it during testing"""
     return __import__(name)
 
 
@@ -112,10 +112,10 @@ class _QtApi:
         self._check_qt_api_version()
 
         # qInfo is not exposed in PySide6 < 6.8.2 (#232)
-        if hasattr(QtCore, "QMessageLogger"):
-            self.qInfo = lambda msg: QtCore.QMessageLogger().info(msg)
-        elif hasattr(QtCore, "qInfo"):
+        if hasattr(QtCore, "qInfo"):
             self.qInfo = QtCore.qInfo
+        elif hasattr(QtCore, "QMessageLogger"):
+            self.qInfo = lambda msg: QtCore.QMessageLogger().info(msg)
         else:
             self.qInfo = None
 
