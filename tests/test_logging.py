@@ -5,6 +5,10 @@ import pytest
 from pytestqt.qt_compat import qt_api
 
 
+# qInfo is not exposed by PySide6 < 6.8.2 (#225)
+HAS_QINFO = qt_api.qInfo is not None
+
+
 @pytest.mark.parametrize("test_succeeds", [True, False])
 @pytest.mark.parametrize("qt_log", [True, False])
 def test_basic_logging(testdir, test_succeeds, qt_log):
@@ -14,7 +18,7 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
     :type testdir: _pytest.pytester.TmpTestdir
     """
     testdir.makepyfile(
-        """
+        f"""
         import sys
         from pytestqt.qt_compat import qt_api
 
@@ -26,15 +30,13 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
         qt_api.QtCore.qInstallMessageHandler(print_msg)
 
         def test_types():
-            # qInfo is not exposed by the bindings yet (#225)
-            # qt_api.qInfo('this is an INFO message')
+            if {HAS_QINFO}:
+                qt_api.qInfo('this is an INFO message')
             qt_api.qDebug('this is a DEBUG message')
             qt_api.qWarning('this is a WARNING message')
             qt_api.qCritical('this is a CRITICAL message')
-            assert {}
-        """.format(
-            test_succeeds
-        )
+            assert {test_succeeds}
+        """
     )
     res = testdir.runpytest(*(["--no-qt-log"] if not qt_log else []))
     if test_succeeds:
@@ -45,8 +47,7 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
             res.stdout.fnmatch_lines(
                 [
                     "*-- Captured Qt messages --*",
-                    # qInfo is not exposed by the bindings yet (#232)
-                    # '*QtInfoMsg: this is an INFO message*',
+                    *(["*QtInfoMsg: this is an INFO message*"] if HAS_QINFO else []),
                     "*QtDebugMsg: this is a DEBUG message*",
                     "*QtWarningMsg: this is a WARNING message*",
                     "*QtCriticalMsg: this is a CRITICAL message*",
@@ -56,9 +57,7 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
             res.stdout.fnmatch_lines(
                 [
                     "*-- Captured stderr call --*",
-                    # qInfo is not exposed by the bindings yet (#232)
-                    # '*QtInfoMsg: this is an INFO message*',
-                    # 'this is an INFO message*',
+                    *(["this is an INFO message*"] if HAS_QINFO else []),
                     "this is a DEBUG message*",
                     "this is a WARNING message*",
                     "this is a CRITICAL message*",
@@ -66,37 +65,27 @@ def test_basic_logging(testdir, test_succeeds, qt_log):
             )
 
 
-def test_qinfo(qtlog):
-    """Test INFO messages when we have means to do so. Should be temporary until bindings
-    catch up and expose qInfo (or at least QMessageLogger), then we should update
-    the other logging tests properly. #232
-    """
-
-    if qt_api.is_pyside:
-        assert (
-            qt_api.qInfo is None
-        ), "pyside6 does not expose qInfo. If it does, update this test."
-        return
-
-    qt_api.qInfo("this is an INFO message")
-    records = [(m.type, m.message.strip()) for m in qtlog.records]
-    assert records == [(qt_api.QtCore.QtMsgType.QtInfoMsg, "this is an INFO message")]
-
-
 def test_qtlog_fixture(qtlog):
     """
     Test qtlog fixture.
     """
-    # qInfo is not exposed by the bindings yet (#232)
+    expected = []
+    if HAS_QINFO:
+        qt_api.qInfo("this is an INFO message")
+        expected.append((qt_api.QtCore.QtMsgType.QtInfoMsg, "this is an INFO message"))
+
     qt_api.qDebug("this is a DEBUG message")
     qt_api.qWarning("this is a WARNING message")
     qt_api.qCritical("this is a CRITICAL message")
-    records = [(m.type, m.message.strip()) for m in qtlog.records]
-    assert records == [
+
+    expected += [
         (qt_api.QtCore.QtMsgType.QtDebugMsg, "this is a DEBUG message"),
         (qt_api.QtCore.QtMsgType.QtWarningMsg, "this is a WARNING message"),
         (qt_api.QtCore.QtMsgType.QtCriticalMsg, "this is a CRITICAL message"),
     ]
+
+    records = [(m.type, m.message.strip()) for m in qtlog.records]
+    assert records == expected
     # `records` attribute is read-only
     with pytest.raises(AttributeError):
         qtlog.records = []
