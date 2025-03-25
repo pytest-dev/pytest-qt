@@ -32,6 +32,13 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         qt-lib: [pyqt5, pyqt6, pyside6]
         os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - python-version: "3.9"
+            qt-lib: pyqt61
+            os: ubuntu-latest
+          - python-version: "3.9"
+            qt-lib: pyside60
+            os: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
