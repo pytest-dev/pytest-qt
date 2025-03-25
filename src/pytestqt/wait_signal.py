@@ -262,7 +262,7 @@ class SignalBlocker(_AbstractSignalBlocker):
 @dataclasses.dataclass
 class SignalAndArgs:
     signal_name: str
-    args: list[Any]
+    args: tuple[Any, ...]
 
     def __str__(self) -> str:
         args = repr(self.args) if self.args else ""
