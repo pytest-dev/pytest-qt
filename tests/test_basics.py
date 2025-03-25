@@ -309,20 +309,13 @@ def test_event_processing_before_and_after_teardown(testdir):
     res.stdout.fnmatch_lines(["*3 passed in*"])
 
 
-def test_header(testdir):
-    testdir.makeconftest(
-        """
-        from pytestqt import qt_compat
-        from pytestqt.qt_compat import qt_api
-
-        def mock_get_versions():
-            return qt_compat.VersionTuple('PyQtAPI', '1.0', '2.5', '3.5')
-
-        assert hasattr(qt_api, 'get_versions')
-        qt_api.get_versions = mock_get_versions
-        """
+def test_header(testdir, monkeypatch):
+    monkeypatch.setattr(
+        qt_api,
+        "get_versions",
+        lambda: qt_compat.VersionTuple("PyQtAPI", "1.0", "2.5", "3.5"),
     )
-    res = testdir.runpytest()
+    res = testdir.runpytest_inprocess()
     res.stdout.fnmatch_lines(
         ["*test session starts*", "PyQtAPI 1.0 -- Qt runtime 2.5 -- Qt compiled 3.5"]
     )
