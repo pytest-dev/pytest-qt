@@ -1,4 +1,6 @@
 import functools
+import dataclasses
+from typing import Any
 
 from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
@@ -257,12 +259,12 @@ class SignalBlocker(_AbstractSignalBlocker):
             )
 
 
+@dataclasses.dataclass
 class SignalAndArgs:
-    def __init__(self, signal_name, args):
-        self.signal_name = signal_name
-        self.args = args
+    signal_name: str
+    args: tuple[Any, ...]
 
-    def _get_readable_signal_with_optional_args(self):
+    def __str__(self) -> str:
         args = repr(self.args) if self.args else ""
 
         # remove signal parameter signature, e.g. turn "some_signal(str,int)" to "some_signal", because we're adding
@@ -272,18 +274,9 @@ class SignalAndArgs:
 
         return signal_name + args
 
-    def __str__(self):
-        return self._get_readable_signal_with_optional_args()
 
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        else:
-            return False
-
-
-# Returns e.g. "3rd" for 3, or "21st" for 21
-def get_ordinal_str(n):
+def get_ordinal_str(n: int) -> str:
+    """Return e.g. "3rd" for 3, or "21st" for 21."""
     return "%d%s" % (n, {1: "st", 2: "nd", 3: "rd"}.get(n if n < 20 else n % 10, "th"))
 
 
@@ -308,22 +301,17 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         super().__init__(timeout, raising=raising)
         self._order = order
         self._check_params_callbacks = check_params_cbs
-        self._signals_emitted = (
-            []
-        )  # list of booleans, indicates whether the signal was already emitted
-        self._signals_map = (
-            {}
-        )  # maps from a unique Signal to a list of indices where to expect signal instance emits
-        self._signals = (
-            []
-        )  # list of all Signals (for compatibility with _AbstractSignalBlocker)
+        self._signals_emitted: list[bool] = []  # whether the signal was already emitted
+        # maps from a unique Signal to a list of indices where to expect signal instance emits
+        self._signals_map = {}
+        # list of all Signals (for compatibility with _AbstractSignalBlocker)
+        self._signals = []
         self._slots = []  # list of slot functions
         self._signal_expected_index = 0  # only used when forcing order
         self._strict_order_violated = False
         self._actual_signal_and_args_at_violation = None
-        self._signal_names = (
-            {}
-        )  # maps from the unique Signal to the name of the signal (as string)
+        # maps from the unique Signal to the name of the signal (as string)
+        self._signal_names = {}
         self.all_signals_and_args = []  # list of SignalAndArgs instances
 
     def add_signals(self, signals):
@@ -570,9 +558,7 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
 
     def _cleanup(self):
         super()._cleanup()
-        for i in range(len(self._signals)):
-            signal = self._signals[i]
-            slot = self._slots[i]
+        for signal, slot in zip(self._signals, self._slots):
             _silent_disconnect(signal, slot)
         del self._signals_emitted[:]
         self._signals_map.clear()
