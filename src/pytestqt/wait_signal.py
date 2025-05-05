@@ -1,4 +1,5 @@
 import functools
+from contextlib import suppress
 
 from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
@@ -732,7 +733,5 @@ def _silent_disconnect(signal, slot):
     """Disconnects a signal from a slot, ignoring errors. Sometimes
     Qt might disconnect a signal automatically for unknown reasons.
     """
-    try:
+    with suppress(TypeError, RuntimeError, SystemError)
         signal.disconnect(slot)
-    except (TypeError, RuntimeError):  # pragma: no cover
-        pass
