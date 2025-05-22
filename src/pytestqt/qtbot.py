@@ -733,14 +733,14 @@ class QtBot:
 
 
 # provide easy access to exceptions to qtbot fixtures
-QtBot.SignalEmittedError = SignalEmittedError
-QtBot.TimeoutError = TimeoutError
-QtBot.ScreenshotError = ScreenshotError
-QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError
+QtBot.SignalEmittedError = SignalEmittedError  # type: ignore[attr-defined]
+QtBot.TimeoutError = TimeoutError  # type: ignore[attr-defined]
+QtBot.ScreenshotError = ScreenshotError  # type: ignore[attr-defined]
+QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError  # type: ignore[attr-defined]
 
 
 def _add_widget(
-    item: object,
+    item,
     widget: "QWidget",
     *,
     before_close_func: Optional[BeforeCloseFunc] = None,
