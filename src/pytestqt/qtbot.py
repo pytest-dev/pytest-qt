@@ -1,6 +1,7 @@
 import contextlib
 import weakref
 import warnings
+from typing import TYPE_CHECKING, Callable, Optional
 
 from pytestqt.exceptions import TimeoutError, ScreenshotError
 from pytestqt.qt_compat import qt_api
@@ -12,6 +13,11 @@ from pytestqt.wait_signal import (
     CallbackBlocker,
     CallbackCalledTwiceError,
 )
+
+if TYPE_CHECKING:
+    from qtpy.QtWidgets import QWidget
+
+BeforeCloseFunc = Callable[["QWidget"], None]
 
 
 def _parse_ini_boolean(value):
@@ -170,7 +176,9 @@ class QtBot:
         else:
             return True
 
-    def addWidget(self, widget, *, before_close_func=None):
+    def addWidget(
+        self, widget: "QWidget", *, before_close_func: Optional[BeforeCloseFunc] = None
+    ):
         """
         Adds a widget to be tracked by this bot. This is not required, but will ensure that the
         widget gets closed by the end of the test, so it is highly recommended.
@@ -731,7 +739,12 @@ QtBot.ScreenshotError = ScreenshotError
 QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError
 
 
-def _add_widget(item, widget, *, before_close_func=None):
+def _add_widget(
+    item: object,
+    widget: "QWidget",
+    *,
+    before_close_func: Optional[BeforeCloseFunc] = None,
+):
     """
     Register a widget into the given pytest item for later closing.
     """
