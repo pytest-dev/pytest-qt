@@ -46,3 +46,7 @@ repos:
         files: ^(HOWTORELEASE.rst|README.rst)$
         language: python
         additional_dependencies: [pygments, restructuredtext_lint]
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.15.0'
+    hooks:
+    -   id: mypy
