@@ -1,7 +1,7 @@
 import contextlib
 import weakref
 import warnings
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable, Optional, Any
 
 from pytestqt.exceptions import TimeoutError, ScreenshotError
 from pytestqt.qt_compat import qt_api
@@ -15,9 +15,11 @@ from pytestqt.wait_signal import (
 )
 
 if TYPE_CHECKING:
-    from qtpy.QtWidgets import QWidget
+    # Type hint objects until figuring out how to import across qt
+    # versions possibly using 'qtpy' library.
+    QWidget = Any
 
-BeforeCloseFunc = Callable[["QWidget"], None]
+BeforeCloseFunc = Callable[[QWidget], None]
 
 
 def _parse_ini_boolean(value):
