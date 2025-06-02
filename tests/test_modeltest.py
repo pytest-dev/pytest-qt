@@ -6,7 +6,7 @@ from pytestqt import modeltest
 pytestmark = pytest.mark.usefixtures("qtbot")
 
 
-class BasicModel(qt_api.QtCore.QAbstractItemModel):
+class BasicModel(qt_api.QtCore.QAbstractItemModel):  # type: ignore[name-defined]
     def data(self, index, role=qt_api.QtCore.Qt.ItemDataRole.DisplayRole):
         return None
 

@@ -1,6 +1,7 @@
 import contextlib
 import weakref
 import warnings
+from typing import TYPE_CHECKING, Callable, Optional, Any, cast
 
 from pytestqt.exceptions import TimeoutError, ScreenshotError
 from pytestqt.qt_compat import qt_api
@@ -13,12 +14,19 @@ from pytestqt.wait_signal import (
     CallbackCalledTwiceError,
 )
 
+if TYPE_CHECKING:
+    # Type hint objects until figuring out how to import across qt
+    # versions possibly using 'qtpy' library.
+    QWidget = Any
 
-def _parse_ini_boolean(value):
+BeforeCloseFunc = Callable[["QWidget"], None]
+
+
+def _parse_ini_boolean(value: bool | str) -> bool:
     if value in (True, False):
-        return value
+        return cast("bool", value)
     try:
-        return {"true": True, "false": False}[value.lower()]
+        return {"true": True, "false": False}[cast("str", value).lower()]
     except KeyError:
         raise ValueError("unknown string for bool: %r" % value)
 
@@ -170,7 +178,7 @@ class QtBot:
         else:
             return True
 
-    def addWidget(self, widget, *, before_close_func=None):
+    def addWidget(self, widget, *, before_close_func: Optional[BeforeCloseFunc] = None):
         """
         Adds a widget to be tracked by this bot. This is not required, but will ensure that the
         widget gets closed by the end of the test, so it is highly recommended.
@@ -188,7 +196,7 @@ class QtBot:
             raise TypeError(f"Need to pass a QWidget to addWidget: {widget!r}")
         _add_widget(self._request.node, widget, before_close_func=before_close_func)
 
-    def waitActive(self, widget, *, timeout=5000):
+    def waitActive(self, widget, *, timeout: int = 5000):
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is active.
         If window is not exposed within ``timeout`` milliseconds, raise
@@ -725,13 +733,18 @@ class QtBot:
 
 
 # provide easy access to exceptions to qtbot fixtures
-QtBot.SignalEmittedError = SignalEmittedError
-QtBot.TimeoutError = TimeoutError
-QtBot.ScreenshotError = ScreenshotError
-QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError
+QtBot.SignalEmittedError = SignalEmittedError  # type: ignore[attr-defined]
+QtBot.TimeoutError = TimeoutError  # type: ignore[attr-defined]
+QtBot.ScreenshotError = ScreenshotError  # type: ignore[attr-defined]
+QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError  # type: ignore[attr-defined]
 
 
-def _add_widget(item, widget, *, before_close_func=None):
+def _add_widget(
+    item,
+    widget,
+    *,
+    before_close_func: Optional[BeforeCloseFunc] = None,
+):
     """
     Register a widget into the given pytest item for later closing.
     """
