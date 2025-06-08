@@ -1,10 +1,11 @@
 import functools
 import dataclasses
-from typing import Any
+from typing import Any, Callable
 
 from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
 
+CheckParamsCb = Callable[..., bool]
 
 class _AbstractSignalBlocker:
     """
