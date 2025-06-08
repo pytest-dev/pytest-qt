@@ -7,6 +7,7 @@ from pytestqt.qt_compat import qt_api
 
 CheckParamsCb = Callable[..., bool]
 
+
 class _AbstractSignalBlocker:
     """
     Base class for :class:`SignalBlocker` and :class:`MultiSignalBlocker`.
