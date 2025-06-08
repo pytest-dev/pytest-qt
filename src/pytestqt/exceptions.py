@@ -11,6 +11,7 @@ from pytestqt.utils import get_marker
 CapturedException = Tuple[Type[BaseException], BaseException, TracebackType]
 CapturedExceptions = List[CapturedException]
 
+
 @contextmanager
 def capture_exceptions():
     """

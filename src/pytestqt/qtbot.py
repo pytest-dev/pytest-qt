@@ -2,7 +2,19 @@ import contextlib
 from types import TracebackType
 import weakref
 import warnings
-from typing import TYPE_CHECKING, Callable, Generator, Iterator, List, Literal, Optional, Any, Self, Type, cast
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Generator,
+    Iterator,
+    List,
+    Literal,
+    Optional,
+    Any,
+    Self,
+    Type,
+    cast,
+)
 from pathlib import Path
 
 from pytestqt.exceptions import TimeoutError, ScreenshotError
@@ -190,7 +202,9 @@ class QtBot:
         else:
             return True
 
-    def addWidget(self, widget: QWidget, *, before_close_func: Optional[BeforeCloseFunc] = None) -> None:
+    def addWidget(
+        self, widget: QWidget, *, before_close_func: Optional[BeforeCloseFunc] = None
+    ) -> None:
         """
         Adds a widget to be tracked by this bot. This is not required, but will ensure that the
         widget gets closed by the end of the test, so it is highly recommended.
@@ -208,7 +222,9 @@ class QtBot:
             raise TypeError(f"Need to pass a QWidget to addWidget: {widget!r}")
         _add_widget(self._request.node, widget, before_close_func=before_close_func)
 
-    def waitActive(self, widget: QWidget, *, timeout: int = 5000) -> "_WaitWidgetContextManager":
+    def waitActive(
+        self, widget: QWidget, *, timeout: int = 5000
+    ) -> "_WaitWidgetContextManager":
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is active.
         If window is not exposed within ``timeout`` milliseconds, raise
@@ -235,7 +251,9 @@ class QtBot:
             "qWaitForWindowActive", "activated", widget, timeout
         )
 
-    def waitExposed(self, widget: QWidget, *, timeout: int=5000) -> "_WaitWidgetContextManager":
+    def waitExposed(
+        self, widget: QWidget, *, timeout: int = 5000
+    ) -> "_WaitWidgetContextManager":
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is exposed.
         If the window is not exposed within ``timeout`` milliseconds, raise
@@ -387,10 +405,10 @@ class QtBot:
         self,
         signals: List[SignalInstance],
         *,
-        timeout: int=5000,
-        raising:Optional[bool]=None,
-        check_params_cbs:Optional[List[CheckParamsCb]] =None,
-        order: WaitSignalsOrder="none",
+        timeout: int = 5000,
+        raising: Optional[bool] = None,
+        check_params_cbs: Optional[List[CheckParamsCb]] = None,
+        order: WaitSignalsOrder = "none",
     ) -> "MultiSignalBlocker":
         """
         .. versionadded:: 1.4
@@ -486,7 +504,9 @@ class QtBot:
         blocker.wait()
 
     @contextlib.contextmanager
-    def assertNotEmitted(self, signal: SignalInstance, *, wait: int=0) -> Generator[None, None, None]:
+    def assertNotEmitted(
+        self, signal: SignalInstance, *, wait: int = 0
+    ) -> Generator[None, None, None]:
         """
         .. versionadded:: 1.11
 
@@ -507,7 +527,9 @@ class QtBot:
             yield
         spy.assert_not_emitted()
 
-    def waitUntil(self, callback: Callable[[], Optional[bool]], *, timeout: int=5000) -> None:
+    def waitUntil(
+        self, callback: Callable[[], Optional[bool]], *, timeout: int = 5000
+    ) -> None:
         """
         .. versionadded:: 2.0
 
@@ -578,7 +600,9 @@ class QtBot:
                     raise TimeoutError(timeout_msg)
             self.wait(10)
 
-    def waitCallback(self, *, timeout: int = 5000, raising: Optional[bool] = None) -> "CallbackBlocker":
+    def waitCallback(
+        self, *, timeout: int = 5000, raising: Optional[bool] = None
+    ) -> "CallbackBlocker":
         """
         .. versionadded:: 3.1
 
@@ -644,7 +668,9 @@ class QtBot:
         with capture_exceptions() as exceptions:
             yield exceptions
 
-    def screenshot(self, widget: QWidget, suffix: str="", region: Optional[QRect]=None) -> Path:
+    def screenshot(
+        self, widget: QWidget, suffix: str = "", region: Optional[QRect] = None
+    ) -> Path:
         """
         .. versionadded:: 4.1
 
@@ -799,7 +825,9 @@ class _WaitWidgetContextManager:
     Context manager implementation used by ``waitActive`` and ``waitExposed`` methods.
     """
 
-    def __init__(self, method_name: str, adjective_name: str, widget: QWidget, timeout: int) -> None:
+    def __init__(
+        self, method_name: str, adjective_name: str, widget: QWidget, timeout: int
+    ) -> None:
         """
         :param str method_name: name to the ``QtTest`` method to call to check if widget is active/exposed.
         :param str adjective_name: "activated" or "exposed".
@@ -815,7 +843,12 @@ class _WaitWidgetContextManager:
         __tracebackhide__ = True
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]) -> None:
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         __tracebackhide__ = True
         try:
             if exc_type is None:
