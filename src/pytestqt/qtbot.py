@@ -644,7 +644,7 @@ class QtBot:
         return blocker
 
     @contextlib.contextmanager
-    def captureExceptions(self) -> Generator["CapturedExceptions", None, None]:
+    def captureExceptions(self) -> Iterator["CapturedExceptions"]:
         """
         .. versionadded:: 2.1
 
