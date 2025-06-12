@@ -774,12 +774,11 @@ class QtBot:
     def mouseRelease(*args, **kwargs):
         qt_api.QtTest.QTest.mouseRelease(*args, **kwargs)
 
-
-# provide easy access to exceptions to qtbot fixtures
-QtBot.SignalEmittedError = SignalEmittedError  # type: ignore[attr-defined]
-QtBot.TimeoutError = TimeoutError  # type: ignore[attr-defined]
-QtBot.ScreenshotError = ScreenshotError  # type: ignore[attr-defined]
-QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError  # type: ignore[attr-defined]
+    # provide easy access to exceptions to qtbot fixtures
+    SignalEmittedError = SignalEmittedError
+    TimeoutError = TimeoutError
+    ScreenshotError = ScreenshotError
+    CallbackCalledTwiceError = CallbackCalledTwiceError
 
 
 def _add_widget(
