@@ -1,6 +1,21 @@
 import contextlib
+from types import TracebackType
 import weakref
 import warnings
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Generator,
+    Iterator,
+    List,
+    Literal,
+    Optional,
+    Any,
+    Type,
+    cast,
+)
+from pathlib import Path
+from typing_extensions import Self, TypeAlias
 
 from pytestqt.exceptions import TimeoutError, ScreenshotError
 from pytestqt.qt_compat import qt_api
@@ -11,14 +26,31 @@ from pytestqt.wait_signal import (
     SignalEmittedError,
     CallbackBlocker,
     CallbackCalledTwiceError,
+    CheckParamsCb,
 )
 
+from pytest import FixtureRequest
 
-def _parse_ini_boolean(value):
+# Type hint objects until figuring out how to import across qt
+# versions possibly using 'qtpy' library.
+QWidget: TypeAlias = Any
+SignalInstance: TypeAlias = Any
+QRect: TypeAlias = Any
+QKeySequence: TypeAlias = Any
+
+if TYPE_CHECKING:
+    # Keep local import behavior the same.
+    from pytestqt.exceptions import CapturedExceptions
+
+BeforeCloseFunc = Callable[[QWidget], None]
+WaitSignalsOrder = Literal["none", "simple", "strict"]
+
+
+def _parse_ini_boolean(value: Any) -> bool:
     if value in (True, False):
-        return value
+        return cast("bool", value)
     try:
-        return {"true": True, "false": False}[value.lower()]
+        return {"true": True, "false": False}[str(value).lower()]
     except KeyError:
         raise ValueError("unknown string for bool: %r" % value)
 
@@ -146,7 +178,7 @@ class QtBot:
 
     """
 
-    def __init__(self, request):
+    def __init__(self, request: FixtureRequest) -> None:
         self._request = request
         # pep8 aliases. Set here to automatically use implementations defined in sub-classes for alias creation
         self.add_widget = self.addWidget
@@ -160,7 +192,7 @@ class QtBot:
         self.wait_until = self.waitUntil
         self.wait_callback = self.waitCallback
 
-    def _should_raise(self, raising_arg):
+    def _should_raise(self, raising_arg: Optional[bool]) -> bool:
         ini_val = self._request.config.getini("qt_default_raising")
 
         if raising_arg is not None:
@@ -170,7 +202,9 @@ class QtBot:
         else:
             return True
 
-    def addWidget(self, widget, *, before_close_func=None):
+    def addWidget(
+        self, widget: QWidget, *, before_close_func: Optional[BeforeCloseFunc] = None
+    ) -> None:
         """
         Adds a widget to be tracked by this bot. This is not required, but will ensure that the
         widget gets closed by the end of the test, so it is highly recommended.
@@ -188,7 +222,9 @@ class QtBot:
             raise TypeError(f"Need to pass a QWidget to addWidget: {widget!r}")
         _add_widget(self._request.node, widget, before_close_func=before_close_func)
 
-    def waitActive(self, widget, *, timeout=5000):
+    def waitActive(
+        self, widget: QWidget, *, timeout: int = 5000
+    ) -> "_WaitWidgetContextManager":
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is active.
         If window is not exposed within ``timeout`` milliseconds, raise
@@ -215,7 +251,9 @@ class QtBot:
             "qWaitForWindowActive", "activated", widget, timeout
         )
 
-    def waitExposed(self, widget, *, timeout=5000):
+    def waitExposed(
+        self, widget: QWidget, *, timeout: int = 5000
+    ) -> "_WaitWidgetContextManager":
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is exposed.
         If the window is not exposed within ``timeout`` milliseconds, raise
@@ -242,7 +280,7 @@ class QtBot:
             "qWaitForWindowExposed", "exposed", widget, timeout
         )
 
-    def waitForWindowShown(self, widget):
+    def waitForWindowShown(self, widget: QWidget) -> bool:
         """
         Waits until the window is shown in the screen. This is mainly useful for asynchronous
         systems like X11, where a window will be mapped to screen some time after being asked to
@@ -274,7 +312,7 @@ class QtBot:
         )
         return qt_api.QtTest.QTest.qWaitForWindowExposed(widget)
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stops the current test flow, letting the user interact with any visible widget.
 
@@ -295,7 +333,14 @@ class QtBot:
         for widget, visible in widget_and_visibility:
             widget.setVisible(visible)
 
-    def waitSignal(self, signal, *, timeout=5000, raising=None, check_params_cb=None):
+    def waitSignal(
+        self,
+        signal: SignalInstance,
+        *,
+        timeout: int = 5000,
+        raising: Optional[bool] = None,
+        check_params_cb: Optional[CheckParamsCb] = None,
+    ) -> "SignalBlocker":
         """
         .. versionadded:: 1.2
 
@@ -358,13 +403,13 @@ class QtBot:
 
     def waitSignals(
         self,
-        signals,
+        signals: List[SignalInstance],
         *,
-        timeout=5000,
-        raising=None,
-        check_params_cbs=None,
-        order="none",
-    ):
+        timeout: int = 5000,
+        raising: Optional[bool] = None,
+        check_params_cbs: Optional[List[CheckParamsCb]] = None,
+        order: WaitSignalsOrder = "none",
+    ) -> "MultiSignalBlocker":
         """
         .. versionadded:: 1.4
 
@@ -446,7 +491,7 @@ class QtBot:
         blocker.add_signals(signals)
         return blocker
 
-    def wait(self, ms):
+    def wait(self, ms: int) -> None:
         """
         .. versionadded:: 1.9
 
@@ -459,7 +504,9 @@ class QtBot:
         blocker.wait()
 
     @contextlib.contextmanager
-    def assertNotEmitted(self, signal, *, wait=0):
+    def assertNotEmitted(
+        self, signal: SignalInstance, *, wait: int = 0
+    ) -> Generator[None, None, None]:
         """
         .. versionadded:: 1.11
 
@@ -480,7 +527,9 @@ class QtBot:
             yield
         spy.assert_not_emitted()
 
-    def waitUntil(self, callback, *, timeout=5000):
+    def waitUntil(
+        self, callback: Callable[[], Optional[bool]], *, timeout: int = 5000
+    ) -> None:
         """
         .. versionadded:: 2.0
 
@@ -551,7 +600,9 @@ class QtBot:
                     raise TimeoutError(timeout_msg)
             self.wait(10)
 
-    def waitCallback(self, *, timeout=5000, raising=None):
+    def waitCallback(
+        self, *, timeout: int = 5000, raising: Optional[bool] = None
+    ) -> "CallbackBlocker":
         """
         .. versionadded:: 3.1
 
@@ -593,7 +644,7 @@ class QtBot:
         return blocker
 
     @contextlib.contextmanager
-    def captureExceptions(self):
+    def captureExceptions(self) -> Iterator["CapturedExceptions"]:
         """
         .. versionadded:: 2.1
 
@@ -617,9 +668,9 @@ class QtBot:
         with capture_exceptions() as exceptions:
             yield exceptions
 
-    capture_exceptions = captureExceptions
-
-    def screenshot(self, widget, suffix="", region=None):
+    def screenshot(
+        self, widget: QWidget, suffix: str = "", region: Optional[QRect] = None
+    ) -> Path:
         """
         .. versionadded:: 4.1
 
@@ -692,13 +743,13 @@ class QtBot:
         qt_api.QtTest.QTest.keyRelease(*args, **kwargs)
 
     @staticmethod
-    def keySequence(widget, key_sequence):
+    def keySequence(widget: QWidget, key_sequence: QKeySequence) -> None:
         if not hasattr(qt_api.QtTest.QTest, "keySequence"):
             raise NotImplementedError("This method is available from Qt 5.10 upwards.")
         qt_api.QtTest.QTest.keySequence(widget, key_sequence)
 
     @staticmethod
-    def keyToAscii(key):
+    def keyToAscii(key: Any) -> None:
         if not hasattr(qt_api.QtTest.QTest, "keyToAscii"):
             raise NotImplementedError("This method isn't available on PyQt5.")
         qt_api.QtTest.QTest.keyToAscii(key)
@@ -723,15 +774,19 @@ class QtBot:
     def mouseRelease(*args, **kwargs):
         qt_api.QtTest.QTest.mouseRelease(*args, **kwargs)
 
+    # provide easy access to exceptions to qtbot fixtures
+    SignalEmittedError = SignalEmittedError
+    TimeoutError = TimeoutError
+    ScreenshotError = ScreenshotError
+    CallbackCalledTwiceError = CallbackCalledTwiceError
 
-# provide easy access to exceptions to qtbot fixtures
-QtBot.SignalEmittedError = SignalEmittedError
-QtBot.TimeoutError = TimeoutError
-QtBot.ScreenshotError = ScreenshotError
-QtBot.CallbackCalledTwiceError = CallbackCalledTwiceError
 
-
-def _add_widget(item, widget, *, before_close_func=None):
+def _add_widget(
+    item: Any,
+    widget: QWidget,
+    *,
+    before_close_func: Optional[BeforeCloseFunc] = None,
+) -> None:
     """
     Register a widget into the given pytest item for later closing.
     """
@@ -740,7 +795,7 @@ def _add_widget(item, widget, *, before_close_func=None):
     item.qt_widgets = qt_widgets
 
 
-def _close_widgets(item):
+def _close_widgets(item: Any) -> None:
     """
     Close all widgets registered in the pytest item.
     """
@@ -756,7 +811,7 @@ def _close_widgets(item):
         del item.qt_widgets
 
 
-def _iter_widgets(item):
+def _iter_widgets(item: Any) -> Iterator[weakref.ReferenceType[QWidget]]:
     """
     Iterates over widgets registered in the given pytest item.
     """
@@ -769,7 +824,9 @@ class _WaitWidgetContextManager:
     Context manager implementation used by ``waitActive`` and ``waitExposed`` methods.
     """
 
-    def __init__(self, method_name, adjective_name, widget, timeout):
+    def __init__(
+        self, method_name: str, adjective_name: str, widget: QWidget, timeout: int
+    ) -> None:
         """
         :param str method_name: name to the ``QtTest`` method to call to check if widget is active/exposed.
         :param str adjective_name: "activated" or "exposed".
@@ -781,11 +838,16 @@ class _WaitWidgetContextManager:
         self._widget = widget
         self._timeout = timeout
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         __tracebackhide__ = True
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         __tracebackhide__ = True
         try:
             if exc_type is None:
