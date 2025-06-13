@@ -336,7 +336,7 @@ class QtBot:
 
     def waitSignal(
         self,
-        signal: "SignalInstance",
+        signal: SignalInstance,
         *,
         timeout: int = 5000,
         raising: Optional[bool] = None,
