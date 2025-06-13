@@ -50,7 +50,7 @@ def _parse_ini_boolean(value: Any) -> bool:
     if value in (True, False):
         return cast("bool", value)
     try:
-        return {"true": True, "false": False}[cast("str", value).lower()]
+        return {"true": True, "false": False}[str(value).lower()]
     except KeyError:
         raise ValueError("unknown string for bool: %r" % value)
 
