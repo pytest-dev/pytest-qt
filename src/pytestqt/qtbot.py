@@ -11,12 +11,12 @@ from typing import (
     Literal,
     Optional,
     Any,
-    Self,
     Type,
     TypeAlias,
     cast,
 )
 from pathlib import Path
+from typing_extensions import Self
 
 from pytestqt.exceptions import TimeoutError, ScreenshotError
 from pytestqt.qt_compat import qt_api
