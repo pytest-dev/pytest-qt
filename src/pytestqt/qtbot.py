@@ -13,6 +13,7 @@ from typing import (
     Any,
     Self,
     Type,
+    TypeAlias,
     cast,
 )
 from pathlib import Path
@@ -33,10 +34,10 @@ from pytest import FixtureRequest
 
 # Type hint objects until figuring out how to import across qt
 # versions possibly using 'qtpy' library.
-QWidget = Any
-SignalInstance = Any
-QRect = Any
-QKeySequence = Any
+QWidget: TypeAlias = Any
+SignalInstance: TypeAlias = Any
+QRect: TypeAlias = Any
+QKeySequence: TypeAlias = Any
 
 if TYPE_CHECKING:
     # Keep local import behavior the same.
