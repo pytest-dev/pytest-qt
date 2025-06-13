@@ -162,7 +162,7 @@ class _QtApi:
 
     def get_versions(self):
         if self.pytest_qt_api == "pyside6":
-            import PySide6  # type: ignore[import-not-found]
+            import PySide6  # type: ignore[import-not-found,unused-ignore]
 
             version = PySide6.__version__
 
