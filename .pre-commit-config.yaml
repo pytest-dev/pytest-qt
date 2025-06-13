@@ -50,3 +50,4 @@ repos:
     rev: 'v1.16.0'
     hooks:
     -   id: mypy
+        exclude: ^docs/
