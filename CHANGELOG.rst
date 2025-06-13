@@ -4,6 +4,7 @@ UNRELEASED
 - Added official support for Python 3.13.
 - Dropped support for EOL Python 3.8.
 - Dropped support for EOL PySide 2.
+- Type annotations are now provided. Note that because the Qt library used is defined at runtime, Qt classes are currently annotated as ``Any``.
 - Fixed PySide6 exceptions / warnings about being unable to disconnect signals
   with ``qtbot.waitSignal`` (`#552`_, `#558`_).
 - Reduced the likelyhood of trouble when using ``qtbot.waitSignal(s)`` and
