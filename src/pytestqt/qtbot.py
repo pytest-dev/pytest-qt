@@ -791,7 +791,7 @@ def _add_widget(
     """
     qt_widgets = getattr(item, "qt_widgets", [])
     qt_widgets.append((weakref.ref(widget), before_close_func))
-    item.qt_widgets = qt_widgets  # type: ignore[assignment]
+    item.qt_widgets = qt_widgets  # type: ignore[attr-defined]
 
 
 def _close_widgets(item: pytest.Item) -> None:
