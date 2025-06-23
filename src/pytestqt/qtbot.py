@@ -1,20 +1,19 @@
+from collections.abc import Callable
 import contextlib
 from types import TracebackType
 import weakref
 import warnings
 from typing import (
     TYPE_CHECKING,
-    Callable,
     Generator,
     Iterator,
-    List,
     Literal,
     Optional,
     Any,
-    Type,
     cast,
 )
 from pathlib import Path
+import pytest
 from typing_extensions import Self, TypeAlias
 
 from pytestqt.exceptions import TimeoutError, ScreenshotError
@@ -403,11 +402,11 @@ class QtBot:
 
     def waitSignals(
         self,
-        signals: List[SignalInstance],
+        signals: list[SignalInstance],
         *,
         timeout: int = 5000,
         raising: Optional[bool] = None,
-        check_params_cbs: Optional[List[CheckParamsCb]] = None,
+        check_params_cbs: Optional[list[CheckParamsCb]] = None,
         order: WaitSignalsOrder = "none",
     ) -> "MultiSignalBlocker":
         """
@@ -782,7 +781,7 @@ class QtBot:
 
 
 def _add_widget(
-    item: Any,
+    item: pytest.Item,
     widget: QWidget,
     *,
     before_close_func: Optional[BeforeCloseFunc] = None,
@@ -792,31 +791,34 @@ def _add_widget(
     """
     qt_widgets = getattr(item, "qt_widgets", [])
     qt_widgets.append((weakref.ref(widget), before_close_func))
-    item.qt_widgets = qt_widgets
+    item.qt_widgets = qt_widgets  # type: ignore[assignment]
 
 
-def _close_widgets(item: Any) -> None:
+def _close_widgets(item: pytest.Item) -> None:
     """
     Close all widgets registered in the pytest item.
     """
     widgets = getattr(item, "qt_widgets", None)
     if widgets:
-        for w, before_close_func in item.qt_widgets:
+        for w, before_close_func in item.qt_widgets:  # type: ignore[attr-defined]
             w = w()
             if w is not None:
                 if before_close_func is not None:
                     before_close_func(w)
                 w.close()
                 w.deleteLater()
-        del item.qt_widgets
+        del item.qt_widgets  # type: ignore[attr-defined]
 
 
-def _iter_widgets(item: Any) -> Iterator[weakref.ReferenceType[QWidget]]:
+def _iter_widgets(item: pytest.Item) -> Iterator[weakref.ReferenceType[QWidget]]:
     """
     Iterates over widgets registered in the given pytest item.
     """
     qt_widgets = getattr(item, "qt_widgets", [])
     return (w for (w, _) in qt_widgets)
+
+
+WaitAdjectiveName = Literal["activated", "exposed"]
 
 
 class _WaitWidgetContextManager:
@@ -825,7 +827,11 @@ class _WaitWidgetContextManager:
     """
 
     def __init__(
-        self, method_name: str, adjective_name: str, widget: QWidget, timeout: int
+        self,
+        method_name: str,
+        adjective_name: WaitAdjectiveName,
+        widget: QWidget,
+        timeout: int,
     ) -> None:
         """
         :param str method_name: name to the ``QtTest`` method to call to check if widget is active/exposed.
@@ -844,7 +850,7 @@ class _WaitWidgetContextManager:
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:

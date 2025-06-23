@@ -1,6 +1,7 @@
+from collections.abc import Callable
 import functools
 import dataclasses
-from typing import Any, Callable
+from typing import Any
 
 from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
