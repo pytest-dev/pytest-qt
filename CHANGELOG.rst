@@ -1,5 +1,5 @@
-UNRELEASED
-----------
+4.5.0 (2025-07-01)
+------------------
 
 - Added official support for Python 3.13.
 - Dropped support for EOL Python 3.8.
