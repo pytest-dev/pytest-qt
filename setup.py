@@ -2,7 +2,6 @@ from pathlib import Path
 
 from setuptools import setup, find_packages
 
-
 setup(
     name="pytest-qt",
     packages=find_packages(where="src"),

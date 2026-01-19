@@ -150,15 +150,12 @@ def test_zero_timeout(qtbot, timer, delayed, signaller):
 )
 def test_raising(qtbot, testdir, configval, raises):
     if configval is not None:
-        testdir.makeini(
-            f"""
+        testdir.makeini(f"""
             [pytest]
             qt_default_raising = {configval}
-        """
-        )
+        """)
 
-    testdir.makepyfile(
-        """
+    testdir.makepyfile("""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -170,8 +167,7 @@ def test_raising(qtbot, testdir, configval, raises):
 
             with qtbot.waitSignal(signaller.signal, timeout=10):
                 pass
-    """
-    )
+    """)
 
     res = testdir.runpytest()
 
@@ -182,15 +178,12 @@ def test_raising(qtbot, testdir, configval, raises):
 
 
 def test_raising_by_default_overridden(qtbot, testdir):
-    testdir.makeini(
-        """
+    testdir.makeini("""
         [pytest]
         qt_default_raising = false
-    """
-    )
+    """)
 
-    testdir.makepyfile(
-        """
+    testdir.makepyfile("""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -203,8 +196,7 @@ def test_raising_by_default_overridden(qtbot, testdir):
 
             with qtbot.waitSignal(signal, raising=True, timeout=10) as blocker:
                 pass
-    """
-    )
+    """)
     res = testdir.runpytest()
     res.stdout.fnmatch_lines(["*1 failed*"])
 
@@ -1398,8 +1390,7 @@ def test_signal_raised_from_thread(
 
     Extracted from https://github.com/pytest-dev/pytest-qt/issues/586
     """
-    pytester.makepyfile(
-        f"""
+    pytester.makepyfile(f"""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -1429,8 +1420,7 @@ def test_signal_raised_from_thread(
             if {check_stderr}:  # check_stderr
                 out, err = capfd.readouterr()
                 assert not err
-    """
-    )
+    """)
 
     res = pytester.runpytest_subprocess("-x", "-s")
     outcomes = res.parseoutcomes()
@@ -1459,8 +1449,7 @@ def test_callback_in_thread(pytester: pytest.Pytester) -> None:
     # triggers after ~30k runs (~44s). Thus, we skip this test by default.
     count = 50_000
 
-    pytester.makepyfile(
-        f"""
+    pytester.makepyfile(f"""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -1487,8 +1476,7 @@ def test_callback_in_thread(pytester: pytest.Pytester) -> None:
             finally:
                 thread.quit()
                 thread.wait()
-    """
-    )
+    """)
 
     res = pytester.runpytest_subprocess("-x")
     outcomes = res.parseoutcomes()

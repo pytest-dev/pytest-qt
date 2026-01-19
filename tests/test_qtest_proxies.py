@@ -36,8 +36,7 @@ def test_keyToAscii_not_available_on_pyqt(testdir):
     Test that qtbot.keyToAscii() is not available on PyQt5 and
     calling the method raises a NotImplementedError.
     """
-    testdir.makepyfile(
-        """
+    testdir.makepyfile("""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -46,7 +45,6 @@ def test_keyToAscii_not_available_on_pyqt(testdir):
             qtbot.add_widget(widget)
             with pytest.raises(NotImplementedError):
                 qtbot.keyToAscii(qt_api.QtCore.Qt.Key.Key_Escape)
-        """
-    )
+        """)
     result = testdir.runpytest()
     result.stdout.fnmatch_lines(["*= 1 passed in *"])

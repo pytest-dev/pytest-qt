@@ -46,7 +46,6 @@ import collections
 
 from pytestqt.qt_compat import qt_api
 
-
 _Changing = collections.namedtuple("_Changing", "parent, old_size, last, next")
 
 
