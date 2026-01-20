@@ -14,7 +14,6 @@ import sys
 
 import pytest
 
-
 VersionTuple = namedtuple("VersionTuple", "qt_api, qt_api_version, runtime, compiled")
 
 QT_APIS = OrderedDict()
