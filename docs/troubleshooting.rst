@@ -69,6 +69,9 @@ When using ``ubuntu-latest`` on Github Actions, the package ``libxkbcommon-x11-0
 .. _#293: https://github.com/pytest-dev/pytest-qt/issues/293
 .. _#550: https://github.com/pytest-dev/pytest-qt/issues/550
 
+To resolve any missing dll issue with docker-windows base gitlab runner it is recommanded to use an image based on ``mcr.microsoft.com/windows/server`` and not ``servercore`` (docker hub python official images are based on servercore).
+Setting ``QT_QPA_PLATFORM`` environment variable to *offscreen* may also be helpfull.
+
 Since Qt in version 5.15 ``xcb`` libraries are not distributed with Qt so this library in version at least 1.11 on runner. See more in https://codereview.qt-project.org/c/qt/qtbase/+/253905
 
 Since Qt in version 6.5 ``xcb-cursor0`` is a requirement. See all Qt6 requirements in https://doc.qt.io/qt-6/linux-requirements.html
