@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Build and Check Package
-        uses: hynek/build-and-inspect-python-package@v2.15
+        uses: hynek/build-and-inspect-python-package@v2.17
 
   deploy:
     needs: [package]
