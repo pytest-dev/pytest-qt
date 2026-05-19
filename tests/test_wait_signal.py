@@ -905,7 +905,7 @@ class TestAllSignalsAndArgs:
             pass
         assert blocker.all_signals_and_args == []
 
-    def test_empty_when_no_signal_name_available(self, qtbot, signaller):
+    def test_non_empty_on_pyside(self, qtbot, signaller):
         """
         Tests that all_signals_and_args is empty even though expected signals are emitted, but signal names aren't
         available.
@@ -924,7 +924,7 @@ class TestAllSignalsAndArgs:
         ) as blocker:
             signaller.signal.emit()
             signaller.signal_args.emit("1", 1)
-        assert blocker.all_signals_and_args == []
+        assert len(blocker.all_signals_and_args) == 2
 
     def test_non_empty_on_timeout_no_cb(self, qtbot, signaller):
         """
@@ -1188,16 +1188,13 @@ class TestWaitSignalsTimeoutErrorMessage:
             "Missing: [signal(), signal_args(QString,int), signal_args(QString,int)]"
         ).format(signal_args, signal_args)
 
-    def test_degenerate_error_msg(self, qtbot, signaller):
+    def test_error_msg_on_pyside(self, qtbot, signaller):
         """
-        Tests that the TimeoutError message is degenerate when using PySide6 signals for which no name is provided
-        by the user. This degenerate messages doesn't contain the signals' names, and includes a hint to the user how
-        to fix the situation.
+        Tests that the TimeoutError message is not degenerate when using PySide6 signals, since now
+        we can fetch the signal name in PySide6. The error message should provide the signal names.
         """
         if qt_api.pytest_qt_api != "pyside6":
-            pytest.skip(
-                "test only makes sense for PySide, whose signals don't contain a name"
-            )
+            pytest.skip("test only makes sense for PySide")
 
         with pytest.raises(TimeoutError) as excinfo:
             with qtbot.waitSignals(
@@ -1214,9 +1211,7 @@ class TestWaitSignalsTimeoutErrorMessage:
                 signaller.signal.emit()
         ex_msg = TestWaitSignalsTimeoutErrorMessage.get_exception_message(excinfo)
         assert ex_msg == (
-            "Received 1 of the 3 expected signals. "
-            "To improve this error message, provide the names of the signals "
-            "in the waitSignals() call."
+            "Emitted signals: [signal]. Missing: [signal_args, signal_args]"
         )
 
     def test_self_defined_signal_name(self, qtbot, signaller):

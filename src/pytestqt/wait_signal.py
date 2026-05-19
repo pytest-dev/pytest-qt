@@ -86,6 +86,13 @@ class _AbstractSignalBlocker:
         signal_name = signal_name.lstrip("2")
         return signal_name
 
+    def _extract_pyside_signal_name(self, potential_pyside_signal):
+        meta_method = qt_api.QtCore.QMetaMethod.fromSignal(potential_pyside_signal)
+        if not meta_method.isValid():
+            return ""
+        signal_name = meta_method.name().data().decode("utf-8")
+        return signal_name
+
     def _extract_signal_from_signal_tuple(self, potential_signal_tuple):
         if isinstance(potential_signal_tuple, tuple):
             if len(potential_signal_tuple) != 2:
@@ -117,12 +124,15 @@ class _AbstractSignalBlocker:
         signal_name = self._extract_signal_from_signal_tuple(potential_signal_tuple)
 
         if not signal_name:
-            try:
-                signal_name = self._extract_pyqt_signal_name(potential_signal_tuple)
-            except AttributeError:
-                # not a PyQt signal
-                # -> no signal name could be determined
-                signal_name = ""
+            if qt_api.is_pyqt:
+                try:
+                    signal_name = self._extract_pyqt_signal_name(potential_signal_tuple)
+                except AttributeError:
+                    # not a PyQt signal
+                    # -> no signal name could be determined
+                    signal_name = ""
+            elif qt_api.is_pyside:
+                signal_name = self._extract_pyside_signal_name(potential_signal_tuple)
 
         return signal_name
 
