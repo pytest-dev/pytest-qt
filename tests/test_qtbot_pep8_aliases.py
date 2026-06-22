@@ -73,7 +73,7 @@ def generate_test_cases_for_test_subclass_of_qtbot_has_overwritten_pep8_aliases(
 
 @pytest.mark.parametrize(
     "qtbot_subclass, method_name, pep8_name",
-    generate_test_cases_for_test_subclass_of_qtbot_has_overwritten_pep8_aliases(),
+    list(generate_test_cases_for_test_subclass_of_qtbot_has_overwritten_pep8_aliases()),
 )
 def test_subclass_of_qtbot_has_overwritten_pep8_aliases(
     qtbot_subclass, method_name: str, pep8_name: str
