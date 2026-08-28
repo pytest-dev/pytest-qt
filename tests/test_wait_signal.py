@@ -1425,15 +1425,6 @@ def test_signal_raised_from_thread(
     res = pytester.runpytest_subprocess("-x", "-s")
     outcomes = res.parseoutcomes()
 
-    if outcomes.get("failed", 0) and check_stderr and qt_api.pytest_qt_api == "pyside6":
-        # The test succeeds on PyQt (unsure why!), but we can't check
-        # qt_api.pytest_qt_api at import time, so we can't use
-        # pytest.mark.xfail conditionally.
-        pytest.xfail(
-            "Qt error: QObject::killTimer: "
-            "Timers cannot be stopped from another thread"
-        )
-
     res.assert_outcomes(passed=outcomes["passed"])  # no failed/error
 
 

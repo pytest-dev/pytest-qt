@@ -69,7 +69,17 @@ class _AbstractSignalBlocker:
     def _cleanup(self):
         # store timeout message before the data to construct it is lost
         self._timeout_message = self._get_timeout_error_message()
-        self._timer.stop()
+
+        timer_meta = self._timer.metaObject()
+        timer_stop_signature = (
+            timer_meta.normalizedSignature("stop").data().decode("utf-8")
+        )
+        timer_stop_method = timer_meta.method(
+            timer_meta.indexOfMethod(timer_stop_signature)
+        )
+        timer_stop_method.invoke(
+            self._timer, qt_api.QtCore.Qt.ConnectionType.QueuedConnection
+        )
 
     def _get_timeout_error_message(self):
         """Subclasses have to implement this, returning an appropriate error message for a TimeoutError."""
