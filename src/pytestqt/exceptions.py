@@ -35,7 +35,7 @@ def capture_exceptions() -> Iterator[CapturedExceptions]:
 def _except_hook(
     type_: type[BaseException],
     value: BaseException,
-    tback: Optional[TracebackType],
+    tback: TracebackType | None,
     exceptions: CapturedExceptions,
 ) -> None:
     """Hook functions installed by _QtExceptionCaptureManager"""
@@ -49,7 +49,7 @@ class _QtExceptionCaptureManager:
     """
 
     def __init__(self) -> None:
-        self.old_hook: Optional[ExceptHook] = None
+        self.old_hook: ExceptHook | None = None
         self.exceptions: CapturedExceptions = []
 
     def start(self) -> None:

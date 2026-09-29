@@ -8,7 +8,6 @@ import warnings
 from typing import (
     TYPE_CHECKING,
     Literal,
-    Optional,
     Any,
     cast,
 )
@@ -192,7 +191,7 @@ class QtBot:
         self.wait_until = self.waitUntil
         self.wait_callback = self.waitCallback
 
-    def _should_raise(self, raising_arg: Optional[bool]) -> bool:
+    def _should_raise(self, raising_arg: bool | None) -> bool:
         ini_val = self._request.config.getini("qt_default_raising")
 
         if raising_arg is not None:
@@ -203,7 +202,7 @@ class QtBot:
             return True
 
     def addWidget(
-        self, widget: QWidget, *, before_close_func: Optional[BeforeCloseFunc] = None
+        self, widget: QWidget, *, before_close_func: BeforeCloseFunc | None = None
     ) -> None:
         """
         Adds a widget to be tracked by this bot. This is not required, but will ensure that the
@@ -338,8 +337,8 @@ class QtBot:
         signal: SignalInstance,
         *,
         timeout: int = 5000,
-        raising: Optional[bool] = None,
-        check_params_cb: Optional[CheckParamsCb] = None,
+        raising: bool | None = None,
+        check_params_cb: CheckParamsCb | None = None,
     ) -> "SignalBlocker":
         """
         .. versionadded:: 1.2
@@ -406,8 +405,8 @@ class QtBot:
         signals: list[SignalInstance],
         *,
         timeout: int = 5000,
-        raising: Optional[bool] = None,
-        check_params_cbs: Optional[list[CheckParamsCb]] = None,
+        raising: bool | None = None,
+        check_params_cbs: list[CheckParamsCb] | None = None,
         order: WaitSignalsOrder = "none",
     ) -> "MultiSignalBlocker":
         """
@@ -528,7 +527,7 @@ class QtBot:
         spy.assert_not_emitted()
 
     def waitUntil(
-        self, callback: Callable[[], Optional[bool]], *, timeout: int = 5000
+        self, callback: Callable[[], bool | None], *, timeout: int = 5000
     ) -> None:
         """
         .. versionadded:: 2.0
@@ -601,7 +600,7 @@ class QtBot:
             self.wait(10)
 
     def waitCallback(
-        self, *, timeout: int = 5000, raising: Optional[bool] = None
+        self, *, timeout: int = 5000, raising: bool | None = None
     ) -> "CallbackBlocker":
         """
         .. versionadded:: 3.1
@@ -669,7 +668,7 @@ class QtBot:
             yield exceptions
 
     def screenshot(
-        self, widget: QWidget, suffix: str = "", region: Optional[QRect] = None
+        self, widget: QWidget, suffix: str = "", region: QRect | None = None
     ) -> Path:
         """
         .. versionadded:: 4.1
@@ -785,7 +784,7 @@ def _add_widget(
     item: pytest.Item,
     widget: QWidget,
     *,
-    before_close_func: Optional[BeforeCloseFunc] = None,
+    before_close_func: BeforeCloseFunc | None = None,
 ) -> None:
     """
     Register a widget into the given pytest item for later closing.
@@ -851,9 +850,9 @@ class _WaitWidgetContextManager:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         __tracebackhide__ = True
         try:

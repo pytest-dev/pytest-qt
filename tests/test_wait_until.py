@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator
-from typing import Optional
 
 import pytest
 
@@ -32,7 +31,7 @@ class Counter:
 
 def test_wait_until(
     qtbot: QtBot,
-    wait_4_ticks_callback: Callable[[], Optional[bool]],
+    wait_4_ticks_callback: Callable[[], bool | None],
     tick_counter: Counter,
 ) -> None:
     tick_counter.start(100)
@@ -42,7 +41,7 @@ def test_wait_until(
 
 def test_wait_until_timeout(
     qtbot: QtBot,
-    wait_4_ticks_callback: Callable[[], Optional[bool]],
+    wait_4_ticks_callback: Callable[[], bool | None],
     tick_counter: Counter,
 ) -> None:
     tick_counter.start(200)
@@ -63,7 +62,7 @@ def test_pep8_alias(qtbot: QtBot) -> None:
 @pytest.fixture(params=["predicate", "assert"])
 def wait_4_ticks_callback(
     request: pytest.FixtureRequest, tick_counter: Counter
-) -> Callable[[], Optional[bool]]:
+) -> Callable[[], bool | None]:
     """Parametrized fixture which returns the two possible callback methods that can be
     passed to ``waitUntil``: predicate and assertion.
     """
