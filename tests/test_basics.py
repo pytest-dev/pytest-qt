@@ -305,10 +305,10 @@ def test_header(testdir, monkeypatch):
     )
 
 
-def test_qvariant(tmpdir):
+def test_qvariant(tmp_path):
     """Test that QVariant works in the same way across all supported Qt bindings."""
     settings = qt_api.QtCore.QSettings(
-        str(tmpdir / "foo.ini"), qt_api.QtCore.QSettings.Format.IniFormat
+        str(tmp_path / "foo.ini"), qt_api.QtCore.QSettings.Format.IniFormat
     )
     settings.setValue("int", 42)
     settings.setValue("str", "Hello")
