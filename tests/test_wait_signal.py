@@ -5,9 +5,9 @@ import pytest
 import sys
 
 from pytestqt.qt_compat import qt_api
+from pytestqt.exceptions import TimeoutError
 from pytestqt.wait_signal import (
     SignalEmittedError,
-    TimeoutError,
     SignalAndArgs,
     CallbackCalledTwiceError,
 )

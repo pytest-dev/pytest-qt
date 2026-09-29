@@ -31,7 +31,7 @@ def _format_pep_8(camel_case_name: str) -> str:
         ("wait_callback", "waitCallback"),
     ],
 )
-def test_format_pep8(expected: str, camel_case_input: str):
+def test_format_pep8(expected: str, camel_case_input: str) -> None:
     assert _format_pep_8(camel_case_input) == expected
 
 
@@ -76,8 +76,8 @@ def generate_test_cases_for_test_subclass_of_qtbot_has_overwritten_pep8_aliases(
     list(generate_test_cases_for_test_subclass_of_qtbot_has_overwritten_pep8_aliases()),
 )
 def test_subclass_of_qtbot_has_overwritten_pep8_aliases(
-    qtbot_subclass, method_name: str, pep8_name: str
-):
+    qtbot_subclass: type[QtBot], method_name: str, pep8_name: str
+) -> None:
     """
     Test that subclassing QtBot does not create surprises,
     by checking that the PEP8 aliases follow overwritten
