@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=61.2",
+    "setuptools>=77",
     "setuptools_scm",
 ]
 build-backend = "setuptools.build_meta"
@@ -8,14 +8,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pytest-qt"
 authors = [{name = "Bruno Oliveira", email = "nicoddemus@gmail.com"}]
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE"]
 description = "pytest support for PyQt and PySide applications"
 keywords = ["pytest", "qt", "test", "unittest"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: Pytest",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
