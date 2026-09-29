@@ -1,4 +1,5 @@
 import inspect
+from collections.abc import Iterator
 from unittest.mock import MagicMock
 
 import pytest
@@ -35,7 +36,7 @@ def test_format_pep8(expected: str, camel_case_input: str) -> None:
     assert _format_pep_8(camel_case_input) == expected
 
 
-def test_pep8_aliases(qtbot):
+def test_pep8_aliases(qtbot: QtBot) -> None:
     """
     Test that defined PEP8 aliases actually refer to the correct implementation.
     Only check methods that have such an alias defined.
@@ -50,7 +51,9 @@ def test_pep8_aliases(qtbot):
                 )
 
 
-def generate_test_cases_for_test_subclass_of_qtbot_has_overwritten_pep8_aliases():
+def generate_test_cases_for_test_subclass_of_qtbot_has_overwritten_pep8_aliases() -> (
+    Iterator[tuple[type[QtBot], str, str]]
+):
     """
     For each PEP8 alias found in QtBot, yields a test case consisting of
     a QtBot subclass that has the alias pair’s camelCase implementation
