@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import Optional
 
 import pytest
 
 
-def get_marker(item: pytest.Item, name: str) -> Optional["pytest.Mark"]:
+def get_marker(item: pytest.Item, name: str) -> "pytest.Mark" | None:
     """Get a marker from a pytest item.
 
     This is here in order to stay compatible with pytest < 3.6 and not produce
