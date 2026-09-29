@@ -2,6 +2,7 @@ import datetime
 
 import pytest
 
+from pytestqt.logging import _QtMessageCapture
 from pytestqt.qt_compat import qt_api
 
 # qInfo is not exposed by PySide6 < 6.8.2 (#225)
@@ -10,11 +11,11 @@ HAS_QINFO = qt_api.qInfo is not None
 
 @pytest.mark.parametrize("test_succeeds", [True, False])
 @pytest.mark.parametrize("qt_log", [True, False])
-def test_basic_logging(pytester, test_succeeds, qt_log):
+def test_basic_logging(
+    pytester: pytest.Pytester, test_succeeds: bool, qt_log: bool
+) -> None:
     """
     Test Qt logging capture output.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makepyfile(f"""
         import sys
@@ -62,7 +63,7 @@ def test_basic_logging(pytester, test_succeeds, qt_log):
             )
 
 
-def test_qtlog_fixture(qtlog):
+def test_qtlog_fixture(qtlog: _QtMessageCapture) -> None:
     """
     Test qtlog fixture.
     """
@@ -85,16 +86,14 @@ def test_qtlog_fixture(qtlog):
     assert records == expected
     # `records` attribute is read-only
     with pytest.raises(AttributeError):
-        qtlog.records = []
+        qtlog.records = []  # type: ignore[misc]
 
 
 @pytest.mark.parametrize("arg", ["--no-qt-log", "--capture=no", "-s"])
-def test_fixture_with_logging_disabled(pytester, arg):
+def test_fixture_with_logging_disabled(pytester: pytest.Pytester, arg: str) -> None:
     """
     Test that qtlog fixture doesn't capture anything if logging is disabled
     in the command line.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makepyfile("""
         from pytestqt.qt_compat import qt_api
@@ -108,11 +107,11 @@ def test_fixture_with_logging_disabled(pytester, arg):
 
 
 @pytest.mark.parametrize("use_context_manager", [True, False])
-def test_disable_qtlog_context_manager(pytester, use_context_manager):
+def test_disable_qtlog_context_manager(
+    pytester: pytest.Pytester, use_context_manager: bool
+) -> None:
     """
     Test qtlog.disabled() context manager.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makeini("""
         [pytest]
@@ -138,11 +137,9 @@ def test_disable_qtlog_context_manager(pytester, use_context_manager):
 
 
 @pytest.mark.parametrize("use_mark", [True, False])
-def test_disable_qtlog_mark(pytester, use_mark):
+def test_disable_qtlog_mark(pytester: pytest.Pytester, use_mark: bool) -> None:
     """
     Test mark which disables logging capture for a test.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makeini("""
         [pytest]
@@ -164,11 +161,9 @@ def test_disable_qtlog_mark(pytester, use_mark):
     res.assertoutcome(passed=passed, failed=int(not passed))
 
 
-def test_logging_formatting(pytester):
+def test_logging_formatting(pytester: pytest.Pytester) -> None:
     """
     Test custom formatting for logging messages.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makepyfile("""
         from pytestqt.qt_compat import qt_api
@@ -190,11 +185,11 @@ def test_logging_formatting(pytester):
 @pytest.mark.parametrize(
     "level, expect_passes", [("DEBUG", 1), ("WARNING", 2), ("CRITICAL", 3), ("NO", 4)]
 )
-def test_logging_fails_tests(pytester, level, expect_passes):
+def test_logging_fails_tests(
+    pytester: pytest.Pytester, level: str, expect_passes: int
+) -> None:
     """
     Test qt_log_level_fail ini option.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makeini(
         """
@@ -228,11 +223,9 @@ def test_logging_fails_tests(pytester, level, expect_passes):
     res.stdout.fnmatch_lines(lines)
 
 
-def test_logging_fails_tests_mark(pytester):
+def test_logging_fails_tests_mark(pytester: pytest.Pytester) -> None:
     """
     Test mark overrides what's configured in the ini file.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makeini("""
         [pytest]
@@ -249,11 +242,9 @@ def test_logging_fails_tests_mark(pytester):
     res.assertoutcome(failed=1)
 
 
-def test_logging_fails_ignore(pytester):
+def test_logging_fails_ignore(pytester: pytest.Pytester) -> None:
     """
     Test qt_log_ignore config option.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makeini("""
         [pytest]
@@ -303,11 +294,11 @@ def test_logging_fails_ignore(pytester):
 
 @pytest.mark.parametrize("message", ["match-global", "match-mark"])
 @pytest.mark.parametrize("marker_args", ["'match-mark', extend=True", "'match-mark'"])
-def test_logging_mark_with_extend(pytester, message, marker_args):
+def test_logging_mark_with_extend(
+    pytester: pytest.Pytester, message: str, marker_args: str
+) -> None:
     """
     Test qt_log_ignore mark with extend=True.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makeini("""
         [pytest]
@@ -331,11 +322,11 @@ def test_logging_mark_with_extend(pytester, message, marker_args):
 @pytest.mark.parametrize(
     "message, error_expected", [("match-global", True), ("match-mark", False)]
 )
-def test_logging_mark_without_extend(pytester, message, error_expected):
+def test_logging_mark_without_extend(
+    pytester: pytest.Pytester, message: str, error_expected: bool
+) -> None:
     """
     Test qt_log_ignore mark with extend=False.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makeini("""
         [pytest]
@@ -360,11 +351,9 @@ def test_logging_mark_without_extend(pytester, message, error_expected):
         res.assertoutcome(passed=1, failed=0)
 
 
-def test_logging_mark_with_invalid_argument(pytester):
+def test_logging_mark_with_invalid_argument(pytester: pytest.Pytester) -> None:
     """
     Test qt_log_ignore mark with invalid keyword argument.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makepyfile("""
         import pytest
@@ -386,11 +375,11 @@ def test_logging_mark_with_invalid_argument(pytester):
 
 
 @pytest.mark.parametrize("apply_mark", [True, False])
-def test_logging_fails_ignore_mark_multiple(pytester, apply_mark):
+def test_logging_fails_ignore_mark_multiple(
+    pytester: pytest.Pytester, apply_mark: bool
+) -> None:
     """
     Make sure qt_log_ignore mark supports multiple arguments.
-
-    :type pytester: pytest.Pytester
     """
     if apply_mark:
         mark = '@pytest.mark.qt_log_ignore("WM_DESTROY", "WM_PAINT")'
@@ -411,12 +400,10 @@ def test_logging_fails_ignore_mark_multiple(pytester, apply_mark):
     res.assertoutcome(passed=passed, failed=int(not passed))
 
 
-def test_lineno_failure(pytester):
+def test_lineno_failure(pytester: pytest.Pytester) -> None:
     """
     Test that tests when failing because log messages were emitted report
     the correct line number.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makeini("""
         [pytest]
@@ -448,15 +435,13 @@ def test_lineno_failure(pytester):
         )
 
 
-def test_context_none(pytester):
+def test_context_none(pytester: pytest.Pytester) -> None:
     """
     Sometimes PyQt will emit a context with some/all attributes set as None
     instead of appropriate file, function and line number.
 
     Test that when this happens the plugin doesn't break, and it filters
     out the context information.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makepyfile("""
         from pytestqt.qt_compat import qt_api
@@ -473,13 +458,11 @@ def test_context_none(pytester):
     res.stdout.fnmatch_lines(["QtWarningMsg: WARNING message"])
 
 
-def test_logging_broken_makereport(pytester):
+def test_logging_broken_makereport(pytester: pytest.Pytester) -> None:
     """
     Make sure logging's makereport hookwrapper doesn't hide exceptions.
 
     See https://github.com/pytest-dev/pytest-qt/issues/98
-
-    :type pytester: pytest.Pytester
     """
     pytester.makepyfile(
         conftest="""
