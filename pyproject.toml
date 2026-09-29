@@ -65,11 +65,15 @@ select = [
     "W",  # pycodestyle warnings
     "F",  # pyflakes
     "UP", # pyupgrade
+    "I002", # missing-required-import
 ]
 ignore = [
     "UP031", # printf-string-formatting, not enforced by pyupgrade
     "UP032", # f-string, not enforced by pyupgrade
 ]
+
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
 
 [tool.ruff.lint.pycodestyle]
 max-line-length = 120
