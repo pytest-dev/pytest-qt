@@ -24,12 +24,12 @@ exception_capture_pyside6 = pytest.mark.skipif(
 
 
 @pytest.mark.parametrize("raise_error", [False, True])
-def test_catch_exceptions_in_virtual_methods(pytester, raise_error):
+def test_catch_exceptions_in_virtual_methods(
+    pytester: pytest.Pytester, raise_error: bool
+) -> None:
     """
     Catch exceptions that happen inside Qt's event loop and make the
     tests fail if any.
-
-    :type pytester: pytest.Pytester
     """
     pytester.makepyfile(
         """
@@ -114,12 +114,10 @@ def test_format_captured_exceptions_chained():
 
 @pytest.mark.parametrize("no_capture_by_marker", [True, False])
 @exception_capture_pyside6
-def test_no_capture(pytester, no_capture_by_marker):
+def test_no_capture(pytester: pytest.Pytester, no_capture_by_marker: bool) -> None:
     """
     Make sure options that disable exception capture are working (either marker
     or ini configuration value).
-
-    :type pytester: TmpTestdir
     """
     if no_capture_by_marker:
         marker_code = "@pytest.mark.qt_no_exception_capture"
@@ -152,11 +150,9 @@ def test_no_capture(pytester, no_capture_by_marker):
     res.stdout.fnmatch_lines(["*1 passed*"])
 
 
-def test_no_capture_preserves_custom_excepthook(pytester):
+def test_no_capture_preserves_custom_excepthook(pytester: pytest.Pytester) -> None:
     """
     Capturing must leave custom excepthooks alone when disabled.
-
-    :type pytester: TmpTestdir
     """
     pytester.makepyfile("""
         import pytest
@@ -179,11 +175,9 @@ def test_no_capture_preserves_custom_excepthook(pytester):
     res.stdout.fnmatch_lines(["*2 passed*"])
 
 
-def test_exception_capture_on_call(pytester):
+def test_exception_capture_on_call(pytester: pytest.Pytester) -> None:
     """
     Exceptions should also be captured during test execution.
-
-    :type pytester: TmpTestdir
     """
     pytester.makepyfile("""
         import pytest
@@ -203,11 +197,9 @@ def test_exception_capture_on_call(pytester):
     res.stdout.fnmatch_lines(["*RuntimeError('event processed')*", "*1 failed*"])
 
 
-def test_exception_capture_on_widget_close(pytester):
+def test_exception_capture_on_widget_close(pytester: pytest.Pytester) -> None:
     """
     Exceptions should also be captured when widget is being closed.
-
-    :type pytester: TmpTestdir
     """
     pytester.makepyfile("""
         import pytest
@@ -228,12 +220,12 @@ def test_exception_capture_on_widget_close(pytester):
 
 
 @pytest.mark.parametrize("mode", ["setup", "teardown"])
-def test_exception_capture_on_fixture_setup_and_teardown(pytester, mode):
+def test_exception_capture_on_fixture_setup_and_teardown(
+    pytester: pytest.Pytester, mode: str
+) -> None:
     """
     Setup/teardown exception capturing as early/late as possible to catch
     all exceptions, even from other fixtures (#105).
-
-    :type pytester: TmpTestdir
     """
     if mode == "setup":
         setup_code = "send_event(w, qapp)"
