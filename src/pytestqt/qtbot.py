@@ -5,13 +5,12 @@ import weakref
 import warnings
 from typing import (
     TYPE_CHECKING,
-    Generator,
-    Iterator,
     Literal,
     Optional,
     Any,
     cast,
 )
+from collections.abc import Generator, Iterator
 from pathlib import Path
 import pytest
 from typing_extensions import Self, TypeAlias

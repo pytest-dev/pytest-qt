@@ -1,0 +1,15 @@
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "UP", # pyupgrade
+]
+ignore = [
+    "UP031", # printf-string-formatting, not enforced by pyupgrade
+    "UP032", # f-string, not enforced by pyupgrade
+]
