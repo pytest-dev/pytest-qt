@@ -1,6 +1,7 @@
 import pytest
 
 from pytestqt.qt_compat import qt_api
+from pytestqt.qtbot import QtBot
 
 
 @pytest.mark.parametrize(
@@ -21,7 +22,7 @@ from pytestqt.qt_compat import qt_api
         "mouseRelease",
     ],
 )
-def test_expected_qtest_proxies(qtbot, expected_method):
+def test_expected_qtest_proxies(qtbot: QtBot, expected_method: str) -> None:
     """
     This test originates from the implementation where QTest
     API methods were exported on runtime.
@@ -31,7 +32,7 @@ def test_expected_qtest_proxies(qtbot, expected_method):
 
 
 @pytest.mark.skipif(qt_api.is_pyside, reason="PyQt test only")
-def test_keyToAscii_not_available_on_pyqt(pytester):
+def test_keyToAscii_not_available_on_pyqt(pytester: pytest.Pytester) -> None:
     """
     Test that qtbot.keyToAscii() is not available on PyQt5 and
     calling the method raises a NotImplementedError.
