@@ -1,12 +1,4 @@
 repos:
--   repo: https://github.com/PyCQA/autoflake
-    rev: v2.4.0
-    hooks:
-    -   id: autoflake
-        name: autoflake
-        args: ["--in-place", "--remove-unused-variables", "--remove-all-unused-imports"]
-        language: python
-        files: \.py$
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -14,10 +6,11 @@ repos:
     -   id: end-of-file-fixer
     -   id: check-yaml
     -   id: debug-statements
--   repo: https://github.com/asottile/pyupgrade
-    rev: v3.21.2
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.9
     hooks:
-    - id: pyupgrade
+    -   id: ruff-check
+        args: [--fix]
 -   repo: https://github.com/psf/black-pre-commit-mirror
     rev: 26.5.1
     hooks:
@@ -30,10 +23,6 @@ repos:
     -   id: blacken-docs
         additional_dependencies: [black==23.1.0]
         language_version: python3
--   repo: https://github.com/PyCQA/flake8
-    rev: 7.3.0
-    hooks:
-    - id: flake8
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
