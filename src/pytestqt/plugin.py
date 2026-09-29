@@ -145,7 +145,7 @@ def pytest_addoption(parser):
     )
     parser.addini(
         "qt_log_ignore",
-        "list of regexes for messages that should not cause a tests " "to fails",
+        "list of regexes for messages that should not cause a tests to fails",
         type="linelist",
     )
 
