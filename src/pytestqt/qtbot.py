@@ -223,7 +223,7 @@ class QtBot:
 
     def waitActive(
         self, widget: QWidget, *, timeout: int = 5000
-    ) -> "_WaitWidgetContextManager":
+    ) -> _WaitWidgetContextManager:
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is active.
         If window is not exposed within ``timeout`` milliseconds, raise
@@ -252,7 +252,7 @@ class QtBot:
 
     def waitExposed(
         self, widget: QWidget, *, timeout: int = 5000
-    ) -> "_WaitWidgetContextManager":
+    ) -> _WaitWidgetContextManager:
         """
         Context manager that waits for ``timeout`` milliseconds or until the window is exposed.
         If the window is not exposed within ``timeout`` milliseconds, raise
@@ -339,7 +339,7 @@ class QtBot:
         timeout: int = 5000,
         raising: bool | None = None,
         check_params_cb: CheckParamsCb | None = None,
-    ) -> "SignalBlocker":
+    ) -> SignalBlocker:
         """
         .. versionadded:: 1.2
 
@@ -408,7 +408,7 @@ class QtBot:
         raising: bool | None = None,
         check_params_cbs: list[CheckParamsCb] | None = None,
         order: WaitSignalsOrder = "none",
-    ) -> "MultiSignalBlocker":
+    ) -> MultiSignalBlocker:
         """
         .. versionadded:: 1.4
 
@@ -601,7 +601,7 @@ class QtBot:
 
     def waitCallback(
         self, *, timeout: int = 5000, raising: bool | None = None
-    ) -> "CallbackBlocker":
+    ) -> CallbackBlocker:
         """
         .. versionadded:: 3.1
 
@@ -643,7 +643,7 @@ class QtBot:
         return blocker
 
     @contextlib.contextmanager
-    def captureExceptions(self) -> Iterator["CapturedExceptions"]:
+    def captureExceptions(self) -> Iterator[CapturedExceptions]:
         """
         .. versionadded:: 2.1
 
