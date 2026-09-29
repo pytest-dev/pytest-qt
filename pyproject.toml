@@ -1,3 +1,60 @@
+[build-system]
+requires = [
+    "setuptools>=61.2",
+    "setuptools_scm",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytest-qt"
+authors = [{name = "Bruno Oliveira", email = "nicoddemus@gmail.com"}]
+license = {text = "MIT"}
+description = "pytest support for PyQt and PySide applications"
+keywords = ["pytest", "qt", "test", "unittest"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Pytest",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Desktop Environment :: Window Managers",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: User Interfaces",
+]
+urls = {Homepage = "http://github.com/pytest-dev/pytest-qt"}
+requires-python = ">=3.9"
+dependencies = ["pytest", "pluggy>=1.1", "typing_extensions"]
+dynamic = ["version"]
+
+[project.readme]
+file = "README.rst"
+content-type = "text/x-rst"
+
+[project.entry-points]
+pytest11 = {pytest-qt = "pytestqt.plugin"}
+
+[project.optional-dependencies]
+doc = ["sphinx", "sphinx_rtd_theme"]
+dev = ["pre-commit", "tox"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools_scm]
+version_file = "src/pytestqt/_version.py"
+
 [tool.ruff]
 target-version = "py39"
 
