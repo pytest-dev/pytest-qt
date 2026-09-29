@@ -39,7 +39,8 @@ def test_qapp_name(testdir):
 
 
 def test_qapp_cls(testdir):
-    testdir.makepyfile(app="""
+    testdir.makepyfile(
+        app="""
         from pytestqt.qt_compat import qt_api
 
         # Gets run before the plugin via conftest.py
@@ -47,7 +48,8 @@ def test_qapp_cls(testdir):
 
         class CustomQApp(qt_api.QtWidgets.QApplication):
             pass
-        """)
+        """
+    )
     testdir.makeconftest("""
         import pytest
         from app import CustomQApp
@@ -420,10 +422,12 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
 
     monkeypatch.delenv("PYTEST_QT_API", raising=False)
 
-    testdir.makeini("""
+    testdir.makeini(
+        """
         [pytest]
         qt_api={option_api}
-    """.format(option_api=option_api))
+    """.format(option_api=option_api)
+    )
 
     testdir.makepyfile("""
         import pytest
@@ -449,10 +453,12 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
 @pytest.mark.parametrize("envvar", ["pyqt5", "pyqt6", "pyside6"])
 def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
     """ensure environment variable wins over config value if both are present"""
-    testdir.makeini("""
+    testdir.makeini(
+        """
         [pytest]
         qt_api={option_api}
-    """.format(option_api="piecute"))
+    """.format(option_api="piecute")
+    )
 
     monkeypatch.setenv("PYTEST_QT_API", envvar)
 

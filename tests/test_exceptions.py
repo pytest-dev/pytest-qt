@@ -29,7 +29,8 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
 
     :type testdir: _pytest.pytester.TmpTestdir
     """
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         from pytestqt.qt_compat import qt_api
 
         class Receiver(qt_api.QtCore.QObject):
@@ -51,7 +52,8 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
             app.sendEvent(v, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.Type.User))
             app.processEvents()
 
-    """.format(raise_error=raise_error))
+    """.format(raise_error=raise_error)
+    )
     result = testdir.runpytest()
     if raise_error:
         if has_pyside6_exception_capture():
@@ -238,7 +240,8 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
         setup_code = ""
         teardown_code = "send_event(w, qapp)"
 
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -263,7 +266,8 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
 
         def test_capture(widget):
             pass
-    """.format(setup_code=setup_code, teardown_code=teardown_code))
+    """.format(setup_code=setup_code, teardown_code=teardown_code)
+    )
     res = testdir.runpytest("-s")
     res.stdout.fnmatch_lines(
         [

@@ -124,12 +124,14 @@ def test_disable_qtlog_context_manager(testdir, use_context_manager):
     else:
         code = "if 1:"
 
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         from pytestqt.qt_compat import qt_api
         def test_1(qtlog):
             {code}
                 qt_api.qCritical('message')
-        """.format(code=code))
+        """.format(code=code)
+    )
     res = testdir.inline_run()
     passed = 1 if use_context_manager else 0
     res.assertoutcome(passed=passed, failed=int(not passed))
@@ -148,13 +150,15 @@ def test_disable_qtlog_mark(testdir, use_mark):
         """)
     mark = "@pytest.mark.no_qt_log" if use_mark else ""
 
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         from pytestqt.qt_compat import qt_api
         import pytest
         {mark}
         def test_1():
             qt_api.qCritical('message')
-        """.format(mark=mark))
+        """.format(mark=mark)
+    )
     res = testdir.inline_run()
     passed = 1 if use_mark else 0
     res.assertoutcome(passed=passed, failed=int(not passed))
@@ -192,10 +196,12 @@ def test_logging_fails_tests(testdir, level, expect_passes):
 
     :type testdir: _pytest.pytester.TmpTestdir
     """
-    testdir.makeini("""
+    testdir.makeini(
+        """
         [pytest]
         qt_log_level_fail = {level}
-        """.format(level=level))
+        """.format(level=level)
+    )
     testdir.makepyfile("""
         from pytestqt.qt_compat import qt_api
         def test_1():
@@ -308,14 +314,16 @@ def test_logging_mark_with_extend(testdir, message, marker_args):
         qt_log_level_fail = CRITICAL
         qt_log_ignore = match-global
         """)
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         from pytestqt.qt_compat import qt_api
         import pytest
 
         @pytest.mark.qt_log_ignore({marker_args})
         def test1():
             qt_api.qCritical('{message}')
-        """.format(message=message, marker_args=marker_args))
+        """.format(message=message, marker_args=marker_args)
+    )
     res = testdir.inline_run()
     res.assertoutcome(passed=1, failed=0)
 
@@ -334,14 +342,16 @@ def test_logging_mark_without_extend(testdir, message, error_expected):
         qt_log_level_fail = CRITICAL
         qt_log_ignore = match-global
         """)
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         from pytestqt.qt_compat import qt_api
         import pytest
 
         @pytest.mark.qt_log_ignore('match-mark', extend=False)
         def test1():
             qt_api.qCritical('{message}')
-        """.format(message=message))
+        """.format(message=message)
+    )
     res = testdir.inline_run()
 
     if error_expected:
@@ -386,14 +396,16 @@ def test_logging_fails_ignore_mark_multiple(testdir, apply_mark):
         mark = '@pytest.mark.qt_log_ignore("WM_DESTROY", "WM_PAINT")'
     else:
         mark = ""
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         from pytestqt.qt_compat import qt_api
         import pytest
         @pytest.mark.qt_log_level_fail('CRITICAL')
         {mark}
         def test1():
             qt_api.qCritical('WM_PAINT was sent')
-        """.format(mark=mark))
+        """.format(mark=mark)
+    )
     res = testdir.inline_run()
     passed = 1 if apply_mark else 0
     res.assertoutcome(passed=passed, failed=int(not passed))
@@ -469,7 +481,8 @@ def test_logging_broken_makereport(testdir):
 
     :type testdir: _pytest.pytester.TmpTestdir
     """
-    testdir.makepyfile(conftest="""
+    testdir.makepyfile(
+        conftest="""
         import pytest
 
         @pytest.hookimpl(hookwrapper=True, tryfirst=True)
@@ -477,7 +490,8 @@ def test_logging_broken_makereport(testdir):
             if call.when == 'call':
                 raise Exception("This should not be hidden")
             yield
-    """)
+    """
+    )
     p = testdir.makepyfile("""
         def test_foo():
             pass

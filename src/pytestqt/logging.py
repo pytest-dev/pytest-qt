@@ -26,8 +26,9 @@ class QtLoggingPlugin:
         if m:
             if not set(m.kwargs).issubset({"extend"}):
                 raise ValueError(
-                    "Invalid keyword arguments in {!r} for "
-                    "qt_log_ignore mark.".format(m.kwargs)
+                    "Invalid keyword arguments in {!r} for qt_log_ignore mark.".format(
+                        m.kwargs
+                    )
                 )
             if m.kwargs.get("extend", True):
                 config_regexes = self.config.getini("qt_log_ignore")

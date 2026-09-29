@@ -79,8 +79,9 @@ class _AbstractSignalBlocker:
         signal_name = potential_pyqt_signal.signal  # type: str
         if not isinstance(signal_name, str):
             raise TypeError(
-                "Invalid 'signal' attribute in {}. "
-                "Expected str but got {}".format(signal_name, type(signal_name))
+                "Invalid 'signal' attribute in {}. Expected str but got {}".format(
+                    signal_name, type(signal_name)
+                )
             )
         # strip magic number "2" that PyQt prepends to the signal names
         signal_name = signal_name.lstrip("2")

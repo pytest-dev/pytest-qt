@@ -402,8 +402,7 @@ class ModelTester:
         if rows > 0 and columns > 0:
             assert self._has_children(parent)
         self._debug(
-            "Checking children of {} with depth {} "
-            "({} rows, {} columns)".format(
+            "Checking children of {} with depth {} ({} rows, {} columns)".format(
                 self._modelindex_debug(parent), current_depth, rows, columns
             )
         )

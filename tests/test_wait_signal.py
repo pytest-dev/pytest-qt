@@ -619,9 +619,9 @@ class TestCallback:
         for code in emitted_signal_codes:
             signal = TestCallback.get_signal_from_code(signaller, code)
             param_str = code[1]
-            assert (
-                param_str != "x"
-            ), "x is not allowed in emitted_signal_codes, only in expected_signal_codes"
+            assert param_str != "x", (
+                "x is not allowed in emitted_signal_codes, only in expected_signal_codes"
+            )
             param_int = int(param_str)
             signal.emit(param_str, param_int)
 
@@ -1274,7 +1274,7 @@ class TestAssertNotEmitted:
 
         fnmatch.fnmatchcase(
             str(excinfo.value),
-            "Signal * unexpectedly emitted with arguments " "['foo', 123]",
+            "Signal * unexpectedly emitted with arguments ['foo', 123]",
         )
 
     def test_disconnected(self, qtbot, signaller):
@@ -1430,8 +1430,7 @@ def test_signal_raised_from_thread(
         # qt_api.pytest_qt_api at import time, so we can't use
         # pytest.mark.xfail conditionally.
         pytest.xfail(
-            "Qt error: QObject::killTimer: "
-            "Timers cannot be stopped from another thread"
+            "Qt error: QObject::killTimer: Timers cannot be stopped from another thread"
         )
 
     res.assert_outcomes(passed=outcomes["passed"])  # no failed/error
