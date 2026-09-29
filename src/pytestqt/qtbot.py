@@ -208,7 +208,7 @@ class QtBot:
         Adds a widget to be tracked by this bot. This is not required, but will ensure that the
         widget gets closed by the end of the test, so it is highly recommended.
 
-        :param QWidget widget:
+        :param widget:
             Widget to keep track of.
 
         :kwparam before_close_func:
@@ -237,10 +237,10 @@ class QtBot:
             with qtbot.waitActive(widget, timeout=500):
                 show_action()
 
-        :param QWidget widget:
+        :param widget:
             Widget to wait for.
 
-        :param int|None timeout:
+        :param timeout:
             How many milliseconds to wait for.
 
         .. note:: This method is also available as ``wait_active`` (pep-8 alias)
@@ -266,10 +266,10 @@ class QtBot:
             with qtbot.waitExposed(splash, timeout=500):
                 startup()
 
-        :param QWidget widget:
+        :param widget:
             Widget to wait for.
 
-        :param int|None timeout:
+        :param timeout:
             How many milliseconds to wait for.
 
         .. note:: This method is also available as ``wait_exposed`` (pep-8 alias)
@@ -292,7 +292,7 @@ class QtBot:
         .. deprecated:: 4.0
             Use the ``qtbot.waitExposed`` context manager instead.
 
-        :param QWidget widget:
+        :param widget:
             Widget to wait on.
 
         :returns:
@@ -369,17 +369,17 @@ class QtBot:
         .. versionadded:: 2.0
            The *check_params_cb* parameter.
 
-        :param Signal signal:
+        :param signal:
             A signal to wait for, or a tuple ``(signal, signal_name_as_str)`` to improve the error message that is part
             of :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>`.
-        :param int timeout:
+        :param timeout:
             How many milliseconds to wait before resuming control flow.
-        :param bool raising:
+        :param raising:
             If :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_default_raising = false``
             is set in the config.
-        :param Callable check_params_cb:
+        :param check_params_cb:
             Optional ``callable`` that compares the provided signal parameters to some expected parameters.
             It has to match the signature of ``signal`` (just like a slot function would) and return ``True`` if
             parameters match, ``False`` otherwise.
@@ -430,24 +430,25 @@ class QtBot:
            long_function_that_calls_signal()
            blocker.wait()
 
-        :param list signals:
+        :param signals:
             A list of :class:`Signal` objects to wait for. Alternatively: a list of (``Signal, str``) tuples of the form
             ``(signal, signal_name_as_str)`` to improve the error message that is part of ``qtbot.TimeoutError``.
-        :param int timeout:
+        :type signals: list[Signal]
+        :param timeout:
             How many milliseconds to wait before resuming control flow.
-        :param bool raising:
+        :param raising:
             If :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_default_raising = false``
             is set in the config.
-        :param list check_params_cbs:
+        :param check_params_cbs:
             optional list of callables that compare the provided signal parameters to some expected parameters.
             Each callable has to match the signature of the corresponding signal in ``signals`` (just like a slot
             function would) and return ``True`` if parameters match, ``False`` otherwise.
             Instead of a specific callable, ``None`` can be provided, to disable parameter checking for the
             corresponding signal.
             If the number of callbacks doesn't match the number of signals ``ValueError`` will be raised.
-        :param str order:
+        :param order:
             Determines the order in which to expect signals:
 
             - ``"none"``: no order is enforced
@@ -511,7 +512,7 @@ class QtBot:
 
         Make sure the given ``signal`` doesn't get emitted.
 
-        :param int wait:
+        :param wait:
             How many milliseconds to wait to make sure the signal isn't emitted
             asynchronously. By default, this method returns immediately and only
             catches signals emitted inside the ``with``-block.
@@ -625,9 +626,9 @@ class QtBot:
            blocker.wait()
 
 
-        :param int timeout:
+        :param timeout:
             How many milliseconds to wait before resuming control flow.
-        :param bool raising:
+        :param raising:
             If :class:`qtbot.TimeoutError <pytestqt.exceptions.TimeoutError>`
             should be raised if a timeout occurred.
             This defaults to ``True`` unless ``qt_default_raising = false``
@@ -683,13 +684,14 @@ class QtBot:
         Raises :class:`qtbot.ScreenshotError <pytestqt.exceptions.ScreenshotError>`
         if taking the screenshot or saving the file failed.
 
-        :param QWidget widget:
+        :param widget:
             The widget to take a screenshot of.
-        :param str suffix:
+        :param suffix:
             An optional suffix to add to the filename.
-        :param QRect region:
+        :param region:
             The region of the widget to screeshot. By default, the entire widget is
             contained.
+        :type region: QRect | None
         :returns:
             A ``pathlib.Path`` object with the taken screenshot.
         """
@@ -834,8 +836,8 @@ class _WaitWidgetContextManager:
         timeout: int,
     ) -> None:
         """
-        :param str method_name: name to the ``QtTest`` method to call to check if widget is active/exposed.
-        :param str adjective_name: "activated" or "exposed".
+        :param method_name: name to the ``QtTest`` method to call to check if widget is active/exposed.
+        :param adjective_name: "activated" or "exposed".
         :param widget:
         :param timeout:
         """

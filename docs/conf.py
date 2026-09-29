@@ -29,6 +29,20 @@ sys.path.insert(0, os.path.abspath("../src"))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ["sphinx.ext.autodoc", "sphinx.ext.coverage", "sphinx.ext.viewcode"]
 
+# Show the type annotations in the parameter descriptions.
+autodoc_typehints = "description"
+autodoc_typehints_description_target = "documented"
+
+# Qt classes are type-aliased to ``Any`` in the source, keep their names in the docs.
+# Sphinx 9 does not resolve these aliases when nested (``QRect | None``), such
+# parameters keep a ``:type:`` field in their docstring.
+autodoc_type_aliases = {
+    "QWidget": "QWidget",
+    "QRect": "QRect",
+    "QKeySequence": "QKeySequence",
+    "SignalInstance": "Signal",
+}
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
