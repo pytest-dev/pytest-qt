@@ -126,7 +126,7 @@ class _QtMessageCapture:
     """
 
     def __init__(self, ignore_regexes):
-        self._records = []
+        self._records: list[Record] = []
         self._ignore_regexes = ignore_regexes or []
         self._previous_handler = None
 
@@ -200,11 +200,8 @@ class _QtMessageCapture:
         self._append_new_record(msg_type, message, context=context)
 
     @property
-    def records(self):
-        """Access messages captured so far.
-
-        :rtype: list of `Record` instances.
-        """
+    def records(self) -> list[Record]:
+        """Access messages captured so far."""
         return self._records[:]
 
 

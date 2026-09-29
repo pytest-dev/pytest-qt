@@ -26,6 +26,7 @@ from pytestqt.wait_signal import (
     CallbackBlocker,
     CallbackCalledTwiceError,
     CheckParamsCb,
+    SignalInstance,
 )
 
 from pytest import FixtureRequest
@@ -33,7 +34,6 @@ from pytest import FixtureRequest
 # Type hint objects until figuring out how to import across qt
 # versions possibly using 'qtpy' library.
 QWidget: TypeAlias = Any
-SignalInstance: TypeAlias = Any
 QRect: TypeAlias = Any
 QKeySequence: TypeAlias = Any
 

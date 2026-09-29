@@ -5,9 +5,12 @@ import functools
 import dataclasses
 from typing import Any
 
+from typing_extensions import TypeAlias
+
 from pytestqt.exceptions import TimeoutError
 from pytestqt.qt_compat import qt_api
 
+SignalInstance: TypeAlias = Any
 CheckParamsCb = Callable[..., bool]
 
 
@@ -77,7 +80,7 @@ class _AbstractSignalBlocker:
         """Subclasses have to implement this, returning an appropriate error message for a TimeoutError."""
         raise NotImplementedError  # pragma: no cover
 
-    def _extract_pyqt_signal_name(self, potential_pyqt_signal):
+    def _extract_pyqt_signal_name(self, potential_pyqt_signal: SignalInstance) -> str:
         signal_name = potential_pyqt_signal.signal  # type: str
         if not isinstance(signal_name, str):
             raise TypeError(
@@ -89,7 +92,9 @@ class _AbstractSignalBlocker:
         signal_name = signal_name.lstrip("2")
         return signal_name
 
-    def _extract_signal_from_signal_tuple(self, potential_signal_tuple):
+    def _extract_signal_from_signal_tuple(
+        self, potential_signal_tuple: SignalInstance | tuple[SignalInstance, str]
+    ) -> str:
         if isinstance(potential_signal_tuple, tuple):
             if len(potential_signal_tuple) != 2:
                 raise ValueError(
@@ -108,13 +113,15 @@ class _AbstractSignalBlocker:
             return signal_name
         return ""
 
-    def determine_signal_name(self, potential_signal_tuple):
+    def determine_signal_name(
+        self, potential_signal_tuple: SignalInstance | tuple[SignalInstance, str]
+    ) -> str:
         """
         Attempts to determine the signal's name. If the user provided the signal name as 2nd value of the tuple, this
         name has preference. Bad values cause a ``ValueError``.
         Otherwise it attempts to get the signal from the ``signal`` attribute of ``signal`` (which only exists for
         PyQt signals).
-        :returns: str name of the signal, an empty string if no signal name can be determined, or raises an error
+        :returns: name of the signal, an empty string if no signal name can be determined, or raises an error
             in case the user provided an invalid signal name manually
         """
         signal_name = self._extract_signal_from_signal_tuple(potential_signal_tuple)
@@ -320,12 +327,14 @@ class MultiSignalBlocker(_AbstractSignalBlocker):
         self._signal_names = {}
         self.all_signals_and_args = []  # list of SignalAndArgs instances
 
-    def add_signals(self, signals):
+    def add_signals(
+        self, signals: list[SignalInstance | tuple[SignalInstance, str]]
+    ) -> None:
         """
         Adds the given signal to the list of signals which :meth:`wait()` waits
         for.
 
-        :param list signals: list of QtCore.Signal`s or tuples (QtCore.Signal, str)
+        :param signals: list of QtCore.Signal`s or tuples (QtCore.Signal, str)
         """
         self._determine_unique_signals(signals)
         self._create_signal_emitted_indices(signals)
