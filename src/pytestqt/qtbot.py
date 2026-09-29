@@ -308,7 +308,7 @@ class QtBot:
             "instead.",
             DeprecationWarning,
         )
-        return qt_api.QtTest.QTest.qWaitForWindowExposed(widget)
+        return bool(qt_api.QtTest.QTest.qWaitForWindowExposed(widget))
 
     def stop(self) -> None:
         """
@@ -696,7 +696,7 @@ class QtBot:
         if pixmap.isNull():
             raise ScreenshotError("Got null pixmap from Qt")
 
-        tmp_path = self._request.getfixturevalue("tmp_path")
+        tmp_path: Path = self._request.getfixturevalue("tmp_path")
 
         parts = ["screenshot", widget.__class__.__name__]
         name = widget.objectName()
