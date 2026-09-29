@@ -39,6 +39,11 @@ jobs:
           - python-version: "3.9"
             qt-lib: pyside60
             os: ubuntu-latest
+        exclude:
+          # No PySide6 release supports Python 3.15 yet (all declare
+          # Requires-Python <3.15), so it cannot be installed.
+          - python-version: "3.15"
+            qt-lib: pyside6
 
     steps:
     - uses: actions/checkout@v7
