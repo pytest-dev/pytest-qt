@@ -8,6 +8,8 @@ may change between releases and users should not rely on it.
 Based on from https://github.com/epage/PythonUtils.
 """
 
+from __future__ import annotations
+
 from collections import namedtuple, OrderedDict
 import os
 import sys
