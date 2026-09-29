@@ -1,4 +1,9 @@
-def get_marker(item, name):
+from typing import Optional
+
+import pytest
+
+
+def get_marker(item: pytest.Item, name: str) -> Optional["pytest.Mark"]:
     """Get a marker from a pytest item.
 
     This is here in order to stay compatible with pytest < 3.6 and not produce
@@ -8,4 +13,4 @@ def get_marker(item, name):
         return item.get_closest_marker(name)
     except AttributeError:
         # pytest < 3.6
-        return item.get_marker(name)
+        return item.get_marker(name)  # type: ignore[attr-defined,no-any-return]
