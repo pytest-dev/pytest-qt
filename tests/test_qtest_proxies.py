@@ -31,12 +31,12 @@ def test_expected_qtest_proxies(qtbot, expected_method):
 
 
 @pytest.mark.skipif(qt_api.is_pyside, reason="PyQt test only")
-def test_keyToAscii_not_available_on_pyqt(testdir):
+def test_keyToAscii_not_available_on_pyqt(pytester):
     """
     Test that qtbot.keyToAscii() is not available on PyQt5 and
     calling the method raises a NotImplementedError.
     """
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -46,5 +46,5 @@ def test_keyToAscii_not_available_on_pyqt(testdir):
             with pytest.raises(NotImplementedError):
                 qtbot.keyToAscii(qt_api.QtCore.Qt.Key.Key_Escape)
         """)
-    result = testdir.runpytest()
+    result = pytester.runpytest()
     result.stdout.fnmatch_lines(["*= 1 passed in *"])

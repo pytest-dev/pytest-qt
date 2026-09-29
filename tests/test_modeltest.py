@@ -315,8 +315,8 @@ def test_invalid_parent(qtmodeltester):
 
 
 @pytest.mark.skipif(not modeltest.HAS_QT_TESTER, reason="No Qt modeltester available")
-def test_qt_tester_valid(testdir):
-    testdir.makepyfile("""
+def test_qt_tester_valid(pytester):
+    pytester.makepyfile("""
         from pytestqt.qt_compat import qt_api
         from pytestqt import modeltest
 
@@ -327,17 +327,17 @@ def test_qt_tester_valid(testdir):
             model = qt_api.QtGui.QStandardItemModel()
             qtmodeltester.check(model)
         """)
-    res = testdir.inline_run()
+    res = pytester.inline_run()
     res.assertoutcome(passed=1, failed=0)
 
 
 @pytest.mark.skipif(not modeltest.HAS_QT_TESTER, reason="No Qt modeltester available")
-def test_qt_tester_invalid(testdir):
-    testdir.makeini("""
+def test_qt_tester_invalid(pytester):
+    pytester.makeini("""
         [pytest]
         qt_log_level_fail = NO
     """)
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         from pytestqt.qt_compat import qt_api
         from pytestqt import modeltest
 
@@ -365,7 +365,7 @@ def test_qt_tester_invalid(testdir):
             model = Model()
             qtmodeltester.check(model)
         """)
-    res = testdir.runpytest()
+    res = pytester.runpytest()
     res.stdout.fnmatch_lines(
         [
             "*__ test_ok __*",

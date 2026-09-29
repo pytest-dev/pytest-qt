@@ -25,21 +25,21 @@ def test_qapp_default_name(qapp):
     assert qapp.applicationName() == "pytest-qt-qapp"
 
 
-def test_qapp_name(testdir):
-    testdir.makepyfile("""
+def test_qapp_name(pytester):
+    pytester.makepyfile("""
     def test_name(qapp):
         assert qapp.applicationName() == "frobnicator"
     """)
-    testdir.makeini("""
+    pytester.makeini("""
         [pytest]
         qt_qapp_name = frobnicator
         """)
-    res = testdir.runpytest_subprocess()
+    res = pytester.runpytest_subprocess()
     res.stdout.fnmatch_lines("*1 passed*")
 
 
-def test_qapp_cls(testdir):
-    testdir.makepyfile(
+def test_qapp_cls(pytester):
+    pytester.makepyfile(
         app="""
         from pytestqt.qt_compat import qt_api
 
@@ -50,7 +50,7 @@ def test_qapp_cls(testdir):
             pass
         """
     )
-    testdir.makeconftest("""
+    pytester.makeconftest("""
         import pytest
         from app import CustomQApp
 
@@ -58,18 +58,18 @@ def test_qapp_cls(testdir):
         def qapp_cls():
             return CustomQApp
         """)
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         from app import CustomQApp
 
         def test_cls(qapp):
             assert isinstance(qapp, CustomQApp)
     """)
-    res = testdir.runpytest_subprocess()
+    res = pytester.runpytest_subprocess()
     res.stdout.fnmatch_lines("*1 passed*")
 
 
-def test_qapp_reuse_existing(testdir):
-    testdir.makepyfile("""
+def test_qapp_reuse_existing(pytester):
+    pytester.makepyfile("""
         from pytestqt.qt_compat import qt_api
 
         app_instance = qt_api.QtWidgets.QApplication([])
@@ -78,12 +78,12 @@ def test_qapp_reuse_existing(testdir):
             assert qapp is app_instance
             assert qapp is qt_api.QtWidgets.QApplication.instance()
         """)
-    res = testdir.runpytest_subprocess()
+    res = pytester.runpytest_subprocess()
     res.stdout.fnmatch_lines("*1 passed*")
 
 
-def test_qapp_reuse_wrong_type(testdir):
-    testdir.makeconftest("""
+def test_qapp_reuse_wrong_type(pytester):
+    pytester.makeconftest("""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -97,7 +97,7 @@ def test_qapp_reuse_wrong_type(testdir):
         def qapp_cls():
             return CustomQApp
         """)
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         from pytestqt.qt_compat import qt_api
 
         app_instance = qt_api.QtWidgets.QApplication([])
@@ -105,7 +105,7 @@ def test_qapp_reuse_wrong_type(testdir):
         def test_wrong_type(qapp):
             pass
         """)
-    res = testdir.runpytest_subprocess()
+    res = pytester.runpytest_subprocess()
     res.stdout.fnmatch_lines(
         "*Existing QApplication <*.QtWidgets.QApplication* at 0x*> is not an "
         "instance of qapp_cls: <class 'conftest.CustomQApp'>"
@@ -242,7 +242,7 @@ def test_widget_kept_as_weakref(qtbot):
     assert widget() is None
 
 
-def test_event_processing_before_and_after_teardown(testdir):
+def test_event_processing_before_and_after_teardown(pytester):
     """
     Make sure events are processed before and after fixtures are torn down.
 
@@ -253,7 +253,7 @@ def test_event_processing_before_and_after_teardown(testdir):
 
     https://github.com/pytest-dev/pytest-qt/issues/67
     """
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         from pytestqt.qt_compat import qt_api
         import pytest
 
@@ -289,17 +289,17 @@ def test_event_processing_before_and_after_teardown(testdir):
             events_queue.events.append('test event')
             events_queue.pop_later()
         """)
-    res = testdir.runpytest()
+    res = pytester.runpytest()
     res.stdout.fnmatch_lines(["*3 passed in*"])
 
 
-def test_header(testdir, monkeypatch):
+def test_header(pytester, monkeypatch):
     monkeypatch.setattr(
         qt_api,
         "get_versions",
         lambda: qt_compat.VersionTuple("PyQtAPI", "1.0", "2.5", "3.5"),
     )
-    res = testdir.runpytest_inprocess()
+    res = pytester.runpytest_inprocess()
     res.stdout.fnmatch_lines(
         ["*test session starts*", "PyQtAPI 1.0 -- Qt runtime 2.5 -- Qt compiled 3.5"]
     )
@@ -319,12 +319,12 @@ def test_qvariant(tmp_path):
     assert settings.value("empty") is None
 
 
-def test_widgets_closed_before_fixtures(testdir):
+def test_widgets_closed_before_fixtures(pytester):
     """
     Ensure widgets added by "qtbot.add_widget" are closed before all other
     fixtures are teardown. (#106).
     """
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -346,7 +346,7 @@ def test_widgets_closed_before_fixtures(testdir):
         def test_foo(widget):
             pass
     """)
-    result = testdir.runpytest()
+    result = pytester.runpytest()
     result.stdout.fnmatch_lines(["*= 1 passed in *"])
 
 
@@ -414,7 +414,7 @@ def test_parse_ini_boolean_invalid():
 
 
 @pytest.mark.parametrize("option_api", ["pyqt5", "pyqt6", "pyside6"])
-def test_qt_api_ini_config(testdir, monkeypatch, option_api):
+def test_qt_api_ini_config(pytester, monkeypatch, option_api):
     """
     Test qt_api ini option handling.
     """
@@ -422,21 +422,21 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
 
     monkeypatch.delenv("PYTEST_QT_API", raising=False)
 
-    testdir.makeini(
+    pytester.makeini(
         """
         [pytest]
         qt_api={option_api}
     """.format(option_api=option_api)
     )
 
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import pytest
 
         def test_foo(qtbot):
             pass
     """)
 
-    result = testdir.runpytest_subprocess()
+    result = pytester.runpytest_subprocess()
     if qt_api.pytest_qt_api == option_api:
         result.stdout.fnmatch_lines(["* 1 passed in *"])
     else:
@@ -451,9 +451,9 @@ def test_qt_api_ini_config(testdir, monkeypatch, option_api):
 
 
 @pytest.mark.parametrize("envvar", ["pyqt5", "pyqt6", "pyside6"])
-def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
+def test_qt_api_ini_config_with_envvar(pytester, monkeypatch, envvar):
     """ensure environment variable wins over config value if both are present"""
-    testdir.makeini(
+    pytester.makeini(
         """
         [pytest]
         qt_api={option_api}
@@ -462,14 +462,14 @@ def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
 
     monkeypatch.setenv("PYTEST_QT_API", envvar)
 
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import pytest
 
         def test_foo(qtbot):
             pass
     """)
 
-    result = testdir.runpytest_subprocess()
+    result = pytester.runpytest_subprocess()
     if qt_api.pytest_qt_api == envvar:
         result.stdout.fnmatch_lines(["* 1 passed in *"])
     else:
@@ -483,53 +483,53 @@ def test_qt_api_ini_config_with_envvar(testdir, monkeypatch, envvar):
             result.stderr.fnmatch_lines(["*ModuleNotFoundError:*"])
 
 
-def test_invalid_qt_api_envvar(testdir, monkeypatch):
+def test_invalid_qt_api_envvar(pytester, monkeypatch):
     """
     Make sure the error message with an invalid PYQTEST_QT_API is correct.
     """
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import pytest
 
         def test_foo(qtbot):
             pass
     """)
     monkeypatch.setenv("PYTEST_QT_API", "piecute")
-    result = testdir.runpytest_subprocess()
+    result = pytester.runpytest_subprocess()
     result.stderr.fnmatch_lines(
         ["* Invalid value for $PYTEST_QT_API: piecute, expected one of *"]
     )
 
 
-def test_qapp_args(testdir):
+def test_qapp_args(pytester):
     """
     Test customizing of QApplication arguments.
     """
-    testdir.makeconftest("""
+    pytester.makeconftest("""
         import pytest
 
         @pytest.fixture(scope='session')
         def qapp_args():
             return ['prog_name', '--test-arg']
         """)
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         def test_args(qapp):
             assert '--test-arg' in list(qapp.arguments())
     """)
-    result = testdir.runpytest_subprocess()
+    result = pytester.runpytest_subprocess()
     result.stdout.fnmatch_lines(["*= 1 passed in *"])
 
 
-def test_qapp_args_default(testdir):
+def test_qapp_args_default(pytester):
     """
     Test QApplication default arguments.
     """
 
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         def test_args(qapp):
             args = qapp.arguments()
             assert args[0] == 'pytest-qt-qapp'
     """)
-    result = testdir.runpytest_subprocess()
+    result = pytester.runpytest_subprocess()
     result.stdout.fnmatch_lines(["*= 1 passed in *"])
 
 
@@ -620,13 +620,13 @@ def test_already_loaded_backend(monkeypatch, option_api, backend):
     assert qt_api.pytest_qt_api == option_api
 
 
-def test_before_close_func(testdir):
+def test_before_close_func(pytester):
     """
     Test the `before_close_func` argument of qtbot.addWidget.
     """
     import sys
 
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import sys
         import pytest
         from pytestqt.qt_compat import qt_api
@@ -645,12 +645,12 @@ def test_before_close_func(testdir):
         def test_foo(widget):
             pass
     """)
-    result = testdir.runpytest_inprocess()
+    result = pytester.runpytest_inprocess()
     result.stdout.fnmatch_lines(["*= 1 passed in *"])
     assert sys.pytest_qt_widget_closed
 
 
-def test_addwidget_typeerror(testdir, qtbot):
+def test_addwidget_typeerror(pytester, qtbot):
     """
     Make sure addWidget catches type errors early.
     """

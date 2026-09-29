@@ -22,14 +22,14 @@ exception_capture_pyside6 = pytest.mark.skipif(
 
 
 @pytest.mark.parametrize("raise_error", [False, True])
-def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
+def test_catch_exceptions_in_virtual_methods(pytester, raise_error):
     """
     Catch exceptions that happen inside Qt's event loop and make the
     tests fail if any.
 
-    :type testdir: _pytest.pytester.TmpTestdir
+    :type pytester: pytest.Pytester
     """
-    testdir.makepyfile(
+    pytester.makepyfile(
         """
         from pytestqt.qt_compat import qt_api
 
@@ -54,7 +54,7 @@ def test_catch_exceptions_in_virtual_methods(testdir, raise_error):
 
     """.format(raise_error=raise_error)
     )
-    result = testdir.runpytest()
+    result = pytester.runpytest()
     if raise_error:
         if has_pyside6_exception_capture():
             # PySide6 automatically captures exceptions during the event loop,
@@ -112,22 +112,22 @@ def test_format_captured_exceptions_chained():
 
 @pytest.mark.parametrize("no_capture_by_marker", [True, False])
 @exception_capture_pyside6
-def test_no_capture(testdir, no_capture_by_marker):
+def test_no_capture(pytester, no_capture_by_marker):
     """
     Make sure options that disable exception capture are working (either marker
     or ini configuration value).
 
-    :type testdir: TmpTestdir
+    :type pytester: TmpTestdir
     """
     if no_capture_by_marker:
         marker_code = "@pytest.mark.qt_no_exception_capture"
     else:
         marker_code = ""
-        testdir.makeini("""
+        pytester.makeini("""
             [pytest]
             qt_no_exception_capture = 1
             """)
-    testdir.makepyfile(f"""
+    pytester.makepyfile(f"""
         import pytest
         import sys
         from pytestqt.qt_compat import qt_api
@@ -146,17 +146,17 @@ def test_no_capture(testdir, no_capture_by_marker):
             qtbot.addWidget(w)
             qtbot.mouseClick(w, qt_api.QtCore.Qt.MouseButton.LeftButton)
         """)
-    res = testdir.runpytest()
+    res = pytester.runpytest()
     res.stdout.fnmatch_lines(["*1 passed*"])
 
 
-def test_no_capture_preserves_custom_excepthook(testdir):
+def test_no_capture_preserves_custom_excepthook(pytester):
     """
     Capturing must leave custom excepthooks alone when disabled.
 
-    :type testdir: TmpTestdir
+    :type pytester: TmpTestdir
     """
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import pytest
         import sys
         from pytestqt.qt_compat import qt_api
@@ -173,17 +173,17 @@ def test_no_capture_preserves_custom_excepthook(testdir):
         def test_capture(qtbot):
             assert sys.excepthook is not custom_excepthook
     """)
-    res = testdir.runpytest()
+    res = pytester.runpytest()
     res.stdout.fnmatch_lines(["*2 passed*"])
 
 
-def test_exception_capture_on_call(testdir):
+def test_exception_capture_on_call(pytester):
     """
     Exceptions should also be captured during test execution.
 
-    :type testdir: TmpTestdir
+    :type pytester: TmpTestdir
     """
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -197,17 +197,17 @@ def test_exception_capture_on_call(testdir):
             qapp.postEvent(w, qt_api.QtCore.QEvent(QEvent.Type.User))
             qapp.processEvents()
     """)
-    res = testdir.runpytest("-s")
+    res = pytester.runpytest("-s")
     res.stdout.fnmatch_lines(["*RuntimeError('event processed')*", "*1 failed*"])
 
 
-def test_exception_capture_on_widget_close(testdir):
+def test_exception_capture_on_widget_close(pytester):
     """
     Exceptions should also be captured when widget is being closed.
 
-    :type testdir: TmpTestdir
+    :type pytester: TmpTestdir
     """
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -221,17 +221,17 @@ def test_exception_capture_on_widget_close(testdir):
             test_widget.w = w  # keep it alive
             qtbot.addWidget(w)
     """)
-    res = testdir.runpytest("-s")
+    res = pytester.runpytest("-s")
     res.stdout.fnmatch_lines(["*RuntimeError('close error')*", "*1 error*"])
 
 
 @pytest.mark.parametrize("mode", ["setup", "teardown"])
-def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
+def test_exception_capture_on_fixture_setup_and_teardown(pytester, mode):
     """
     Setup/teardown exception capturing as early/late as possible to catch
     all exceptions, even from other fixtures (#105).
 
-    :type testdir: TmpTestdir
+    :type pytester: TmpTestdir
     """
     if mode == "setup":
         setup_code = "send_event(w, qapp)"
@@ -240,7 +240,7 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
         setup_code = ""
         teardown_code = "send_event(w, qapp)"
 
-    testdir.makepyfile(
+    pytester.makepyfile(
         """
         import pytest
         from pytestqt.qt_compat import qt_api
@@ -268,7 +268,7 @@ def test_exception_capture_on_fixture_setup_and_teardown(testdir, mode):
             pass
     """.format(setup_code=setup_code, teardown_code=teardown_code)
     )
-    res = testdir.runpytest("-s")
+    res = pytester.runpytest("-s")
     res.stdout.fnmatch_lines(
         [
             "*__ ERROR at %s of test_capture __*" % mode,
@@ -301,11 +301,11 @@ def test_capture_exceptions_context_manager(qapp):
     assert [str(e) for (t, e, tb) in exceptions] == ["mistakes were made"]
 
 
-def test_capture_exceptions_qtbot_context_manager(testdir):
+def test_capture_exceptions_qtbot_context_manager(pytester):
     """Test capturing exceptions in a block by using `capture_exceptions` method provided
     by `qtbot`.
     """
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -328,7 +328,7 @@ def test_capture_exceptions_qtbot_context_manager(testdir):
             assert len(exceptions) == 1
             assert str(exceptions[0][1]) == "error"
     """)
-    result = testdir.runpytest()
+    result = pytester.runpytest()
     result.stdout.fnmatch_lines(["*1 passed*"])
 
 
@@ -356,11 +356,11 @@ def test_exceptions_to_stderr(qapp, capsys):
 
 
 @exception_capture_pyside6
-def test_exceptions_dont_leak(testdir):
+def test_exceptions_dont_leak(pytester):
     """
     Ensure exceptions are cleared when an exception occurs and don't leak (#187).
     """
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         from pytestqt.qt_compat import qt_api
         import gc
         import weakref
@@ -386,5 +386,5 @@ def test_exceptions_dont_leak(testdir):
             gc.collect()
             assert weak_ref() is None
     """)
-    result = testdir.runpytest()
+    result = pytester.runpytest()
     result.stdout.fnmatch_lines(["*1 failed, 1 passed*"])

@@ -148,14 +148,14 @@ def test_zero_timeout(qtbot, timer, delayed, signaller):
 @pytest.mark.parametrize(
     "configval, raises", [("false", False), ("true", True), (None, True)]
 )
-def test_raising(qtbot, testdir, configval, raises):
+def test_raising(qtbot, pytester, configval, raises):
     if configval is not None:
-        testdir.makeini(f"""
+        pytester.makeini(f"""
             [pytest]
             qt_default_raising = {configval}
         """)
 
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -169,7 +169,7 @@ def test_raising(qtbot, testdir, configval, raises):
                 pass
     """)
 
-    res = testdir.runpytest()
+    res = pytester.runpytest()
 
     if raises:
         res.stdout.fnmatch_lines(["*1 failed*"])
@@ -177,13 +177,13 @@ def test_raising(qtbot, testdir, configval, raises):
         res.stdout.fnmatch_lines(["*1 passed*"])
 
 
-def test_raising_by_default_overridden(qtbot, testdir):
-    testdir.makeini("""
+def test_raising_by_default_overridden(qtbot, pytester):
+    pytester.makeini("""
         [pytest]
         qt_default_raising = false
     """)
 
-    testdir.makepyfile("""
+    pytester.makepyfile("""
         import pytest
         from pytestqt.qt_compat import qt_api
 
@@ -197,7 +197,7 @@ def test_raising_by_default_overridden(qtbot, testdir):
             with qtbot.waitSignal(signal, raising=True, timeout=10) as blocker:
                 pass
     """)
-    res = testdir.runpytest()
+    res = pytester.runpytest()
     res.stdout.fnmatch_lines(["*1 failed*"])
 
 
