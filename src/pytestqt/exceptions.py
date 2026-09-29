@@ -7,10 +7,12 @@ from types import TracebackType
 from typing import Optional
 
 import pytest
+from typing_extensions import Unpack
 from pytestqt.utils import get_marker
 
 CapturedException = tuple[type[BaseException], BaseException, Optional[TracebackType]]
 CapturedExceptions = list[CapturedException]
+ExceptHook = Callable[[Unpack[CapturedException]], object]
 
 
 @contextmanager
@@ -45,11 +47,7 @@ class _QtExceptionCaptureManager:
     """
 
     def __init__(self) -> None:
-        self.old_hook: Optional[
-            Callable[
-                [type[BaseException], BaseException, Optional[TracebackType]], object
-            ]
-        ] = None
+        self.old_hook: Optional[ExceptHook] = None
         self.exceptions: CapturedExceptions = []
 
     def start(self) -> None:
