@@ -1,3 +1,9 @@
+UNRELEASED
+----------
+
+- Added official support for Python 3.14.
+- Python 3.15 is now tested in CI.
+
 4.5.0 (2025-07-01)
 ------------------
 
