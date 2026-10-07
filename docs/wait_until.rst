@@ -44,7 +44,7 @@ assertion:
         qtbot.waitUntil(check_label, timeout=2000)
 
 The optional ``timeout`` parameter specifies how long to wait, in milliseconds,
-before raising a timeout error.
+before raising a timeout error (defaults to `5000`).
 
 ``qtbot.waitUntil`` will periodically call ``check_label`` until it no longer raises
 ``AssertionError`` or a timeout is reached. If a timeout is reached, a
