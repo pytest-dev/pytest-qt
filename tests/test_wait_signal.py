@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import functools
-import fnmatch
 
 import pytest
 import sys
@@ -1262,31 +1261,42 @@ class TestAssertNotEmitted:
         with qtbot.assertNotEmitted(signaller.signal):
             pass
 
+    def test_not_emitted_signals(self, qtbot, signaller):
+        with qtbot.assertNotEmitted((signaller.signal, signaller.signal_2)):
+            pass
+
     def test_emitted(self, qtbot, signaller):
-        with pytest.raises(SignalEmittedError) as excinfo:
+        with pytest.raises(SignalEmittedError, match="Signal .* unexpectedly emitted"):
             with qtbot.assertNotEmitted(signaller.signal):
                 signaller.signal.emit()
 
-        fnmatch.fnmatchcase(str(excinfo.value), "Signal * unexpectedly emitted.")
+    def test_emitted_signals(self, qtbot, signaller):
+        with pytest.raises(
+            SignalEmittedError, match="Signals \\[.*, .*\\] unexpectedly emitted"
+        ):
+            with qtbot.assertNotEmitted([signaller.signal_args, signaller.signal_2]):
+                signaller.signal_args.emit("foo", 123)
+                signaller.signal_2.emit()
 
     def test_emitted_args(self, qtbot, signaller):
-        with pytest.raises(SignalEmittedError) as excinfo:
+        with pytest.raises(
+            SignalEmittedError,
+            match="Signal .* unexpectedly emitted with arguments \\['foo', 123\\]",
+        ):
             with qtbot.assertNotEmitted(signaller.signal_args):
                 signaller.signal_args.emit("foo", 123)
 
-        fnmatch.fnmatchcase(
-            str(excinfo.value),
-            "Signal * unexpectedly emitted with arguments ['foo', 123]",
-        )
-
     def test_disconnected(self, qtbot, signaller):
-        with qtbot.assertNotEmitted(signaller.signal):
+        with qtbot.assertNotEmitted([signaller.signal, signaller.signal_2]):
             pass
         signaller.signal.emit()
+        signaller.signal_2.emit()
 
     def test_emitted_late(self, qtbot, signaller, timer):
         with pytest.raises(SignalEmittedError):
-            with qtbot.assertNotEmitted(signaller.signal, wait=100):
+            with qtbot.assertNotEmitted(
+                [signaller.signal, signaller.signal_2], wait=100
+            ):
                 timer.single_shot(signaller.signal, 10)
 
     def test_continues_when_emitted(self, qtbot, signaller, stop_watch):
