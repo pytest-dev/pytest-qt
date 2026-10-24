@@ -103,10 +103,13 @@ def format_captured_exceptions(exceptions: CapturedExceptions) -> str:
 
 
 def _is_exception_capture_enabled(item: pytest.Item) -> bool:
-    """returns if exception capture is disabled for the given test item."""
-    disabled = get_marker(item, "qt_no_exception_capture") or item.config.getini(
-        "qt_no_exception_capture"
-    )
+    """Return whether Qt exception capture is enabled for the test item."""
+    marker = get_marker(item, "qt_no_exception_capture")
+    if marker is not None:
+        # Explicit mark values override the project-wide ini configuration.
+        disabled = bool(marker.args[0]) if marker.args else True
+    else:
+        disabled = item.config.getini("qt_no_exception_capture")
     return not disabled
 
 

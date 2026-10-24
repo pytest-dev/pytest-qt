@@ -150,6 +150,40 @@ def test_no_capture(pytester: pytest.Pytester, no_capture_by_marker: bool) -> No
     res.stdout.fnmatch_lines(["*1 passed*"])
 
 
+@pytest.mark.parametrize(
+    ("ini_value", "marker_decorator", "expected_enabled"),
+    [
+        ("0", "", True),
+        ("1", "", False),
+        ("0", "@pytest.mark.qt_no_exception_capture", False),
+        ("1", "@pytest.mark.qt_no_exception_capture(False)", True),
+        ("1", "@pytest.mark.qt_no_exception_capture(0)", True),
+        ("0", "@pytest.mark.qt_no_exception_capture(True)", False),
+        ("0", "@pytest.mark.qt_no_exception_capture(1)", False),
+    ],
+)
+def test_exception_capture_ini_and_marker_precedence(
+    pytester: pytest.Pytester,
+    ini_value: str,
+    marker_decorator: str,
+    expected_enabled: bool,
+) -> None:
+    """Explicit marker values override an ini setting parsed as a boolean."""
+    pytester.makeini(f"[pytest]\nqt_no_exception_capture = {ini_value}")
+    pytester.makepyfile(
+        f"""
+        import pytest
+        from pytestqt.exceptions import _is_exception_capture_enabled
+
+        {marker_decorator}
+        def test_capture_setting(request):
+            assert _is_exception_capture_enabled(request.node) is {expected_enabled}
+        """
+    )
+    result = pytester.runpytest("-q")
+    result.assert_outcomes(passed=1)
+
+
 def test_no_capture_preserves_custom_excepthook(pytester: pytest.Pytester) -> None:
     """
     Capturing must leave custom excepthooks alone when disabled.
