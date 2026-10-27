@@ -600,6 +600,7 @@ class SignalEmittedSpy:
 
     def __enter__(self):
         self.signal.connect(self.slot)
+        return self
 
     def __exit__(self, type, value, traceback):
         self.signal.disconnect(self.slot)

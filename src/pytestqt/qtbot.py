@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 import contextlib
 from types import TracebackType
 import weakref
@@ -505,15 +505,15 @@ class QtBot:
 
     @contextlib.contextmanager
     def assertNotEmitted(
-        self, signal: SignalInstance, *, wait: int = 0
+        self, signal: SignalInstance | Sequence[SignalInstance], wait: int = 0
     ) -> Generator[None, None, None]:
         """
         .. versionadded:: 1.11
 
-        Make sure the given ``signal`` doesn't get emitted.
+        Make sure the given ``signal``s don't get emitted.
 
         :param wait:
-            How many milliseconds to wait to make sure the signal isn't emitted
+            How many milliseconds to wait to make sure the signals aren't emitted
             asynchronously. By default, this method returns immediately and only
             catches signals emitted inside the ``with``-block.
 
@@ -522,10 +522,21 @@ class QtBot:
         .. note:: This method is also available as ``assert_not_emitted``
                   (pep-8 alias)
         """
-        spy = SignalEmittedSpy(signal)
-        with spy, self.waitSignal(signal, timeout=wait, raising=False):
-            yield
-        spy.assert_not_emitted()
+        signals = list(signal) if isinstance(signal, Sequence) else [signal]
+
+        with contextlib.ExitStack() as stack:
+            spies = [stack.enter_context(SignalEmittedSpy(sig)) for sig in signals]
+            with self.waitSignals(signals, timeout=wait, raising=False):
+                yield
+
+        if len(spies) == 1:
+            spies[0].assert_not_emitted()
+        else:
+            emittedSignals = [spy.signal for spy in spies if spy.emitted]
+            if emittedSignals:
+                raise SignalEmittedError(
+                    f"Signals {emittedSignals!r} unexpectedly emitted"
+                )
 
     def waitUntil(
         self, callback: Callable[[], bool | None], *, timeout: int = 5000
