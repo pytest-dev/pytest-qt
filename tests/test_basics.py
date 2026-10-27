@@ -423,6 +423,7 @@ def test_qt_api_ini_config(pytester, monkeypatch, option_api):
     from pytestqt.qt_compat import qt_api
 
     monkeypatch.delenv("PYTEST_QT_API", raising=False)
+    monkeypatch.delenv("QT_API", raising=False)
 
     pytester.makeini(
         """
@@ -453,7 +454,8 @@ def test_qt_api_ini_config(pytester, monkeypatch, option_api):
 
 
 @pytest.mark.parametrize("envvar", ["pyqt5", "pyqt6", "pyside6"])
-def test_qt_api_ini_config_with_envvar(pytester, monkeypatch, envvar):
+@pytest.mark.parametrize("envvar_name", ["PYTEST_QT_API", "QT_API"])
+def test_qt_api_ini_config_with_envvar(pytester, monkeypatch, envvar, envvar_name):
     """ensure environment variable wins over config value if both are present"""
     pytester.makeini(
         """
@@ -462,7 +464,9 @@ def test_qt_api_ini_config_with_envvar(pytester, monkeypatch, envvar):
     """.format(option_api="piecute")
     )
 
-    monkeypatch.setenv("PYTEST_QT_API", envvar)
+    monkeypatch.delenv("PYTEST_QT_API", raising=False)
+    monkeypatch.delenv("QT_API", raising=False)
+    monkeypatch.setenv(envvar_name, envvar)
 
     pytester.makepyfile("""
         import pytest
@@ -485,7 +489,8 @@ def test_qt_api_ini_config_with_envvar(pytester, monkeypatch, envvar):
             result.stderr.fnmatch_lines(["*ModuleNotFoundError:*"])
 
 
-def test_invalid_qt_api_envvar(pytester, monkeypatch):
+@pytest.mark.parametrize("envvar_name", ["PYTEST_QT_API", "QT_API"])
+def test_invalid_qt_api_envvar(pytester, monkeypatch, envvar_name):
     """
     Make sure the error message with an invalid PYQTEST_QT_API is correct.
     """
@@ -495,10 +500,12 @@ def test_invalid_qt_api_envvar(pytester, monkeypatch):
         def test_foo(qtbot):
             pass
     """)
-    monkeypatch.setenv("PYTEST_QT_API", "piecute")
+    monkeypatch.delenv("PYTEST_QT_API", raising=False)
+    monkeypatch.delenv("QT_API", raising=False)
+    monkeypatch.setenv(envvar_name, "piecute")
     result = pytester.runpytest_subprocess()
     result.stderr.fnmatch_lines(
-        ["* Invalid value for $PYTEST_QT_API: piecute, expected one of *"]
+        [f"* Invalid value for ${envvar_name}: piecute, expected one of *"]
     )
 
 
@@ -543,6 +550,7 @@ def test_importerror(monkeypatch):
         return False
 
     monkeypatch.delenv("PYTEST_QT_API", raising=False)
+    monkeypatch.delenv("QT_API", raising=False)
     monkeypatch.setattr(qt_compat, "_import", _fake_import)
     monkeypatch.setattr(qt_compat, "_is_library_loaded", _fake_is_library_loaded)
 
@@ -614,6 +622,7 @@ def test_already_loaded_backend(monkeypatch, option_api, backend):
         return name == backend
 
     monkeypatch.delenv("PYTEST_QT_API", raising=False)
+    monkeypatch.delenv("QT_API", raising=False)
     monkeypatch.setattr(qt_compat, "_is_library_loaded", _fake_is_library_loaded)
     monkeypatch.setattr(builtins, "__import__", _fake_import)
 
