@@ -44,14 +44,14 @@ class _QtApi:
     def __init__(self):
         self._import_errors = {}
 
-    def _get_qt_api_from_env(self):
-        api = os.environ.get("PYTEST_QT_API")
+    def _get_qt_api_from_env(self, variable_name):
+        api = os.environ.get(variable_name)
         supported_apis = QT_APIS.keys()
 
         if api is not None:
             api = api.lower()
             if api not in supported_apis:  # pragma: no cover
-                msg = f"Invalid value for $PYTEST_QT_API: {api}, expected one of {supported_apis}"
+                msg = f"Invalid value for ${variable_name}: {api}, expected one of {supported_apis}"
                 raise pytest.UsageError(msg)
         return api
 
@@ -79,7 +79,8 @@ class _QtApi:
 
     def set_qt_api(self, api):
         self.pytest_qt_api = (
-            self._get_qt_api_from_env()
+            self._get_qt_api_from_env("PYTEST_QT_API")
+            or self._get_qt_api_from_env("QT_API")
             or api
             or self._get_already_loaded_backend()
             or self._guess_qt_api()
