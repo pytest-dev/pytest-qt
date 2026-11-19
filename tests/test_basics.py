@@ -40,6 +40,23 @@ def test_qapp_name(pytester):
     res.stdout.fnmatch_lines("*1 passed*")
 
 
+def test_qapp_default_organization_name(qapp):
+    assert qapp.organizationName() == "pytest-qt-qapp"
+
+
+def test_qapp_organization_name(pytester):
+    pytester.makepyfile("""
+    def test_name(qapp):
+        assert qapp.organizationName() == "frobnicator"
+    """)
+    pytester.makeini("""
+        [pytest]
+        qt_qapp_organization_name = frobnicator
+        """)
+    res = pytester.runpytest_subprocess()
+    res.stdout.fnmatch_lines("*1 passed*")
+
+
 def test_qapp_cls(pytester):
     pytester.makepyfile(
         app="""
