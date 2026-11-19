@@ -3,6 +3,11 @@ UNRELEASED
 
 - Added official support for Python 3.14.
 - Python 3.15 is now tested in CI.
+- Document ``qtbot`` key and mouse methods as regular methods rather than
+  static methods, and add an example of sending Enter to a ``QLineEdit``
+  (`#549`_).
+
+..  _#549: https://github.com/pytest-dev/pytest-qt/issues/549
 
 4.5.0 (2025-07-01)
 ------------------
