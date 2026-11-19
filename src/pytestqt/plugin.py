@@ -78,6 +78,8 @@ def qapp(qapp_args, qapp_cls, pytestconfig):
         _qapp_instance = qapp_cls(qapp_args)
         name = pytestconfig.getini("qt_qapp_name")
         _qapp_instance.setApplicationName(name)
+        org_name = pytestconfig.getini("qt_qapp_organization_name")
+        _qapp_instance.setOrganizationName(org_name)
         return _qapp_instance
     else:
         if not isinstance(app, qapp_cls):
@@ -135,6 +137,11 @@ def pytest_addoption(parser):
     )
     parser.addini(
         "qt_qapp_name", "The Qt application name to use", default="pytest-qt-qapp"
+    )
+    parser.addini(
+        "qt_qapp_organization_name",
+        "The Qt organization name to use",
+        default="pytest-qt-qapp",
     )
 
     default_log_fail = QtLoggingPlugin.LOG_FAIL_OPTIONS[0]
