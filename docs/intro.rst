@@ -28,6 +28,20 @@ creation as needed, and registering widgets for testing:
 
 This allows you to test and make sure your view layer is behaving the way you expect after each code change.
 
+pytest-qt and Qt Test
+=====================
+
+`Qt Test`_ is Qt's own testing framework. It is focused on C++, and only
+part of it is exposed in PyQt and PySide, mainly the ``QTest`` helpers
+for simulating keyboard and mouse input.
+
+pytest-qt builds on pytest and wraps those helpers via the ``qtbot``
+fixture. It also adds higher-level helpers such as ``waitSignal``,
+``waitUntil``, capturing exceptions from virtual methods and slots,
+and capturing Qt log messages.
+
+.. _Qt Test: https://doc.qt.io/qt-6/qttest-index.html
+
 .. |version| image:: http://img.shields.io/pypi/v/pytest-qt.svg
   :target: https://pypi.python.org/pypi/pytest-qt
 
