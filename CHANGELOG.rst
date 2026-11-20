@@ -7,8 +7,8 @@ UNRELEASED
   instead of ``*args, **kwargs``. Arguments are forwarded to ``QTest`` positionally,
   so keyword arguments now work consistently across all Qt bindings. In particular,
   ``modifier=`` can now be used for the mouse methods with PySide6 (which names the
-  argument ``stateKey`` in its own API); passing ``stateKey=`` through ``qtbot`` is
-  no longer supported.
+  argument ``stateKey`` in its own API). Passing ``stateKey=`` through ``qtbot`` is
+  deprecated and emits a ``DeprecationWarning``.
 
 4.5.0 (2025-07-01)
 ------------------

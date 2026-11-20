@@ -60,12 +60,28 @@ def _parse_ini_boolean(value: Any) -> bool:
         raise ValueError("unknown string for bool: %r" % value)
 
 
-def _modifier(modifier: Optional[KeyboardModifier]) -> KeyboardModifier:
-    """Resolve the default keyboard modifier for the QTest proxy methods.
+def _modifier(
+    modifier: Optional[KeyboardModifier],
+    stateKey: Optional[KeyboardModifier] = None,
+) -> KeyboardModifier:
+    """Resolve the keyboard modifier for the QTest proxy methods.
 
-    Resolved at call time because the Qt API is only known once the plugin
-    is configured.
+    The default is resolved at call time because the Qt API is only known once
+    the plugin is configured.
+
+    ``stateKey`` is the deprecated PySide spelling of ``modifier`` for the
+    mouse methods, which used to leak through the ``**kwargs`` forwarding.
     """
+    if stateKey is not None:
+        if modifier is not None:
+            raise TypeError("Cannot pass both 'modifier' and 'stateKey'.")
+        warnings.warn(
+            "The 'stateKey' argument is deprecated, use 'modifier' instead. "
+            "It now works with all Qt bindings.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
+        modifier = stateKey
     if modifier is None:
         return qt_api.QtCore.Qt.KeyboardModifier.NoModifier
     return modifier
@@ -201,6 +217,9 @@ class QtBot:
         .. note:: All arguments can be passed by keyword using the names above, regardless of the
             Qt bindings in use. In particular, the *modifier* argument is always called *modifier*,
             even though PySide names it *stateKey* in its own ``QTest`` API.
+
+            Passing ``stateKey=`` is still accepted for backwards compatibility, but is
+            deprecated and emits a ``DeprecationWarning``.
 
 
     .. _QTest API: http://doc.qt.io/qt-5/qtest.html
@@ -816,9 +835,11 @@ class QtBot:
         modifier: Optional[KeyboardModifier] = None,
         pos: Optional[QPoint] = None,
         delay: int = -1,
+        *,
+        stateKey: Optional[KeyboardModifier] = None,
     ) -> None:
         qt_api.QtTest.QTest.mouseClick(
-            widget, button, _modifier(modifier), _pos(pos), delay
+            widget, button, _modifier(modifier, stateKey), _pos(pos), delay
         )
 
     @staticmethod
@@ -828,9 +849,11 @@ class QtBot:
         modifier: Optional[KeyboardModifier] = None,
         pos: Optional[QPoint] = None,
         delay: int = -1,
+        *,
+        stateKey: Optional[KeyboardModifier] = None,
     ) -> None:
         qt_api.QtTest.QTest.mouseDClick(
-            widget, button, _modifier(modifier), _pos(pos), delay
+            widget, button, _modifier(modifier, stateKey), _pos(pos), delay
         )
 
     @staticmethod
@@ -848,9 +871,11 @@ class QtBot:
         modifier: Optional[KeyboardModifier] = None,
         pos: Optional[QPoint] = None,
         delay: int = -1,
+        *,
+        stateKey: Optional[KeyboardModifier] = None,
     ) -> None:
         qt_api.QtTest.QTest.mousePress(
-            widget, button, _modifier(modifier), _pos(pos), delay
+            widget, button, _modifier(modifier, stateKey), _pos(pos), delay
         )
 
     @staticmethod
@@ -860,9 +885,11 @@ class QtBot:
         modifier: Optional[KeyboardModifier] = None,
         pos: Optional[QPoint] = None,
         delay: int = -1,
+        *,
+        stateKey: Optional[KeyboardModifier] = None,
     ) -> None:
         qt_api.QtTest.QTest.mouseRelease(
-            widget, button, _modifier(modifier), _pos(pos), delay
+            widget, button, _modifier(modifier, stateKey), _pos(pos), delay
         )
 
     # provide easy access to exceptions to qtbot fixtures

@@ -753,3 +753,34 @@ def test_mouse_events_keyword_arguments(qtbot, event_recorder):
     # Qt 5 does not deliver a synthetic move event to an offscreen widget,
     # so only check that the keyword arguments are accepted.
     qtbot.mouseMove(widget=event_recorder, pos=qt_api.QtCore.QPoint(30, 40), delay=-1)
+
+
+def test_mouse_events_statekey_deprecated(qtbot, event_recorder):
+    """
+    The deprecated PySide spelling ``stateKey`` still works as ``modifier``,
+    but emits a DeprecationWarning.
+    """
+
+    def extract(mouse_event):
+        return (mouse_event.type(), mouse_event.modifiers())
+
+    event_recorder.registerEvent(qt_api.QtGui.QMouseEvent, extract)
+
+    with pytest.deprecated_call(match="'stateKey' argument is deprecated"):
+        qtbot.mousePress(
+            event_recorder,
+            qt_api.QtCore.Qt.MouseButton.LeftButton,
+            stateKey=qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
+        )
+    assert event_recorder.event_data == (
+        qt_api.QtCore.QEvent.Type.MouseButtonPress,
+        qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
+    )
+
+    with pytest.raises(TypeError, match="both 'modifier' and 'stateKey'"):
+        qtbot.mouseRelease(
+            event_recorder,
+            qt_api.QtCore.Qt.MouseButton.LeftButton,
+            modifier=qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
+            stateKey=qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
+        )
