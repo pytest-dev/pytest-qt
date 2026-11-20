@@ -651,3 +651,105 @@ def test_addwidget_typeerror(testdir, qtbot):
     obj = qt_api.QtCore.QObject()
     with pytest.raises(TypeError):
         qtbot.addWidget(obj)
+
+
+def test_key_events_keyword_arguments(qtbot, event_recorder):
+    """
+    The QTest key proxies accept keyword arguments with the same names
+    on all Qt bindings.
+    """
+    events = []
+
+    def extract(key_event):
+        events.append(
+            (
+                key_event.type(),
+                qt_api.QtCore.Qt.Key(key_event.key()),
+                key_event.modifiers(),
+            )
+        )
+        return events
+
+    event_recorder.registerEvent(qt_api.QtGui.QKeyEvent, extract)
+
+    qtbot.keyClick(
+        event_recorder,
+        key=qt_api.QtCore.Qt.Key.Key_B,
+        modifier=qt_api.QtCore.Qt.KeyboardModifier.ShiftModifier,
+        delay=-1,
+    )
+    assert (
+        qt_api.QtCore.QEvent.Type.KeyPress,
+        qt_api.QtCore.Qt.Key.Key_B,
+        qt_api.QtCore.Qt.KeyboardModifier.ShiftModifier,
+    ) in events
+
+    events.clear()
+    qtbot.keyEvent(
+        action=qt_api.QtTest.QTest.KeyAction.Press,
+        widget=event_recorder,
+        key="c",
+        modifier=qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
+    )
+    assert (
+        qt_api.QtCore.QEvent.Type.KeyPress,
+        qt_api.QtCore.Qt.Key.Key_C,
+        qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
+    ) in events
+
+    events.clear()
+    qtbot.keyClicks(widget=event_recorder, sequence="de", delay=-1)
+    presses = [
+        key for (type_, key, _) in events if type_ == qt_api.QtCore.QEvent.Type.KeyPress
+    ]
+    assert presses == [qt_api.QtCore.Qt.Key.Key_D, qt_api.QtCore.Qt.Key.Key_E]
+
+
+def test_mouse_events_keyword_arguments(qtbot, event_recorder):
+    """
+    The QTest mouse proxies accept ``modifier`` and ``pos`` as keyword
+    arguments on all Qt bindings (PySide names the modifier ``stateKey``).
+    """
+    events = []
+
+    def extract(mouse_event):
+        if hasattr(mouse_event, "position"):
+            pos = mouse_event.position().toPoint()
+        else:
+            pos = mouse_event.pos()
+        events.append(
+            (
+                mouse_event.type(),
+                mouse_event.button(),
+                mouse_event.modifiers(),
+                pos,
+            )
+        )
+        return events
+
+    event_recorder.registerEvent(qt_api.QtGui.QMouseEvent, extract)
+    event_recorder.resize(100, 100)
+
+    qtbot.mouseClick(
+        event_recorder,
+        qt_api.QtCore.Qt.MouseButton.LeftButton,
+        modifier=qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
+        pos=qt_api.QtCore.QPoint(10, 20),
+        delay=-1,
+    )
+    assert (
+        qt_api.QtCore.QEvent.Type.MouseButtonPress,
+        qt_api.QtCore.Qt.MouseButton.LeftButton,
+        qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
+        qt_api.QtCore.QPoint(10, 20),
+    ) in events
+    assert (
+        qt_api.QtCore.QEvent.Type.MouseButtonRelease,
+        qt_api.QtCore.Qt.MouseButton.LeftButton,
+        qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
+        qt_api.QtCore.QPoint(10, 20),
+    ) in events
+
+    # Qt 5 does not deliver a synthetic move event to an offscreen widget,
+    # so only check that the keyword arguments are accepted.
+    qtbot.mouseMove(widget=event_recorder, pos=qt_api.QtCore.QPoint(30, 40), delay=-1)

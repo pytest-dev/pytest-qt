@@ -9,6 +9,7 @@ from typing import (
     Iterator,
     Literal,
     Optional,
+    Union,
     Any,
     cast,
 )
@@ -35,7 +36,12 @@ from pytest import FixtureRequest
 QWidget: TypeAlias = Any
 SignalInstance: TypeAlias = Any
 QRect: TypeAlias = Any
+QPoint: TypeAlias = Any
 QKeySequence: TypeAlias = Any
+Key: TypeAlias = Any
+KeyAction: TypeAlias = Any
+KeyboardModifier: TypeAlias = Any
+MouseButton: TypeAlias = Any
 
 if TYPE_CHECKING:
     # Keep local import behavior the same.
@@ -52,6 +58,24 @@ def _parse_ini_boolean(value: Any) -> bool:
         return {"true": True, "false": False}[str(value).lower()]
     except KeyError:
         raise ValueError("unknown string for bool: %r" % value)
+
+
+def _modifier(modifier: Optional[KeyboardModifier]) -> KeyboardModifier:
+    """Resolve the default keyboard modifier for the QTest proxy methods.
+
+    Resolved at call time because the Qt API is only known once the plugin
+    is configured.
+    """
+    if modifier is None:
+        return qt_api.QtCore.Qt.KeyboardModifier.NoModifier
+    return modifier
+
+
+def _pos(pos: Optional[QPoint]) -> QPoint:
+    """Resolve the default mouse position for the QTest proxy methods."""
+    if pos is None:
+        return qt_api.QtCore.QPoint()
+    return pos
 
 
 class QtBot:
@@ -97,17 +121,21 @@ class QtBot:
 
     Below are methods used to simulate sending key events to widgets:
 
-    .. staticmethod:: keyClick (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
-    .. staticmethod:: keyClicks (widget, key_sequence[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
-    .. staticmethod:: keyEvent (action, widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
-    .. staticmethod:: keyPress (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
-    .. staticmethod:: keyRelease (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
+    .. staticmethod:: keyClick (widget, key, modifier=Qt.KeyboardModifier.NoModifier, delay=-1)
+    .. staticmethod:: keyClicks (widget, sequence, modifier=Qt.KeyboardModifier.NoModifier, delay=-1)
+    .. staticmethod:: keyEvent (action, widget, key, modifier=Qt.KeyboardModifier.NoModifier, delay=-1)
+    .. staticmethod:: keyPress (widget, key, modifier=Qt.KeyboardModifier.NoModifier, delay=-1)
+    .. staticmethod:: keyRelease (widget, key, modifier=Qt.KeyboardModifier.NoModifier, delay=-1)
 
         Sends one or more keyboard events to a widget.
 
         :param QWidget widget: the widget that will receive the event
 
-        :param str|int key: key to send, it can be either a Qt.Key.Key_* constant or a single character string.
+        :param QTest.KeyAction action: for ``keyEvent``, whether to press, release or click the key.
+
+        :param Qt.Key|str key: key to send, it can be either a Qt.Key.Key_* constant or a single character string.
+
+        :param str sequence: for ``keyClicks``, the string of characters to send as individual key clicks.
 
         .. _keyboard modifiers:
 
@@ -140,11 +168,11 @@ class QtBot:
 
     Below are methods used to simulate sending mouse events to widgets.
 
-    .. staticmethod:: mouseClick (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
-    .. staticmethod:: mouseDClick (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
-    .. staticmethod:: mouseMove (widget[, pos=QPoint()[, delay=-1]])
-    .. staticmethod:: mousePress (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
-    .. staticmethod:: mouseRelease (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
+    .. staticmethod:: mouseClick (widget, button, modifier=Qt.KeyboardModifier.NoModifier, pos=QPoint(), delay=-1)
+    .. staticmethod:: mouseDClick (widget, button, modifier=Qt.KeyboardModifier.NoModifier, pos=QPoint(), delay=-1)
+    .. staticmethod:: mouseMove (widget, pos=QPoint(), delay=-1)
+    .. staticmethod:: mousePress (widget, button, modifier=Qt.KeyboardModifier.NoModifier, pos=QPoint(), delay=-1)
+    .. staticmethod:: mouseRelease (widget, button, modifier=Qt.KeyboardModifier.NoModifier, pos=QPoint(), delay=-1)
 
         Sends a mouse moves and clicks to a widget.
 
@@ -170,7 +198,9 @@ class QtBot:
 
         :param int delay: after the event, delay the test for this milliseconds (if > 0).
 
-        .. note:: In the PySide bindings, the *modifier* argument is called *stateKey*.
+        .. note:: All arguments can be passed by keyword using the names above, regardless of the
+            Qt bindings in use. In particular, the *modifier* argument is always called *modifier*,
+            even though PySide names it *stateKey* in its own ``QTest`` API.
 
 
     .. _QTest API: http://doc.qt.io/qt-5/qtest.html
@@ -722,24 +752,50 @@ class QtBot:
         raise ScreenshotError(f"Failed to find unique filename, last try: {path}")
 
     @staticmethod
-    def keyClick(*args, **kwargs):
-        qt_api.QtTest.QTest.keyClick(*args, **kwargs)
+    def keyClick(
+        widget: QWidget,
+        key: Union[Key, str],
+        modifier: Optional[KeyboardModifier] = None,
+        delay: int = -1,
+    ) -> None:
+        qt_api.QtTest.QTest.keyClick(widget, key, _modifier(modifier), delay)
 
     @staticmethod
-    def keyClicks(*args, **kwargs):
-        qt_api.QtTest.QTest.keyClicks(*args, **kwargs)
+    def keyClicks(
+        widget: QWidget,
+        sequence: str,
+        modifier: Optional[KeyboardModifier] = None,
+        delay: int = -1,
+    ) -> None:
+        qt_api.QtTest.QTest.keyClicks(widget, sequence, _modifier(modifier), delay)
 
     @staticmethod
-    def keyEvent(*args, **kwargs):
-        qt_api.QtTest.QTest.keyEvent(*args, **kwargs)
+    def keyEvent(
+        action: KeyAction,
+        widget: QWidget,
+        key: Union[Key, str],
+        modifier: Optional[KeyboardModifier] = None,
+        delay: int = -1,
+    ) -> None:
+        qt_api.QtTest.QTest.keyEvent(action, widget, key, _modifier(modifier), delay)
 
     @staticmethod
-    def keyPress(*args, **kwargs):
-        qt_api.QtTest.QTest.keyPress(*args, **kwargs)
+    def keyPress(
+        widget: QWidget,
+        key: Union[Key, str],
+        modifier: Optional[KeyboardModifier] = None,
+        delay: int = -1,
+    ) -> None:
+        qt_api.QtTest.QTest.keyPress(widget, key, _modifier(modifier), delay)
 
     @staticmethod
-    def keyRelease(*args, **kwargs):
-        qt_api.QtTest.QTest.keyRelease(*args, **kwargs)
+    def keyRelease(
+        widget: QWidget,
+        key: Union[Key, str],
+        modifier: Optional[KeyboardModifier] = None,
+        delay: int = -1,
+    ) -> None:
+        qt_api.QtTest.QTest.keyRelease(widget, key, _modifier(modifier), delay)
 
     @staticmethod
     def keySequence(widget: QWidget, key_sequence: QKeySequence) -> None:
@@ -754,24 +810,60 @@ class QtBot:
         qt_api.QtTest.QTest.keyToAscii(key)
 
     @staticmethod
-    def mouseClick(*args, **kwargs):
-        qt_api.QtTest.QTest.mouseClick(*args, **kwargs)
+    def mouseClick(
+        widget: QWidget,
+        button: MouseButton,
+        modifier: Optional[KeyboardModifier] = None,
+        pos: Optional[QPoint] = None,
+        delay: int = -1,
+    ) -> None:
+        qt_api.QtTest.QTest.mouseClick(
+            widget, button, _modifier(modifier), _pos(pos), delay
+        )
 
     @staticmethod
-    def mouseDClick(*args, **kwargs):
-        qt_api.QtTest.QTest.mouseDClick(*args, **kwargs)
+    def mouseDClick(
+        widget: QWidget,
+        button: MouseButton,
+        modifier: Optional[KeyboardModifier] = None,
+        pos: Optional[QPoint] = None,
+        delay: int = -1,
+    ) -> None:
+        qt_api.QtTest.QTest.mouseDClick(
+            widget, button, _modifier(modifier), _pos(pos), delay
+        )
 
     @staticmethod
-    def mouseMove(*args, **kwargs):
-        qt_api.QtTest.QTest.mouseMove(*args, **kwargs)
+    def mouseMove(
+        widget: QWidget,
+        pos: Optional[QPoint] = None,
+        delay: int = -1,
+    ) -> None:
+        qt_api.QtTest.QTest.mouseMove(widget, _pos(pos), delay)
 
     @staticmethod
-    def mousePress(*args, **kwargs):
-        qt_api.QtTest.QTest.mousePress(*args, **kwargs)
+    def mousePress(
+        widget: QWidget,
+        button: MouseButton,
+        modifier: Optional[KeyboardModifier] = None,
+        pos: Optional[QPoint] = None,
+        delay: int = -1,
+    ) -> None:
+        qt_api.QtTest.QTest.mousePress(
+            widget, button, _modifier(modifier), _pos(pos), delay
+        )
 
     @staticmethod
-    def mouseRelease(*args, **kwargs):
-        qt_api.QtTest.QTest.mouseRelease(*args, **kwargs)
+    def mouseRelease(
+        widget: QWidget,
+        button: MouseButton,
+        modifier: Optional[KeyboardModifier] = None,
+        pos: Optional[QPoint] = None,
+        delay: int = -1,
+    ) -> None:
+        qt_api.QtTest.QTest.mouseRelease(
+            widget, button, _modifier(modifier), _pos(pos), delay
+        )
 
     # provide easy access to exceptions to qtbot fixtures
     SignalEmittedError = SignalEmittedError

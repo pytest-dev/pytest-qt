@@ -1,3 +1,15 @@
+UNRELEASED
+----------
+
+- The ``QTest`` proxy methods on ``qtbot`` (``keyClick``, ``keyClicks``, ``keyEvent``,
+  ``keyPress``, ``keyRelease``, ``mouseClick``, ``mouseDClick``, ``mouseMove``,
+  ``mousePress`` and ``mouseRelease``) now have explicit, type-annotated signatures
+  instead of ``*args, **kwargs``. Arguments are forwarded to ``QTest`` positionally,
+  so keyword arguments now work consistently across all Qt bindings. In particular,
+  ``modifier=`` can now be used for the mouse methods with PySide6 (which names the
+  argument ``stateKey`` in its own API); passing ``stateKey=`` through ``qtbot`` is
+  no longer supported.
+
 4.5.0 (2025-07-01)
 ------------------
 
