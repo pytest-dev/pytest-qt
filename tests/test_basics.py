@@ -653,10 +653,10 @@ def test_addwidget_typeerror(testdir, qtbot):
         qtbot.addWidget(obj)
 
 
-def test_key_events_keyword_arguments(qtbot, event_recorder):
+@pytest.fixture
+def key_events(event_recorder):
     """
-    The QTest key proxies accept keyword arguments with the same names
-    on all Qt bindings.
+    List of ``(type, key, modifiers)`` tuples for key events received by ``event_recorder``.
     """
     events = []
 
@@ -671,44 +671,14 @@ def test_key_events_keyword_arguments(qtbot, event_recorder):
         return events
 
     event_recorder.registerEvent(qt_api.QtGui.QKeyEvent, extract)
-
-    qtbot.keyClick(
-        event_recorder,
-        key=qt_api.QtCore.Qt.Key.Key_B,
-        modifier=qt_api.QtCore.Qt.KeyboardModifier.ShiftModifier,
-        delay=-1,
-    )
-    assert (
-        qt_api.QtCore.QEvent.Type.KeyPress,
-        qt_api.QtCore.Qt.Key.Key_B,
-        qt_api.QtCore.Qt.KeyboardModifier.ShiftModifier,
-    ) in events
-
-    events.clear()
-    qtbot.keyEvent(
-        action=qt_api.QtTest.QTest.KeyAction.Press,
-        widget=event_recorder,
-        key="c",
-        modifier=qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
-    )
-    assert (
-        qt_api.QtCore.QEvent.Type.KeyPress,
-        qt_api.QtCore.Qt.Key.Key_C,
-        qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
-    ) in events
-
-    events.clear()
-    qtbot.keyClicks(widget=event_recorder, sequence="de", delay=-1)
-    presses = [
-        key for (type_, key, _) in events if type_ == qt_api.QtCore.QEvent.Type.KeyPress
-    ]
-    assert presses == [qt_api.QtCore.Qt.Key.Key_D, qt_api.QtCore.Qt.Key.Key_E]
+    return events
 
 
-def test_mouse_events_keyword_arguments(qtbot, event_recorder):
+@pytest.fixture
+def mouse_events(event_recorder):
     """
-    The QTest mouse proxies accept ``modifier`` and ``pos`` as keyword
-    arguments on all Qt bindings (PySide names the modifier ``stateKey``).
+    List of ``(type, button, modifiers, pos)`` tuples for mouse events received by
+    ``event_recorder``.
     """
     events = []
 
@@ -718,67 +688,137 @@ def test_mouse_events_keyword_arguments(qtbot, event_recorder):
         else:
             pos = mouse_event.pos()
         events.append(
-            (
-                mouse_event.type(),
-                mouse_event.button(),
-                mouse_event.modifiers(),
-                pos,
-            )
+            (mouse_event.type(), mouse_event.button(), mouse_event.modifiers(), pos)
         )
         return events
 
     event_recorder.registerEvent(qt_api.QtGui.QMouseEvent, extract)
     event_recorder.resize(100, 100)
+    return events
 
-    qtbot.mouseClick(
-        event_recorder,
-        qt_api.QtCore.Qt.MouseButton.LeftButton,
+
+@pytest.mark.parametrize(
+    "method, event_type",
+    [
+        ("keyClick", "KeyPress"),
+        ("keyPress", "KeyPress"),
+        ("keyRelease", "KeyRelease"),
+    ],
+)
+def test_key_methods_keyword_arguments(
+    qtbot, event_recorder, key_events, method, event_type
+):
+    """
+    The key proxies accept all arguments by keyword, with the same names on all
+    Qt bindings.
+    """
+    getattr(qtbot, method)(
+        widget=event_recorder,
+        key=qt_api.QtCore.Qt.Key.Key_B,
+        modifier=qt_api.QtCore.Qt.KeyboardModifier.ShiftModifier,
+        delay=-1,
+    )
+    assert (
+        getattr(qt_api.QtCore.QEvent.Type, event_type),
+        qt_api.QtCore.Qt.Key.Key_B,
+        qt_api.QtCore.Qt.KeyboardModifier.ShiftModifier,
+    ) in key_events
+
+
+def test_keyEvent_keyword_arguments(qtbot, event_recorder, key_events):
+    qtbot.keyEvent(
+        action=qt_api.QtTest.QTest.KeyAction.Press,
+        widget=event_recorder,
+        key="c",
+        modifier=qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
+        delay=-1,
+    )
+    assert (
+        qt_api.QtCore.QEvent.Type.KeyPress,
+        qt_api.QtCore.Qt.Key.Key_C,
+        qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
+    ) in key_events
+
+
+def test_keyClicks_keyword_arguments(qtbot, event_recorder, key_events):
+    qtbot.keyClicks(
+        widget=event_recorder,
+        sequence="de",
+        modifier=qt_api.QtCore.Qt.KeyboardModifier.NoModifier,
+        delay=-1,
+    )
+    presses = [
+        key
+        for (type_, key, _) in key_events
+        if type_ == qt_api.QtCore.QEvent.Type.KeyPress
+    ]
+    assert presses == [qt_api.QtCore.Qt.Key.Key_D, qt_api.QtCore.Qt.Key.Key_E]
+
+
+MOUSE_BUTTON_METHODS = [
+    ("mouseClick", "MouseButtonPress"),
+    ("mouseDClick", "MouseButtonDblClick"),
+    ("mousePress", "MouseButtonPress"),
+    ("mouseRelease", "MouseButtonRelease"),
+]
+
+
+@pytest.mark.parametrize("method, event_type", MOUSE_BUTTON_METHODS)
+def test_mouse_methods_keyword_arguments(
+    qtbot, event_recorder, mouse_events, method, event_type
+):
+    """
+    The mouse proxies accept all arguments by keyword, with the same names on all
+    Qt bindings (PySide itself calls ``modifier`` ``stateKey``).
+    """
+    getattr(qtbot, method)(
+        widget=event_recorder,
+        button=qt_api.QtCore.Qt.MouseButton.LeftButton,
         modifier=qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
         pos=qt_api.QtCore.QPoint(10, 20),
         delay=-1,
     )
     assert (
-        qt_api.QtCore.QEvent.Type.MouseButtonPress,
+        getattr(qt_api.QtCore.QEvent.Type, event_type),
         qt_api.QtCore.Qt.MouseButton.LeftButton,
         qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
         qt_api.QtCore.QPoint(10, 20),
-    ) in events
-    assert (
-        qt_api.QtCore.QEvent.Type.MouseButtonRelease,
-        qt_api.QtCore.Qt.MouseButton.LeftButton,
-        qt_api.QtCore.Qt.KeyboardModifier.ControlModifier,
-        qt_api.QtCore.QPoint(10, 20),
-    ) in events
+    ) in mouse_events
 
+
+def test_mouseMove_keyword_arguments(qtbot, event_recorder, mouse_events):
     # Qt 5 does not deliver a synthetic move event to an offscreen widget,
     # so only check that the keyword arguments are accepted.
     qtbot.mouseMove(widget=event_recorder, pos=qt_api.QtCore.QPoint(30, 40), delay=-1)
 
 
-def test_mouse_events_statekey_deprecated(qtbot, event_recorder):
+@pytest.mark.parametrize("method, event_type", MOUSE_BUTTON_METHODS)
+def test_mouse_methods_stateKey_deprecated(
+    qtbot, event_recorder, mouse_events, method, event_type
+):
     """
     The deprecated PySide spelling ``stateKey`` still works as ``modifier``,
     but emits a DeprecationWarning.
     """
-
-    def extract(mouse_event):
-        return (mouse_event.type(), mouse_event.modifiers())
-
-    event_recorder.registerEvent(qt_api.QtGui.QMouseEvent, extract)
-
     with pytest.deprecated_call(match="'stateKey' argument is deprecated"):
-        qtbot.mousePress(
+        getattr(qtbot, method)(
             event_recorder,
             qt_api.QtCore.Qt.MouseButton.LeftButton,
+            pos=qt_api.QtCore.QPoint(10, 20),
             stateKey=qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
         )
-    assert event_recorder.event_data == (
-        qt_api.QtCore.QEvent.Type.MouseButtonPress,
+    assert (
+        getattr(qt_api.QtCore.QEvent.Type, event_type),
+        qt_api.QtCore.Qt.MouseButton.LeftButton,
         qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
-    )
+        qt_api.QtCore.QPoint(10, 20),
+    ) in mouse_events
 
+
+@pytest.mark.parametrize("method", [m for m, _ in MOUSE_BUTTON_METHODS])
+def test_mouse_methods_modifier_and_stateKey(qtbot, event_recorder, method):
     with pytest.raises(TypeError, match="both 'modifier' and 'stateKey'"):
-        qtbot.mouseRelease(
+        getattr(qtbot, method)(
             event_recorder,
             qt_api.QtCore.Qt.MouseButton.LeftButton,
             modifier=qt_api.QtCore.Qt.KeyboardModifier.AltModifier,
