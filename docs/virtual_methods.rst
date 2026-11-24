@@ -44,14 +44,19 @@ print a stack trace without raising any exception:
 
 To make testing Qt code less surprising, ``pytest-qt`` automatically
 installs an exception hook which captures errors and fails tests when exceptions
-are raised inside virtual methods, like this::
+are raised inside virtual methods. The original exception is re-raised, so pytest
+prints it with the same traceback style as any other failure::
 
-    E           Failed: Qt exceptions in virtual methods:
-    E           ________________________________________________________________________________
-    E             File "x:\pytest-qt\pytestqt\_tests\test_exceptions.py", line 14, in event
-    E               raise RuntimeError('unexpected error')
-    E
-    E           RuntimeError: unexpected error
+    def event(self, ev):
+>       raise RuntimeError('unexpected error')
+E       RuntimeError: unexpected error
+E       caught in Qt event loop during call
+
+test_widget.py:14: RuntimeError
+
+If several exceptions were caught, each traceback is reported. On Python 3.11
+and newer the message ``caught in Qt event loop during ...`` names the test
+phase (``setup``, ``call`` or ``teardown``).
 
 
 Disabling the automatic exception hook

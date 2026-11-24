@@ -3,6 +3,10 @@ UNRELEASED
 
 - Added official support for Python 3.14.
 - Python 3.15 is now tested in CI.
+- Exceptions raised inside the Qt event loop are reported with pytest's normal
+  traceback formatting (`#541`_).
+
+..  _#541: https://github.com/pytest-dev/pytest-qt/issues/541
 
 4.5.0 (2025-07-01)
 ------------------

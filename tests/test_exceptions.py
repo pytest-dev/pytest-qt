@@ -350,6 +350,110 @@ def test_exceptions_to_stderr(qapp, capsys):
 
 
 @exception_capture_pyside6
+def test_event_loop_traceback_uses_pytest_style(pytester: pytest.Pytester) -> None:
+    """Event-loop failures should use pytest's traceback, not a trimmed dump."""
+    pytester.makepyfile(
+        """
+        from pytestqt.qt_compat import qt_api
+
+        class Receiver(qt_api.QtCore.QObject):
+
+            def event(self, ev):
+                marker = "context-line"
+                raise RuntimeError("event processed")
+
+        def test_exceptions(qtbot):
+            receiver = Receiver()
+            app = qt_api.QtWidgets.QApplication.instance()
+            app.sendEvent(
+                receiver, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.Type.User)
+            )
+            app.processEvents()
+        """
+    )
+    result = pytester.runpytest("--tb=long")
+    result.stdout.fnmatch_lines(
+        [
+            '*marker = "context-line"*',
+            '*>*raise RuntimeError("event processed")*',
+            "*RuntimeError: event processed*",
+            "*caught in Qt event loop during call*",
+            "*1 failed*",
+        ]
+    )
+    assert "Failed: CALL ERROR" not in "\n".join(result.outlines)
+
+
+@exception_capture_pyside6
+def test_multiple_event_loop_exceptions_are_reported(
+    pytester: pytest.Pytester,
+) -> None:
+    pytester.makepyfile(
+        """
+        from pytestqt.qt_compat import qt_api
+
+        class Receiver(qt_api.QtCore.QObject):
+
+            def __init__(self):
+                super().__init__()
+                self.seen = 0
+
+            def event(self, ev):
+                self.seen += 1
+                raise RuntimeError("boom-%d" % self.seen)
+
+        def test_exceptions(qtbot):
+            receiver = Receiver()
+            app = qt_api.QtWidgets.QApplication.instance()
+            event = qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.Type.User)
+            app.sendEvent(receiver, event)
+            app.sendEvent(receiver, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.Type.User))
+            app.processEvents()
+        """
+    )
+    result = pytester.runpytest("--tb=long")
+    result.stdout.fnmatch_lines(
+        [
+            "*RuntimeError: boom-1*",
+            "*RuntimeError: boom-2*",
+            "*1 failed*",
+        ]
+    )
+
+
+@exception_capture_pyside6
+def test_keyboard_interrupt_in_event_loop_fails_test(
+    pytester: pytest.Pytester,
+) -> None:
+    pytester.makepyfile(
+        """
+        from pytestqt.qt_compat import qt_api
+
+        class Receiver(qt_api.QtCore.QObject):
+
+            def event(self, ev):
+                raise KeyboardInterrupt()
+
+        def test_exceptions(qtbot):
+            receiver = Receiver()
+            app = qt_api.QtWidgets.QApplication.instance()
+            app.sendEvent(
+                receiver, qt_api.QtCore.QEvent(qt_api.QtCore.QEvent.Type.User)
+            )
+            app.processEvents()
+        """
+    )
+    result = pytester.runpytest("--tb=short")
+    result.stdout.fnmatch_lines(
+        [
+            "*KeyboardInterrupt*",
+            "*caught in Qt event loop during call*",
+            "*1 failed*",
+        ]
+    )
+
+
+@exception_capture_pyside6
 def test_exceptions_dont_leak(pytester):
     """
     Ensure exceptions are cleared when an exception occurs and don't leak (#187).

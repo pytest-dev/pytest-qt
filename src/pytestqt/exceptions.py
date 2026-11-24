@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import functools
+import inspect
 import sys
 import traceback
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from types import TracebackType
+from types import FrameType, TracebackType
 from typing import Optional
 
 import pytest
@@ -69,20 +70,122 @@ class _QtExceptionCaptureManager:
             self.old_hook = None
 
     def fail_if_exceptions_occurred(self, when: str) -> None:
-        """calls pytest.fail() with an informative message if exceptions
-        have been captured so far. Before pytest.fail() is called, also
-        finish capturing.
+        """Re-raise captured exceptions so pytest formats the traceback.
+
+        Stops capturing first. Nothing happens when no exception was captured.
         """
-        if self.exceptions:
-            self.finish()
-            exceptions = self.exceptions
-            self.exceptions = []
-            prefix = "%s ERROR: " % when
-            msg = prefix + format_captured_exceptions(exceptions)
-            del exceptions[:]  # Don't keep exceptions alive longer.
+        __tracebackhide__ = True
+        if not self.exceptions:
+            return
+        self.finish()
+        exceptions = self.exceptions
+        self.exceptions = []
+        try:
+            _reraise_captured_exceptions(exceptions, when)
+        finally:
+            del exceptions[:]  # Don't keep exceptions alive longer (#187).
             if hasattr(sys, "last_exc"):
                 sys.last_exc = None  # type: ignore[assignment]
-            pytest.fail(msg, pytrace=False)
+
+
+def _reraise_captured_exceptions(exceptions: CapturedExceptions, when: str) -> None:
+    """Raise captured event-loop exceptions with their original tracebacks.
+
+    pytest then prints them with the usual traceback style. Several independent
+    exceptions are chained so each one is still reported.
+    """
+    __tracebackhide__ = True
+    note = f"caught in Qt event loop during {when.lower()}"
+    prepared = [
+        _prepare_captured_exception(value, tb, note) for _, value, tb in exceptions
+    ]
+    current = prepared[0]
+    for extra in prepared[1:]:
+        current = _chain_independent_exceptions(current, extra)
+    # Drop frame locals so Qt objects referenced there can be collected (#187).
+    # Source lines still come from the code objects.
+    _clear_exception_locals(current)
+    raise current
+
+
+def _prepare_captured_exception(
+    value: BaseException, tb: TracebackType | None, note: str
+) -> BaseException:
+    if tb is not None:
+        value = value.with_traceback(tb)
+    # KeyboardInterrupt would abort the session; report it as a test failure.
+    if isinstance(value, KeyboardInterrupt):
+        replacement = RuntimeError(note)
+        replacement.__cause__ = value
+        replacement.__suppress_context__ = True
+        return replacement
+    _add_note(value, note)
+    return value
+
+
+def _add_note(exc: BaseException, note: str) -> None:
+    add_note = getattr(exc, "add_note", None)
+    if add_note is None:
+        return
+    existing = getattr(exc, "__notes__", ())
+    if note not in existing:
+        add_note(note)
+
+
+def _clear_exception_locals(exc: BaseException | None) -> None:
+    """Clear locals on captured frames so Qt objects can be collected (#187).
+
+    A traceback frame's ``f_back`` still points at the finished test frame,
+    which is what keeps the widget alive. Leave frames that are still running
+    alone.
+    """
+    executing: set[FrameType] = set()
+    frame = inspect.currentframe()
+    while frame is not None:
+        executing.add(frame)
+        frame = frame.f_back
+    _clear_exception_locals_rec(exc, set(), set(), executing)
+
+
+def _clear_exception_locals_rec(
+    exc: BaseException | None,
+    seen_excs: set[int],
+    seen_frames: set[int],
+    executing: set[FrameType],
+) -> None:
+    if exc is None or id(exc) in seen_excs:
+        return
+    seen_excs.add(id(exc))
+    tb = exc.__traceback__
+    while tb is not None:
+        frame: FrameType | None = tb.tb_frame
+        while frame is not None and id(frame) not in seen_frames:
+            seen_frames.add(id(frame))
+            if frame not in executing:
+                frame.clear()
+            frame = frame.f_back
+        tb = tb.tb_next
+    _clear_exception_locals_rec(exc.__cause__, seen_excs, seen_frames, executing)
+    _clear_exception_locals_rec(exc.__context__, seen_excs, seen_frames, executing)
+    group = getattr(exc, "exceptions", None)
+    if group:
+        for sub in group:
+            _clear_exception_locals_rec(sub, seen_excs, seen_frames, executing)
+
+
+def _chain_independent_exceptions(
+    earlier: BaseException, later: BaseException
+) -> BaseException:
+    """Attach ``earlier`` to ``later`` without dropping an existing chain."""
+    if later.__context__ is None and not later.__suppress_context__:
+        later.__context__ = earlier
+        later.__suppress_context__ = False
+        return later
+    carrier = RuntimeError("Another exception caught in Qt event loop")
+    carrier.__cause__ = later
+    carrier.__suppress_context__ = True
+    carrier.__context__ = earlier
+    return carrier
 
 
 def format_captured_exceptions(exceptions: CapturedExceptions) -> str:
