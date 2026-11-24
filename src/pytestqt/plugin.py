@@ -173,6 +173,7 @@ def pytest_runtest_setup(item):
     Hook called after before test setup starts, to start capturing exceptions
     as early as possible.
     """
+    __tracebackhide__ = True
     capture_enabled = _is_exception_capture_enabled(item)
     if capture_enabled:
         item.qt_exception_capture_manager = _QtExceptionCaptureManager()
@@ -186,6 +187,7 @@ def pytest_runtest_setup(item):
 
 @pytest.hookimpl(wrapper=True, tryfirst=True)
 def pytest_runtest_call(item):
+    __tracebackhide__ = True
     result = yield
     _process_events()
     capture_enabled = _is_exception_capture_enabled(item)
@@ -201,6 +203,7 @@ def pytest_runtest_teardown(item):
     avoiding leaking events to the next test. Also, if exceptions have
     been captured during fixtures teardown, fail the test.
     """
+    __tracebackhide__ = True
     _process_events()
     _close_widgets(item)
     _process_events()
