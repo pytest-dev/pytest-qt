@@ -3,6 +3,9 @@ UNRELEASED
 
 - Added official support for Python 3.14.
 - Python 3.15 is now tested in CI.
+- Clarify in the intro how pytest-qt relates to Qt Test (`#273`_).
+
+..  _#273: https://github.com/pytest-dev/pytest-qt/issues/273
 
 4.5.0 (2025-07-01)
 ------------------
