@@ -3,6 +3,11 @@ UNRELEASED
 
 - Added official support for Python 3.14.
 - Python 3.15 is now tested in CI.
+- New option ``qt_qapp_organization_name`` can be used to set the organization
+  name of the ``QApplication`` created by ``pytest-qt``, defaulting to
+  ``"pytest-qt-qapp"`` (`#402`_).
+
+..  _#402: https://github.com/pytest-dev/pytest-qt/issues/402
 
 4.5.0 (2025-07-01)
 ------------------

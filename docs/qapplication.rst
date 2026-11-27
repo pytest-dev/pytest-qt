@@ -88,3 +88,17 @@ option in ``pytest.ini``:
 
     [pytest]
     qt_qapp_name = frobnicate-tests
+
+
+Setting a QApplication organization name
+----------------------------------------
+
+By default, pytest-qt sets the ``QApplication.organizationName()`` to
+``pytest-qt-qapp``. This is needed, together with the application name,
+for ``QSettings`` to work. To use a custom name, you can set the
+``qt_qapp_organization_name`` option in ``pytest.ini``:
+
+.. code-block:: ini
+
+    [pytest]
+    qt_qapp_organization_name = frobnicate
