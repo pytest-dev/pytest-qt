@@ -448,11 +448,11 @@ def test_context_none(pytester: pytest.Pytester) -> None:
     pytester.makepyfile("""
         from pytestqt.qt_compat import qt_api
 
-        def test_foo(request):
-            log_capture = request.node.qt_log_capture
-            context = log_capture._Context(None, None, 0, None)
-            log_capture._handle_with_context(qt_api.QtCore.QtMsgType.QtWarningMsg,
-                                             context, "WARNING message")
+        def test_foo(qtlog):
+            context = qtlog._Context(None, None, 0, None)
+            qtlog._handle_with_context(
+                qt_api.QtCore.QtMsgType.QtWarningMsg, context, "WARNING message"
+            )
             assert 0
         """)
     res = pytester.runpytest()

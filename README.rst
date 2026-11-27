@@ -173,6 +173,7 @@ Many thanks to:
 - Francesco Montesano (`@montefra <https://github.com/montefra>`_);
 - Roman Yurchak (`@rth <https://github.com/rth>`_)
 - Christian Karl (`@karlch <https://github.com/karlch>`_)
+- `@Max-WX-Chen <https://github.com/Max-WX-Chen>`_
 
 **Powered by**
 

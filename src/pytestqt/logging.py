@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 from collections import namedtuple
+from collections.abc import Generator
 from contextlib import contextmanager
 import datetime
 import re
 from _pytest._code.code import TerminalRepr, ReprFileLocation
 import pytest
 from pytestqt.qt_compat import qt_api
-from pytestqt.utils import get_marker
+from pytestqt.utils import _get_item_stash, get_marker, StashKey
+
+
+_QT_LOG_CAPTURE_KEY: StashKey[_QtMessageCapture] = StashKey()
 
 
 class QtLoggingPlugin:
@@ -21,7 +25,7 @@ class QtLoggingPlugin:
     def __init__(self, config):
         self.config = config
 
-    def pytest_runtest_setup(self, item):
+    def pytest_runtest_setup(self, item: pytest.Item) -> None:
         if get_marker(item, "no_qt_log"):
             return
         m = get_marker(item, "qt_log_ignore")
@@ -39,14 +43,19 @@ class QtLoggingPlugin:
                 ignore_regexes = m.args
         else:
             ignore_regexes = self.config.getini("qt_log_ignore")
-        item.qt_log_capture = _QtMessageCapture(ignore_regexes)
-        item.qt_log_capture._start()
+        capture = _QtMessageCapture(ignore_regexes)
+        _get_item_stash(item)[_QT_LOG_CAPTURE_KEY] = capture
+        capture._start()
 
     @pytest.hookimpl(wrapper=True)
-    def pytest_runtest_makereport(self, item, call):
+    def pytest_runtest_makereport(
+        self, item: pytest.Item, call: pytest.CallInfo[None]
+    ) -> Generator[None, pytest.TestReport, pytest.TestReport]:
         """Add captured Qt messages to test item report if the call failed."""
         report = yield
-        if not hasattr(item, "qt_log_capture"):
+        stash = _get_item_stash(item)
+        capture = stash.get(_QT_LOG_CAPTURE_KEY, None)
+        if capture is None:
             return report
 
         if call.when == "call":
@@ -60,7 +69,7 @@ class QtLoggingPlugin:
             # make test fail if any records were captured which match
             # log_fail_level
             if report.outcome != "failed":
-                for rec in item.qt_log_capture.records:
+                for rec in capture.records:
                     is_modeltest_error = (
                         rec.context is not None
                         and rec.context.category == "qt.modeltest"
@@ -80,7 +89,9 @@ class QtLoggingPlugin:
             # representation
             if not report.passed:
                 long_repr = getattr(report, "longrepr", None)
-                if hasattr(long_repr, "addsection"):  # pragma: no cover
+                if long_repr is not None and hasattr(
+                    long_repr, "addsection"
+                ):  # pragma: no cover
                     log_format = self.config.getoption("qt_log_format")
                     context_format = None
                     if log_format is None:
@@ -88,7 +99,7 @@ class QtLoggingPlugin:
                         log_format = "    {rec.type_name}: {rec.message}"
 
                     lines = []
-                    for rec in item.qt_log_capture.records:
+                    for rec in capture.records:
                         suffix = " (IGNORED)" if rec.ignored else ""
 
                         if (
@@ -110,8 +121,8 @@ class QtLoggingPlugin:
                     if lines:
                         long_repr.addsection("Captured Qt messages", "\n".join(lines))
 
-            item.qt_log_capture._stop()
-            del item.qt_log_capture
+            capture._stop()
+            del stash[_QT_LOG_CAPTURE_KEY]
         return report
 
 

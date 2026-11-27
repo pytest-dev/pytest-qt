@@ -18,6 +18,7 @@ from typing_extensions import Self, TypeAlias
 
 from pytestqt.exceptions import TimeoutError, ScreenshotError
 from pytestqt.qt_compat import qt_api
+from pytestqt.utils import _get_item_stash, StashKey
 from pytestqt.wait_signal import (
     SignalBlocker,
     MultiSignalBlocker,
@@ -42,6 +43,9 @@ if TYPE_CHECKING:
     from pytestqt.exceptions import CapturedExceptions
 
 BeforeCloseFunc = Callable[[QWidget], None]
+_QT_WIDGETS_KEY: StashKey[
+    list[tuple[weakref.ReferenceType[QWidget], BeforeCloseFunc | None]]
+] = StashKey()
 WaitSignalsOrder = Literal["none", "simple", "strict"]
 
 
@@ -791,32 +795,36 @@ def _add_widget(
     """
     Register a widget into the given pytest item for later closing.
     """
-    qt_widgets = getattr(item, "qt_widgets", [])
+    qt_widgets = _get_item_stash(item).setdefault(_QT_WIDGETS_KEY, [])
     qt_widgets.append((weakref.ref(widget), before_close_func))
-    item.qt_widgets = qt_widgets  # type: ignore[attr-defined]
 
 
 def _close_widgets(item: pytest.Item) -> None:
     """
     Close all widgets registered in the pytest item.
     """
-    widgets = getattr(item, "qt_widgets", None)
-    if widgets:
-        for w, before_close_func in item.qt_widgets:  # type: ignore[attr-defined]
-            w = w()
-            if w is not None:
+    stash = _get_item_stash(item)
+    widgets = stash.get(_QT_WIDGETS_KEY, None)
+    if widgets is None:
+        return
+
+    try:
+        for widget_ref, before_close_func in widgets:
+            widget = widget_ref()
+            if widget is not None:
                 if before_close_func is not None:
-                    before_close_func(w)
-                w.close()
-                w.deleteLater()
-        del item.qt_widgets  # type: ignore[attr-defined]
+                    before_close_func(widget)
+                widget.close()
+                widget.deleteLater()
+    finally:
+        del stash[_QT_WIDGETS_KEY]
 
 
 def _iter_widgets(item: pytest.Item) -> Iterator[weakref.ReferenceType[QWidget]]:
     """
     Iterates over widgets registered in the given pytest item.
     """
-    qt_widgets = getattr(item, "qt_widgets", [])
+    qt_widgets = _get_item_stash(item).get(_QT_WIDGETS_KEY, [])
     return (w for (w, _) in qt_widgets)
 
 
