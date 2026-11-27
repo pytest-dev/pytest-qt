@@ -95,13 +95,17 @@ class QtBot:
 
     ---
 
-    Below are methods used to simulate sending key events to widgets:
+    Below are methods used to simulate sending key events to widgets.
 
-    .. staticmethod:: keyClick (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
-    .. staticmethod:: keyClicks (widget, key_sequence[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
-    .. staticmethod:: keyEvent (action, widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
-    .. staticmethod:: keyPress (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
-    .. staticmethod:: keyRelease (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
+    Although they wrap static ``QTest`` helpers, call them on the ``qtbot``
+    fixture, for example ``qtbot.keyClick(widget, Qt.Key.Key_Enter)``.
+    ``keyPress`` is a shorthand for ``keyEvent(QTest.KeyAction.Press, ...)``.
+
+    .. method:: keyClick (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
+    .. method:: keyClicks (widget, key_sequence[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
+    .. method:: keyEvent (action, widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
+    .. method:: keyPress (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
+    .. method:: keyRelease (widget, key[, modifier=Qt.KeyboardModifier.NoModifier[, delay=-1]])
 
         Sends one or more keyboard events to a widget.
 
@@ -124,8 +128,15 @@ class QtBot:
 
         :param int delay: after the event, delay the test for this milliseconds (if > 0).
 
+        To type into a ``QLineEdit`` and press Enter::
 
-    .. staticmethod:: keyToAscii (key)
+            lineedit = QLineEdit()
+            qtbot.addWidget(lineedit)
+            qtbot.keyClicks(lineedit, "hello")
+            qtbot.keyClick(lineedit, Qt.Key.Key_Enter)
+
+
+    .. method:: keyToAscii (key)
 
         Auxiliary method that converts the given constant to its equivalent ascii.
 
@@ -140,11 +151,11 @@ class QtBot:
 
     Below are methods used to simulate sending mouse events to widgets.
 
-    .. staticmethod:: mouseClick (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
-    .. staticmethod:: mouseDClick (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
-    .. staticmethod:: mouseMove (widget[, pos=QPoint()[, delay=-1]])
-    .. staticmethod:: mousePress (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
-    .. staticmethod:: mouseRelease (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
+    .. method:: mouseClick (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
+    .. method:: mouseDClick (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
+    .. method:: mouseMove (widget[, pos=QPoint()[, delay=-1]])
+    .. method:: mousePress (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
+    .. method:: mouseRelease (widget, button[, modifier=0[, pos=QPoint()[, delay=-1]]])
 
         Sends a mouse moves and clicks to a widget.
 
