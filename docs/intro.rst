@@ -91,6 +91,6 @@ To force a particular API, set the configuration variable ``qt_api`` in your ``p
     qt_api=pyqt5
 
 
-Alternatively, you can set the ``PYTEST_QT_API`` environment
-variable to the same values described above (the environment variable wins over the configuration
+Alternatively, you can set one of the ``PYTEST_QT_API`` or ``QT_API`` environment
+variables to the same values described above (the environment variable wins over the configuration
 if both are set).

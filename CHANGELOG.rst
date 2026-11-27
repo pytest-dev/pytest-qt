@@ -1,6 +1,7 @@
 UNRELEASED
 ----------
 
+- Added support for QT_API environment variable.
 - Added official support for Python 3.14.
 - Python 3.15 is now tested in CI.
 
