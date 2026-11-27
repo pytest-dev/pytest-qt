@@ -244,6 +244,30 @@ def test_widget_kept_as_weakref(qtbot):
     assert widget() is None
 
 
+def test_item_state_does_not_overwrite_attributes(pytester):
+    pytester.makeconftest("""
+        def pytest_collection_modifyitems(items):
+            for item in items:
+                item.qt_exception_capture_manager = "other plugin"
+                item.qt_log_capture = "other plugin"
+                item.qt_widgets = "other plugin"
+        """)
+    pytester.makepyfile("""
+        from pytestqt.qt_compat import qt_api
+
+        def test_qt_state(qtbot, qtlog, request):
+            assert request.node.qt_exception_capture_manager == "other plugin"
+            assert request.node.qt_log_capture == "other plugin"
+            assert request.node.qt_widgets == "other plugin"
+
+            widget = qt_api.QtWidgets.QWidget()
+            qtbot.add_widget(widget)
+            qt_api.qWarning("test Qt message")
+            assert any(record.message == "test Qt message" for record in qtlog.records)
+        """)
+    pytester.runpytest().assert_outcomes(passed=1)
+
+
 def test_event_processing_before_and_after_teardown(pytester):
     """
     Make sure events are processed before and after fixtures are torn down.

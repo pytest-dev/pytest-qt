@@ -1,7 +1,22 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 
 import pytest
+
+if TYPE_CHECKING or hasattr(pytest, "StashKey"):
+    from pytest import StashKey as StashKey
+else:
+    from _pytest.store import StoreKey
+
+    StashKey = StoreKey
+
+
+def _get_item_stash(item: pytest.Item) -> pytest.Stash:
+    """Return the item's storage, using its equivalent Store on pytest 6.2."""
+    if TYPE_CHECKING or hasattr(item, "stash"):
+        return item.stash
+    return item._store
 
 
 def get_marker(item: pytest.Item, name: str) -> pytest.Mark | None:

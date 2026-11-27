@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 import warnings
 
 import pytest
@@ -8,9 +9,13 @@ from pytestqt.exceptions import (
     _is_exception_capture_enabled,
     _QtExceptionCaptureManager,
 )
-from pytestqt.logging import QtLoggingPlugin, _QtMessageCapture
+from pytestqt.logging import QtLoggingPlugin, _QtMessageCapture, _QT_LOG_CAPTURE_KEY
 from pytestqt.qt_compat import qt_api
 from pytestqt.qtbot import QtBot, _close_widgets
+from pytestqt.utils import _get_item_stash, StashKey
+
+
+_QT_EXCEPTION_CAPTURE_KEY: StashKey[_QtExceptionCaptureManager] = StashKey()
 
 
 @pytest.fixture(scope="session")
@@ -106,10 +111,11 @@ def qtbot(qapp, request):
 
 
 @pytest.fixture
-def qtlog(request):
+def qtlog(request: pytest.FixtureRequest) -> _QtMessageCapture:
     """Fixture that can access messages captured during testing"""
-    if hasattr(request._pyfuncitem, "qt_log_capture"):
-        return request._pyfuncitem.qt_log_capture
+    capture = _get_item_stash(request.node).get(_QT_LOG_CAPTURE_KEY, None)
+    if capture is not None:
+        return capture
     else:
         return _QtMessageCapture([])  # pragma: no cover
 
@@ -168,49 +174,61 @@ def pytest_addoption(parser):
 
 
 @pytest.hookimpl(wrapper=True, tryfirst=True)
-def pytest_runtest_setup(item):
+def pytest_runtest_setup(
+    item: pytest.Item,
+) -> Generator[None, list[object], list[object]]:
     """
     Hook called after before test setup starts, to start capturing exceptions
     as early as possible.
     """
-    capture_enabled = _is_exception_capture_enabled(item)
-    if capture_enabled:
-        item.qt_exception_capture_manager = _QtExceptionCaptureManager()
-        item.qt_exception_capture_manager.start()
+    capture_manager = None
+    if _is_exception_capture_enabled(item):
+        capture_manager = _QtExceptionCaptureManager()
+        _get_item_stash(item)[_QT_EXCEPTION_CAPTURE_KEY] = capture_manager
+        capture_manager.start()
     result = yield
     _process_events()
-    if capture_enabled:
-        item.qt_exception_capture_manager.fail_if_exceptions_occurred("SETUP")
+    if capture_manager is not None:
+        capture_manager.fail_if_exceptions_occurred("SETUP")
     return result
 
 
 @pytest.hookimpl(wrapper=True, tryfirst=True)
-def pytest_runtest_call(item):
+def pytest_runtest_call(
+    item: pytest.Item,
+) -> Generator[None, list[object], list[object]]:
     result = yield
     _process_events()
-    capture_enabled = _is_exception_capture_enabled(item)
-    if capture_enabled:
-        item.qt_exception_capture_manager.fail_if_exceptions_occurred("CALL")
+    capture_manager = _get_item_stash(item).get(_QT_EXCEPTION_CAPTURE_KEY, None)
+    if capture_manager is not None and _is_exception_capture_enabled(item):
+        capture_manager.fail_if_exceptions_occurred("CALL")
     return result
 
 
 @pytest.hookimpl(wrapper=True, trylast=True)
-def pytest_runtest_teardown(item):
+def pytest_runtest_teardown(
+    item: pytest.Item,
+) -> Generator[None, list[object], list[object]]:
     """
     Hook called after each test tear down, to process any pending events and
     avoiding leaking events to the next test. Also, if exceptions have
     been captured during fixtures teardown, fail the test.
     """
-    _process_events()
-    _close_widgets(item)
-    _process_events()
-    result = yield
-    _process_events()
-    capture_enabled = _is_exception_capture_enabled(item)
-    if capture_enabled:
-        item.qt_exception_capture_manager.fail_if_exceptions_occurred("TEARDOWN")
-        item.qt_exception_capture_manager.finish()
-    return result
+    stash = _get_item_stash(item)
+    capture_manager = stash.get(_QT_EXCEPTION_CAPTURE_KEY, None)
+    try:
+        _process_events()
+        _close_widgets(item)
+        _process_events()
+        result = yield
+        _process_events()
+        if capture_manager is not None and _is_exception_capture_enabled(item):
+            capture_manager.fail_if_exceptions_occurred("TEARDOWN")
+        return result
+    finally:
+        if capture_manager is not None:
+            capture_manager.finish()
+            del stash[_QT_EXCEPTION_CAPTURE_KEY]
 
 
 def _process_events():
