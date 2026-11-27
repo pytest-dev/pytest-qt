@@ -8,7 +8,14 @@ processes, you can use :meth:`qtbot.waitSignal <pytestqt.plugin.QtBot.waitSignal
 to block a test until a signal is emitted (such as ``QThread.finished``) or a
 timeout is reached. This makes it easy to write tests that wait until a
 computation running in another thread or process is completed before
-ensuring the results are correct:
+ensuring the results are correct.
+
+In the examples below, ``Application`` represents a hypothetical class from
+your application, not ``QApplication``. ``assert_application_results`` represents
+your own checks of the application's results. These names are placeholders,
+not classes or functions to import from pytest-qt. If you need direct access to the
+``QApplication`` instance, request the :ref:`qapp fixture <qapp-fixture>` in your test.
+The ``qtbot`` fixture already ensures that a ``QApplication`` instance is available.
 
 .. code-block:: python
 
@@ -149,7 +156,11 @@ If you have to wait until **all** signals in a list are triggered, use
 :meth:`qtbot.waitSignals <pytestqt.plugin.QtBot.waitSignals>`, which receives
 a list of signals instead of a single signal. As with
 :meth:`qtbot.waitSignal <pytestqt.plugin.QtBot.waitSignal>`, it also supports
-the ``raising`` parameter::
+the ``raising`` parameter.
+
+Here, ``spawn_workers`` is a placeholder for an application function that
+returns workers which have not yet been started. Start them inside the
+``with`` block, after ``waitSignals`` has connected to their signals::
 
     def test_workers(qtbot):
         workers = spawn_workers()
@@ -159,7 +170,7 @@ the ``raising`` parameter::
 
         # this will be reached after all workers emit their "finished"
         # signal or a qtbot.TimeoutError will be raised
-        assert_application_results(app)
+        # Check the workers' results here.
 
 check_params_cbs parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
