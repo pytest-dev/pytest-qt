@@ -128,7 +128,12 @@ def qtmodeltester(request):
 
 def pytest_addoption(parser):
     parser.addini("qt_api", 'Qt api version to use: "pyside6" , "pyqt6", "pyqt5"')
-    parser.addini("qt_no_exception_capture", "disable automatic exception capture")
+    parser.addini(
+        "qt_no_exception_capture",
+        "disable automatic exception capture",
+        type="bool",
+        default=False,
+    )
     parser.addini(
         "qt_default_raising",
         "Default value for the raising parameter of qtbot.waitSignal/waitCallback",
